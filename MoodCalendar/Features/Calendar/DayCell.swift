@@ -16,7 +16,9 @@ struct DayCell: View {
                     .frame(width: 30, height: 30)
                     .background {
                         if isSelected {
-                            Circle().fill(Mood.veryGood.color.opacity(0.20))
+                            Image(systemName: "heart.fill")
+                                .font(.system(size: 34))
+                                .foregroundStyle(Mood.veryGood.color.opacity(0.35))
                         }
                     }
 

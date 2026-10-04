@@ -9,13 +9,13 @@ struct MonthGrid: View {
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 2), count: 7)
 
     var body: some View {
-        VStack(spacing: 10) {
-            HStack {
+        VStack(spacing: 26) {
+            LazyVGrid(columns: columns, spacing: 0) {
                 ForEach(0..<7, id: \.self) { index in
                     Text(weekdayNames[index])
-                        .font(.caption.weight(.medium))
-                        .foregroundStyle(.secondary)
-                        .frame(maxWidth: .infinity)
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundStyle(Color.gray)
+                        .frame(maxWidth: .infinity, alignment: .center)
                 }
             }
             LazyVGrid(columns: columns, spacing: 4) {
