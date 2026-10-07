@@ -3,15 +3,33 @@ import SwiftData
 
 @Model
 final class MoodEntry {
-    @Attribute(.unique) var dayKey: String
-    var moodValue: Int
-    var note: String
+    var id: UUID = UUID()
+    var dayKey: String = ""
+    // Keep the original field for SwiftData compatibility; it stores DailyChoice IDs 1–20.
+    var moodValue: Int = DailyChoice.veryGood.rawValue
+    var note: String = ""
+    var updatedAt: Date = Date(timeIntervalSince1970: 0)
 
-    init(dayKey: String, mood: Mood, note: String) {
+    init(dayKey: String, choice: DailyChoice, note: String) {
         self.dayKey = dayKey
-        moodValue = mood.rawValue
+        moodValue = choice.rawValue
         self.note = note
+        updatedAt = .now
     }
 
-    var mood: Mood? { Mood(rawValue: moodValue) }
+    var choice: DailyChoice? { DailyChoice(rawValue: moodValue) }
+}
+
+@Model
+final class MonthlyNote {
+    var id: UUID = UUID()
+    var monthKey: String = ""
+    var text: String = ""
+    var updatedAt: Date = Date(timeIntervalSince1970: 0)
+
+    init(monthKey: String, text: String) {
+        self.monthKey = monthKey
+        self.text = text
+        updatedAt = .now
+    }
 }

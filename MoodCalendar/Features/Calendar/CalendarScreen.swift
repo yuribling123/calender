@@ -3,57 +3,94 @@ import SwiftData
 
 struct CalendarScreen: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.appTheme) private var theme
+    @Environment(\.selectionShape) private var selectionShape
+    @AppStorage("calendarTitle") private var storedCalendarTitle = ""
     @Query private var entries: [MoodEntry]
     @State private var displayedMonth = MonthLayout(containing: Date()).monthStart
     @State private var selectedDay = Date()
     @State private var isChoosingMonth = false
     @State private var chooserYear = Calendar.current.component(.year, from: Date())
     @State private var isEditorPresented = false
+    @State private var editorInitialGroup: ChoiceGroup = .mood
     @State private var saveError: String?
 
     private let calendar = Calendar.current
 
     private var selectedEntry: MoodEntry? {
         let key = DayKey(selectedDay).storageValue
-        return entries.first { $0.dayKey == key }
+        return entriesByDay[key]
+    }
+
+    private var entriesByDay: [String: MoodEntry] {
+        Dictionary(grouping: entries, by: \.dayKey).compactMapValues { dayEntries in
+            dayEntries.max { $0.updatedAt < $1.updatedAt }
+        }
     }
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 0) {
-                    intro
-                        .padding(.bottom, 28)
-                    if isChoosingMonth {
-                        monthChooser
-                    } else {
-                        monthHeader
-                            .padding(.bottom, 30)
-                        MonthGrid(
-                            layout: MonthLayout(containing: displayedMonth),
-                            entries: Dictionary(uniqueKeysWithValues: entries.map { ($0.dayKey, $0) }),
-                            selectedDay: DayKey(selectedDay),
-                            onSelect: { selectedDay = $0 }
-                        )
-                        .padding(.bottom, 22)
-                        SelectedDateDetail(
-                            date: selectedDay,
-                            entry: selectedEntry,
-                            onRecordMood: saveMood,
-                            onEditToday: {
-                                if DayKey(selectedDay).relationToToday == .today {
-                                    isEditorPresented = true
+            ScrollViewReader { scrollProxy in
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 0) {
+                        intro
+                            .padding(.bottom, 4)
+                        if isChoosingMonth {
+                            monthChooser
+                        } else {
+                            monthHeader
+                                .padding(.bottom, 30)
+                                .simultaneousGesture(monthSwipeGesture)
+                            MonthGrid(
+                                layout: MonthLayout(containing: displayedMonth),
+                                entries: entriesByDay,
+                                selectedDay: DayKey(selectedDay),
+                                onSelect: { date in
+                                    selectedDay = date
+                                    if DayKey(date).relationToToday == .today {
+                                        let key = DayKey(date).storageValue
+                                        editorInitialGroup = entriesByDay[key]?.choice?.group ?? .mood
+                                        isEditorPresented = true
+                                        return
+                                    }
+                                    withAnimation(.easeInOut(duration: 0.3)) {
+                                        scrollProxy.scrollTo("detailBottom", anchor: .bottom)
+                                    }
                                 }
-                            }
-                        )
+                            )
+                            .padding(.bottom, 8)
+                            .simultaneousGesture(monthSwipeGesture)
+                            SelectedDateDetail(
+                                date: selectedDay,
+                                entry: selectedEntry,
+                                onRecordMood: saveMood,
+                                onChooseDaily: {
+                                    guard DayKey(selectedDay).relationToToday == .today else { return }
+                                    editorInitialGroup = .daily
+                                    isEditorPresented = true
+                                },
+                                onEditToday: {
+                                    if DayKey(selectedDay).relationToToday == .today {
+                                        editorInitialGroup = selectedEntry?.choice?.group ?? .mood
+                                        isEditorPresented = true
+                                    }
+                                }
+                            )
+                            Color.clear
+                                .frame(height: 80)
+                                .id("detailBottom")
+                        }
                     }
+                    .padding(24)
                 }
-                .padding(24)
             }
-            .background(Color(red: 0.99, green: 0.98, blue: 0.97))
+            .background(theme.palette.background)
             .toolbar(.hidden, for: .navigationBar)
+            .onChange(of: entries.map { "\($0.id.uuidString)-\($0.updatedAt.timeIntervalSince1970)" }) { _, _ in
+                try? EntryStore(context: modelContext).reconcileDuplicates()
+            }
             .sheet(isPresented: $isEditorPresented) {
-                EntryEditorScreen(day: selectedDay, entry: selectedEntry)
+                EntryEditorScreen(day: selectedDay, entry: selectedEntry, initialGroup: editorInitialGroup)
             }
             .alert("保存失败", isPresented: Binding(
                 get: { saveError != nil },
@@ -67,11 +104,11 @@ struct CalendarScreen: View {
     }
 
     private var intro: some View {
-        VStack(alignment: .leading, spacing: 7) {
-            Text("今日份")
-                .font(.system(size: 32, weight: .semibold))
-                .foregroundStyle(.black)
-            HStack {
+        VStack(alignment: .leading, spacing: 2) {
+            HStack(alignment: .firstTextBaseline, spacing: 12) {
+                Text(storedCalendarTitle.isEmpty ? "今日份" : storedCalendarTitle)
+                    .font(.system(size: 32, weight: .semibold))
+                    .foregroundStyle(.black)
                 Button {
                     if !isChoosingMonth {
                         chooserYear = calendar.component(.year, from: displayedMonth)
@@ -88,6 +125,14 @@ struct CalendarScreen: View {
                     .frame(minHeight: 44, alignment: .leading)
                 }
                 .accessibilityLabel(isChoosingMonth ? "关闭月份选择" : "选择月份")
+                Spacer()
+
+                if !isChoosingMonth && !isDisplayingCurrentMonth {
+                    todayButton
+                }
+            }
+
+            HStack {
 
                 if isChoosingMonth {
                     Spacer()
@@ -104,6 +149,7 @@ struct CalendarScreen: View {
                 }
             }
             .buttonStyle(.plain)
+            .simultaneousGesture(yearSwipeGesture)
             #if DEBUG
             if DemoData.isEnabled {
                 Text("演示数据")
@@ -112,36 +158,66 @@ struct CalendarScreen: View {
             }
             #endif
         }
-        .padding(.top, 8)
+        .padding(.top, 4)
     }
 
     private var monthChooser: some View {
-        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: 3), spacing: 16) {
+        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: 3), spacing: 32) {
             ForEach(1...12, id: \.self) { month in
                 Button {
                     chooseMonth(month)
                 } label: {
                     Text("\(month)月")
                         .font(.system(size: 18, weight: isDisplayedMonth(month) ? .semibold : .medium))
-                        .foregroundStyle(.primary)
+                        .foregroundStyle(isDisplayedMonth(month) ? theme.palette.onSelection : Color.primary)
+                        .frame(minWidth: 68, minHeight: 44)
                         .frame(maxWidth: .infinity, minHeight: 64)
                         .background {
                             if isDisplayedMonth(month) {
-                                RoundedRectangle(cornerRadius: 18)
-                                    .fill(Mood.veryGood.color.opacity(0.18))
+                                Image(systemName: selectionShape.systemName)
+                                    .font(.system(size: 66))
+                                    .foregroundStyle(theme.palette.selectionFill)
+                                    .accessibilityHidden(true)
                             }
                         }
+                        .contentShape(Rectangle())
                 }
-                .accessibilityLabel("\(chooserYear)年\(month)月")
+                .accessibilityLabel(Text(verbatim: "\(chooserYear)年\(month)月"))
                 .accessibilityAddTraits(isDisplayedMonth(month) ? .isSelected : [])
             }
         }
         .buttonStyle(.plain)
+        .padding(.top, 22)
     }
 
     private func isDisplayedMonth(_ month: Int) -> Bool {
         chooserYear == calendar.component(.year, from: displayedMonth)
             && month == calendar.component(.month, from: displayedMonth)
+    }
+
+    private var monthSwipeGesture: some Gesture {
+        DragGesture(minimumDistance: 30)
+            .onEnded { value in
+                guard let step = swipeStep(for: value.translation) else { return }
+                moveMonth(step)
+            }
+    }
+
+    private var yearSwipeGesture: some Gesture {
+        DragGesture(minimumDistance: 30)
+            .onEnded { value in
+                guard isChoosingMonth, let step = swipeStep(for: value.translation) else { return }
+                chooserYear += step
+            }
+    }
+
+    private func swipeStep(for translation: CGSize) -> Int? {
+        let horizontal = translation.width
+        guard abs(horizontal) >= 50,
+              abs(horizontal) > abs(translation.height) * 1.2 else {
+            return nil
+        }
+        return horizontal < 0 ? 1 : -1
     }
 
     private func chooseMonth(_ month: Int) {
@@ -183,19 +259,19 @@ struct CalendarScreen: View {
                 .allowsHitTesting(false)
             }
 
-            if !isDisplayingCurrentMonth {
-                HStack {
-                    Spacer()
-                    Button("今天") { showCurrentMonth() }
-                        .font(.subheadline.weight(.medium))
-                        .foregroundStyle(.primary)
-                        .frame(minWidth: 44, minHeight: 44)
-                        .background(Mood.veryGood.color.opacity(0.18))
-                        .clipShape(Capsule())
-                }
-            }
         }
         .buttonStyle(.plain)
+    }
+
+    private var todayButton: some View {
+        Button("今天") { showCurrentMonth() }
+            .font(.subheadline.weight(.medium))
+            .foregroundStyle(theme.palette.onStrongAccent)
+            .frame(minWidth: 44, minHeight: 44)
+            .background(theme.palette.strongAccent)
+            .clipShape(Capsule())
+            .buttonStyle(.plain)
+            .accessibilityLabel("回到今天")
     }
 
     private var isDisplayingCurrentMonth: Bool {
@@ -225,7 +301,8 @@ struct CalendarScreen: View {
     private func saveMood(_ mood: Mood) {
         guard DayKey(selectedDay).relationToToday == .today else { return }
         do {
-            try EntryStore(context: modelContext).save(day: DayKey(selectedDay), mood: mood, note: "")
+            guard let choice = DailyChoice(rawValue: mood.rawValue) else { return }
+            try EntryStore(context: modelContext).save(day: DayKey(selectedDay), choice: choice, note: "")
         } catch {
             saveError = error.localizedDescription
         }

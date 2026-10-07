@@ -20,6 +20,7 @@
 ## Verification
 
 - After code changes, run the relevant Xcode build on an available iPhone simulator and check the affected interaction when Xcode is available. Do not claim simulator verification from a syntax check alone.
+- After every code or asset modification, rebuild and rerun the latest app in Xcode on the available iPhone simulator before reporting completion.
 - For date or persistence changes, check month boundaries, leap years, one-entry-per-day updates, and reopening saved records. Add focused tests when they verify a real risk.
 - If the local environment lacks full Xcode, perform available static checks and clearly report that compilation and simulator behavior remain unverified.
 - Keep `README.md` accurate when setup, behavior, or project structure changes.

@@ -15,6 +15,16 @@ enum Mood: Int, CaseIterable, Identifiable, Codable {
         }
     }
 
+    var caption: String {
+        switch self {
+        case .veryGood: "幸福到融化"
+        case .good: "心里软乎乎"
+        case .okay: "今天就这样"
+        case .bad: "小小不开心"
+        case .veryBad: "快要碎掉了"
+        }
+    }
+
     var imageName: String {
         switch self {
         case .veryGood: "moodVeryGood"
