@@ -64,6 +64,7 @@ struct CalendarScreen: View {
                                     }
                                 }
                             )
+                            .offset(y: -8)
                             .padding(.bottom, 8)
                             .simultaneousGesture(monthSwipeGesture)
                             SelectedDateDetail(

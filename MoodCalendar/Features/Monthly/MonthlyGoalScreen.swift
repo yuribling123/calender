@@ -267,7 +267,7 @@ struct MonthlyGoalScreen: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
             if let choice = data.choice {
-                summaryRow(title: "这个月常常在", value: displayTitle(for: choice), imageName: choice.imageName)
+                summaryRow(title: "那个月常常在", value: displayTitle(for: choice), imageName: choice.imageName)
             }
         }
         .padding(.top, 16)

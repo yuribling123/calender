@@ -81,7 +81,7 @@ struct MembershipScreen: View {
     private var purchaseTitle: String {
         if membership.hasMembershipAccess { return "已永久解锁" }
         if let price = membership.product?.displayPrice { return "永久解锁 · \(price)" }
-        return membership.isLoading ? "正在连接 App Store…" : "永久解锁 · ¥10"
+        return membership.isLoading ? "正在连接 App Store…" : "永久解锁 · ¥12"
     }
 
     private func benefit(_ title: String, detail: String) -> some View {

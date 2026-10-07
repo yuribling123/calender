@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct SelectedDateDetail: View {
+    @Environment(\.appTheme) private var theme
+
     let date: Date
     let entry: MoodEntry?
     let onRecordMood: (Mood) -> Void
@@ -12,7 +14,7 @@ struct SelectedDateDetail: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             Rectangle()
-                .fill(Color.primary.opacity(0.09))
+                .fill(theme.palette.accent.opacity(0.2))
                 .frame(height: 1)
 
             HStack {
@@ -21,10 +23,9 @@ struct SelectedDateDetail: View {
                      : "\(date.formatted(.dateTime.month().day())) · \(date.formatted(.dateTime.weekday(.wide)))")
                     .font(.subheadline.weight(.medium))
                     .foregroundStyle(.secondary)
-
                 Spacer()
             }
-            .frame(minHeight: 28)
+            .padding(.bottom, -8)
             .overlay(alignment: .trailing) {
                 if relation == .today, entry?.choice != nil {
                     Button(action: onEditToday) {
@@ -150,7 +151,7 @@ private func choiceArtwork(_ choice: DailyChoice) -> some View {
 }
 
     private func recordedChoice(_ choice: DailyChoice) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 1) {
             HStack(alignment: .center, spacing: 2) {
                 choiceArtwork(choice)
                     .accessibilityHidden(true)

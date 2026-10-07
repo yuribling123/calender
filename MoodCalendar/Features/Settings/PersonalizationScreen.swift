@@ -248,7 +248,7 @@ struct PersonalizationScreen: View {
                                     Text(membership.hasMembershipAccess ? "已永久解锁" : "解锁全部表情和自定义")
                                         .font(.body.weight(.medium))
                                         .foregroundStyle(.primary)
-                                    Text(membership.hasMembershipAccess ? "全部权益已开启" : "一次购买，永久使用 · \(membership.product?.displayPrice ?? "¥10")")
+                                    Text(membership.hasMembershipAccess ? "全部权益已开启" : "一次购买，永久使用 · \(membership.product?.displayPrice ?? "¥12")")
                                         .font(.subheadline)
                                         .foregroundStyle(.secondary)
                                 }
