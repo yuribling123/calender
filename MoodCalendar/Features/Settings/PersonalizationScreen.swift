@@ -1,5 +1,83 @@
 import SwiftUI
 import CloudKit
+import UIKit
+
+private struct CalendarTitleCardFramePreferenceKey: PreferenceKey {
+    static var defaultValue: CGRect = .zero
+
+    static func reduce(value: inout CGRect, nextValue: () -> CGRect) {
+        value = nextValue()
+    }
+}
+
+private struct OutsideTapMonitor: UIViewRepresentable {
+    let isActive: Bool
+    let excludedFrame: CGRect
+    let onOutsideTap: () -> Void
+
+    func makeCoordinator() -> Coordinator { Coordinator() }
+
+    func makeUIView(context: Context) -> UIView {
+        let view = UIView(frame: .zero)
+        view.isUserInteractionEnabled = false
+        return view
+    }
+
+    func updateUIView(_ view: UIView, context: Context) {
+        let coordinator = context.coordinator
+        coordinator.isActive = isActive
+        coordinator.excludedFrame = excludedFrame
+        coordinator.onOutsideTap = onOutsideTap
+        DispatchQueue.main.async {
+            coordinator.attach(to: view.window)
+        }
+    }
+
+    static func dismantleUIView(_ view: UIView, coordinator: Coordinator) {
+        coordinator.attach(to: nil)
+    }
+
+    final class Coordinator: NSObject, UIGestureRecognizerDelegate {
+        weak var window: UIWindow?
+        var recognizer: UITapGestureRecognizer?
+        var isActive = false
+        var excludedFrame = CGRect.zero
+        var onOutsideTap: () -> Void = {}
+
+        func attach(to newWindow: UIWindow?) {
+            guard window !== newWindow else { return }
+            if let recognizer {
+                window?.removeGestureRecognizer(recognizer)
+            }
+            window = newWindow
+            guard let newWindow else { return }
+
+            let tap = UITapGestureRecognizer(target: self, action: #selector(handleTap))
+            tap.cancelsTouchesInView = false
+            tap.delaysTouchesBegan = false
+            tap.delaysTouchesEnded = false
+            tap.delegate = self
+            newWindow.addGestureRecognizer(tap)
+            recognizer = tap
+        }
+
+        func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer,
+                               shouldReceive touch: UITouch) -> Bool {
+            guard isActive, let window else { return false }
+            return !excludedFrame.contains(touch.location(in: window))
+        }
+
+        func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer,
+                               shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
+            true
+        }
+
+        @objc private func handleTap() {
+            guard isActive else { return }
+            onOutsideTap()
+        }
+    }
+}
 
 struct PersonalizationScreen: View {
     @AppStorage("appTheme") private var storedTheme = AppTheme.pink.rawValue
@@ -13,6 +91,8 @@ struct PersonalizationScreen: View {
     @State private var isCheckingICloud = false
     @State private var isICloudAccountAvailable = false
     @State private var iCloudMessage = "数据仅保存在本机。"
+    @State private var calendarTitleCardFrame: CGRect = .zero
+    @FocusState private var isCalendarTitleFocused: Bool
 
     private var canEnableICloudSync: Bool {
         isICloudAccountAvailable && !isCheckingICloud && !DemoData.isEnabled
@@ -39,10 +119,54 @@ struct PersonalizationScreen: View {
                         .padding(.bottom, 20)
 
                     VStack(alignment: .leading, spacing: 16) {
-                    Text("让日历更像你")
+                    Text("个性化")
                         .font(.title3.weight(.semibold))
+                        .padding(.top, 12)
 
-                    Button { isThemePickerPresented = true } label: {
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack(spacing: 14) {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("日历标题")
+                                    .font(.body.weight(.medium))
+                                TextField("今日份", text: $storedCalendarTitle)
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                                    .focused($isCalendarTitleFocused)
+                                    .textInputAutocapitalization(.never)
+                                    .submitLabel(.done)
+                                    .onSubmit { isCalendarTitleFocused = false }
+                                    .accessibilityLabel("日历标题，最多六个字")
+                                    .onChange(of: storedCalendarTitle) { _, newValue in
+                                        let limitedValue = String(newValue.prefix(6))
+                                        if limitedValue != newValue {
+                                            storedCalendarTitle = limitedValue
+                                        }
+                                    }
+                            }
+                            Spacer(minLength: 8)
+                            if isCalendarTitleFocused {
+                                Text("\(storedCalendarTitle.count)/6")
+                                    .font(.footnote.monospacedDigit())
+                                    .foregroundStyle(.tertiary)
+                                    .accessibilityLabel("已输入\(storedCalendarTitle.count)个字，共六个字")
+                            }
+                        }
+                        .padding(18)
+                        .background {
+                            GeometryReader { proxy in
+                                RoundedRectangle(cornerRadius: 20)
+                                        .fill(Color.white.opacity(0.72))
+                                        .preference(
+                                            key: CalendarTitleCardFramePreferenceKey.self,
+                                            value: proxy.frame(in: .global)
+                                        )
+                            }
+                        }
+                    }
+
+                    Button {
+                        isThemePickerPresented = true
+                    } label: {
                         HStack(spacing: 14) {
                             Circle()
                                 .fill(theme.palette.accent)
@@ -70,7 +194,9 @@ struct PersonalizationScreen: View {
                     .accessibilityLabel("主题色，\(theme.title)")
                     .accessibilityHint("选择日历的强调色")
 
-                    Button { isShapePickerPresented = true } label: {
+                    Button {
+                        isShapePickerPresented = true
+                    } label: {
                         HStack(spacing: 14) {
                             Image(systemName: selectionShape.systemName)
                                 .font(.system(size: 28))
@@ -99,43 +225,6 @@ struct PersonalizationScreen: View {
                     .accessibilityLabel("选中图形，\(selectionShape.title)")
                     .accessibilityHint("选择日期和月份的选中图形")
 
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack(spacing: 14) {
-                            Image(systemName: "textformat")
-                                .font(.system(size: 25, weight: .medium))
-                                .foregroundStyle(theme.palette.accent)
-                                .frame(width: 28, height: 28)
-                                .accessibilityHidden(true)
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text("今日份标题")
-                                    .font(.body.weight(.medium))
-                                TextField("今日份", text: $storedCalendarTitle)
-                                    .font(.subheadline)
-                                    .foregroundStyle(.secondary)
-                                    .textInputAutocapitalization(.never)
-                                    .submitLabel(.done)
-                                    .accessibilityLabel("今日份标题，最多六个字")
-                                    .onChange(of: storedCalendarTitle) { _, newValue in
-                                        let limitedValue = String(newValue.prefix(6))
-                                        if limitedValue != newValue {
-                                            storedCalendarTitle = limitedValue
-                                        }
-                                    }
-                            }
-                            Spacer(minLength: 8)
-                            Text("\(storedCalendarTitle.count)/6")
-                                .font(.footnote.monospacedDigit())
-                                .foregroundStyle(.tertiary)
-                                .accessibilityLabel("已输入\(storedCalendarTitle.count)个字，共六个字")
-                        }
-                        .padding(18)
-                        .background(Color.white.opacity(0.72), in: RoundedRectangle(cornerRadius: 20))
-
-                        Text("最多六个字；留空时显示“今日份”")
-                            .font(.footnote)
-                            .foregroundStyle(.secondary)
-                            .padding(.horizontal, 4)
-                    }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -186,11 +275,15 @@ struct PersonalizationScreen: View {
                             .foregroundStyle(.secondary)
                             .padding(.horizontal, 4)
                     }
-                    .padding(.top, 28)
+                    .padding(.top, 40)
                 }
                 .padding(24)
             }
+            .scrollDismissesKeyboard(.interactively)
             .background(theme.palette.background)
+            .onPreferenceChange(CalendarTitleCardFramePreferenceKey.self) {
+                calendarTitleCardFrame = $0
+            }
             .toolbar(.hidden, for: .navigationBar)
             .task { await validateSavedICloudSetting() }
             .sheet(isPresented: $isThemePickerPresented) {
@@ -200,6 +293,15 @@ struct PersonalizationScreen: View {
             .sheet(isPresented: $isShapePickerPresented) {
                 shapePicker
                     .presentationDetents([.medium])
+            }
+            .background {
+                OutsideTapMonitor(
+                    isActive: isCalendarTitleFocused,
+                    excludedFrame: calendarTitleCardFrame
+                ) {
+                    isCalendarTitleFocused = false
+                }
+                .frame(width: 0, height: 0)
             }
         }
     }

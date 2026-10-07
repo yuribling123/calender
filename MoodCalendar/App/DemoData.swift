@@ -18,10 +18,10 @@ enum DemoData {
 
         let seededMonthKeys = Set(try context.fetch(FetchDescriptor<MonthlyNote>()).map(\.monthKey))
         if !seededMonthKeys.contains("\(year)-07") {
-            context.insert(MonthlyNote(monthKey: "\(year)-07", text: "慢一点，也没关系。"))
+            context.insert(MonthlyNote(monthKey: "\(year)-08", text: "慢一点，也没关系。"))
         }
-        if !seededMonthKeys.contains("\(year)-08") {
-            context.insert(MonthlyNote(monthKey: "\(year)-08", text: "把喜欢的事，留一点给自己。"))
+        if !seededMonthKeys.contains("\(year)-09") {
+            context.insert(MonthlyNote(monthKey: "\(year)-09", text: "我发现人只要一出门，就很容易花钱。买杯喝的、顺手吃点东西，最后拎着一堆东西回家并思考自己刚刚经历了什么"))
         }
 
         guard try context.fetch(FetchDescriptor<MoodEntry>()).isEmpty else { return }
@@ -40,7 +40,7 @@ enum DemoData {
             (8, 24, .work, ""),
             (8, 29, .relax, ""),
             // September: 10 records, covering all three choice groups.
-            (9, 1, .good, "早上出门走了一圈，风很舒服。"),
+            (9, 1, .good, "早上吃了豆浆、油条和一个热乎乎的包子。吃完出门走了一圈，阳光暖暖的，风也很舒服，感觉整个人都放松了下来。"),
             (9, 4, .veryGood, ""),
             (9, 7, .bad, "事情有点多，先允许自己慢下来。"),
             (9, 10, .clover, ""),
@@ -52,7 +52,21 @@ enum DemoData {
             (9, 28, .gather, "")
         ]
 
-        for (month, day, choice, note) in examples {
+        let today = Calendar.current.startOfDay(for: Date())
+        let currentMonth = Calendar.current.component(.month, from: today)
+        let currentDay = Calendar.current.component(.day, from: today)
+        var launchExamples = examples
+        let hasVisibleCurrentMonthExample = examples.contains {
+            $0.0 == currentMonth && $0.1 <= currentDay
+        }
+        if !hasVisibleCurrentMonthExample {
+            if currentDay > 1 {
+                launchExamples.append((currentMonth, 1, .good, "给这个月留下一条演示记录。"))
+            }
+            launchExamples.append((currentMonth, currentDay, .veryGood, "今天的演示心情。"))
+        }
+
+        for (month, day, choice, note) in launchExamples {
             var components = DateComponents()
             components.year = year
             components.month = month

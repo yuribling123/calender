@@ -49,7 +49,8 @@ struct CalendarScreen: View {
                                     selectedDay = date
                                     if DayKey(date).relationToToday == .today {
                                         let key = DayKey(date).storageValue
-                                        editorInitialGroup = entriesByDay[key]?.choice?.group ?? .mood
+                                        guard entriesByDay[key]?.choice == nil else { return }
+                                        editorInitialGroup = .mood
                                         isEditorPresented = true
                                         return
                                     }
@@ -117,8 +118,8 @@ struct CalendarScreen: View {
                 } label: {
                     HStack(spacing: 5) {
                         Text(verbatim: "\(isChoosingMonth ? chooserYear : calendar.component(.year, from: displayedMonth))年")
-                        Image(systemName: isChoosingMonth ? "chevron.up" : "chevron.down")
-                            .font(.system(size: 10, weight: .medium))
+                        // Image(systemName: isChoosingMonth ? "chevron.up" : "chevron.down")
+                        //     .font(.system(size: 10, weight: .medium))
                     }
                     .font(.system(size: 16, weight: .regular))
                     .foregroundStyle(Color.gray)

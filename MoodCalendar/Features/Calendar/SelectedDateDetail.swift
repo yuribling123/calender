@@ -16,7 +16,9 @@ struct SelectedDateDetail: View {
                 .frame(height: 1)
 
             HStack {
-                Text("\(date.formatted(.dateTime.month().day())) · \(date.formatted(.dateTime.weekday(.wide)))")
+                Text(relation == .today
+                     ? "今天"
+                     : "\(date.formatted(.dateTime.month().day())) · \(date.formatted(.dateTime.weekday(.wide)))")
                     .font(.subheadline.weight(.medium))
                     .foregroundStyle(.secondary)
 

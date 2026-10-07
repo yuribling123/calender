@@ -1,6 +1,14 @@
 import SwiftUI
 import SwiftData
 
+private struct NoteCardFramePreferenceKey: PreferenceKey {
+    static var defaultValue: CGRect = .zero
+
+    static func reduce(value: inout CGRect, nextValue: () -> CGRect) {
+        value = nextValue()
+    }
+}
+
 struct EntryEditorScreen: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
@@ -15,6 +23,7 @@ struct EntryEditorScreen: View {
     @State private var note = ""
     @State private var showsNote = false
     @State private var errorMessage: String?
+    @State private var noteCardFrame: CGRect = .zero
     @FocusState private var isNoteFocused: Bool
 
     var body: some View {
@@ -102,7 +111,16 @@ struct EntryEditorScreen: View {
                         }
                     }
                     .padding(18)
-                    .background(Color.white.opacity(0.72), in: RoundedRectangle(cornerRadius: 22))
+                    .background {
+                        GeometryReader { proxy in
+                            RoundedRectangle(cornerRadius: 22)
+                                .fill(Color.white.opacity(0.72))
+                                .preference(
+                                    key: NoteCardFramePreferenceKey.self,
+                                    value: proxy.frame(in: .named("EntryEditor"))
+                                )
+                        }
+                    }
                     .overlay {
                         if !showsNote {
                             Color.clear
@@ -112,17 +130,21 @@ struct EntryEditorScreen: View {
                     }
                 }
                 .padding(24)
-                .contentShape(Rectangle())
-                .gesture(
-                    TapGesture().onEnded {
-                        if showsNote {
-                            isNoteFocused = false
-                        }
-                    },
-                    including: .gesture
-                )
             }
             .background(theme.palette.background)
+            .coordinateSpace(name: "EntryEditor")
+            .onPreferenceChange(NoteCardFramePreferenceKey.self) {
+                noteCardFrame = $0
+            }
+            .simultaneousGesture(
+                SpatialTapGesture(coordinateSpace: .named("EntryEditor"))
+                    .onEnded { tap in
+                        guard showsNote,
+                              isNoteFocused,
+                              !noteCardFrame.contains(tap.location) else { return }
+                        isNoteFocused = false
+                    }
+            )
             .navigationTitle(day.formatted(.dateTime.month().day()))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
