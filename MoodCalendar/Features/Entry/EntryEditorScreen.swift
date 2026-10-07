@@ -10,6 +10,7 @@ private struct NoteCardFramePreferenceKey: PreferenceKey {
 }
 
 struct EntryEditorScreen: View {
+    @EnvironmentObject private var membership: MembershipStore
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     @Environment(\.appTheme) private var theme
@@ -23,8 +24,11 @@ struct EntryEditorScreen: View {
     @State private var note = ""
     @State private var showsNote = false
     @State private var errorMessage: String?
+    @State private var isMembershipPresented = false
     @State private var noteCardFrame: CGRect = .zero
     @FocusState private var isNoteFocused: Bool
+
+    private var hasPremiumAccess: Bool { membership.hasMembershipAccess }
 
     var body: some View {
         NavigationStack {
@@ -36,13 +40,25 @@ struct EntryEditorScreen: View {
 
                     HStack(spacing: 4) {
                         ForEach(ChoiceGroup.allCases) { group in
-                            Button { selectedGroup = group } label: {
-                                Text(group.rawValue)
-                                    .font(.subheadline.weight(selectedGroup == group ? .semibold : .regular))
-                                    .foregroundStyle(selectedGroup == group ? .primary : .secondary)
-                                    .frame(maxWidth: .infinity, minHeight: 44)
-                                    .background(selectedGroup == group ? Color.white : .clear,
-                                                in: RoundedRectangle(cornerRadius: 13))
+                            Button {
+                                if !hasPremiumAccess && group != .mood {
+                                    isMembershipPresented = true
+                                } else {
+                                    selectedGroup = group
+                                }
+                            } label: {
+                                HStack(spacing: 4) {
+                                    Text(group.rawValue)
+                                    if !hasPremiumAccess && group != .mood {
+                                        Image(systemName: "lock.fill")
+                                            .font(.system(size: 9))
+                                    }
+                                }
+                                .font(.subheadline.weight(selectedGroup == group ? .semibold : .regular))
+                                .foregroundStyle(!hasPremiumAccess && group != .mood ? .tertiary : selectedGroup == group ? .primary : .secondary)
+                                .frame(maxWidth: .infinity, minHeight: 44)
+                                .background(selectedGroup == group ? Color.white : .clear,
+                                            in: RoundedRectangle(cornerRadius: 13))
                             }
                             .buttonStyle(.plain)
                             .accessibilityAddTraits(selectedGroup == group ? .isSelected : [])
@@ -164,6 +180,10 @@ struct EntryEditorScreen: View {
             } message: {
                 Text(errorMessage ?? "请稍后再试。")
             }
+            .sheet(isPresented: $isMembershipPresented) {
+                MembershipScreen()
+                    .environmentObject(membership)
+            }
             .onAppear {
                 selectedChoice = entry?.choice
                 selectedGroup = entry?.choice?.group ?? initialGroup
@@ -184,7 +204,8 @@ struct EntryEditorScreen: View {
         guard let selectedChoice else { return }
         do {
             try EntryStore(context: modelContext).save(
-                day: DayKey(day), choice: selectedChoice, note: showsNote ? note : ""
+                day: DayKey(day), choice: selectedChoice, note: showsNote ? note : "",
+                isMember: hasPremiumAccess
             )
             dismiss()
         } catch {

@@ -5,6 +5,7 @@ struct CalendarScreen: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.appTheme) private var theme
     @Environment(\.selectionShape) private var selectionShape
+    @Environment(\.scenePhase) private var scenePhase
     @AppStorage("calendarTitle") private var storedCalendarTitle = ""
     @Query private var entries: [MoodEntry]
     @State private var displayedMonth = MonthLayout(containing: Date()).monthStart
@@ -26,6 +27,10 @@ struct CalendarScreen: View {
         Dictionary(grouping: entries, by: \.dayKey).compactMapValues { dayEntries in
             dayEntries.max { $0.updatedAt < $1.updatedAt }
         }
+    }
+
+    private var recordedDayKeys: Set<String> {
+        Set(entries.filter { $0.choice != nil }.map(\.dayKey))
     }
 
     var body: some View {
@@ -89,6 +94,20 @@ struct CalendarScreen: View {
             .toolbar(.hidden, for: .navigationBar)
             .onChange(of: entries.map { "\($0.id.uuidString)-\($0.updatedAt.timeIntervalSince1970)" }) { _, _ in
                 try? EntryStore(context: modelContext).reconcileDuplicates()
+            }
+            .task {
+                await DailyFragmentReminder.refresh(recordedDayKeys: recordedDayKeys)
+            }
+            .onChange(of: recordedDayKeys.sorted()) { _, _ in
+                Task {
+                    await DailyFragmentReminder.refresh(recordedDayKeys: recordedDayKeys)
+                }
+            }
+            .onChange(of: scenePhase) { _, newPhase in
+                guard newPhase == .active else { return }
+                Task {
+                    await DailyFragmentReminder.refresh(recordedDayKeys: recordedDayKeys)
+                }
             }
             .sheet(isPresented: $isEditorPresented) {
                 EntryEditorScreen(day: selectedDay, entry: selectedEntry, initialGroup: editorInitialGroup)

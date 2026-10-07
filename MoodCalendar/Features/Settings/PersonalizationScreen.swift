@@ -80,6 +80,7 @@ private struct OutsideTapMonitor: UIViewRepresentable {
 }
 
 struct PersonalizationScreen: View {
+    @EnvironmentObject private var membership: MembershipStore
     @AppStorage("appTheme") private var storedTheme = AppTheme.pink.rawValue
     @AppStorage("selectionShape") private var storedSelectionShape = SelectionShape.heart.rawValue
     @AppStorage("icloudSyncEnabled") private var isICloudSyncEnabled = false
@@ -88,6 +89,7 @@ struct PersonalizationScreen: View {
     @Environment(\.selectionShape) private var selectionShape
     @State private var isThemePickerPresented = false
     @State private var isShapePickerPresented = false
+    @State private var isMembershipPresented = false
     @State private var isCheckingICloud = false
     @State private var isICloudAccountAvailable = false
     @State private var iCloudMessage = "数据仅保存在本机。"
@@ -97,6 +99,8 @@ struct PersonalizationScreen: View {
     private var canEnableICloudSync: Bool {
         isICloudAccountAvailable && !isCheckingICloud && !DemoData.isEnabled
     }
+
+    private var hasPremiumAccess: Bool { membership.hasMembershipAccess }
 
     private var iCloudStatusText: String {
         if isCheckingICloud {
@@ -229,6 +233,39 @@ struct PersonalizationScreen: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
 
                     VStack(alignment: .leading, spacing: 12) {
+                        Text("会员")
+                            .font(.title3.weight(.semibold))
+
+                        Button {
+                            isMembershipPresented = true
+                        } label: {
+                            HStack(spacing: 14) {
+                                Image(systemName: membership.hasMembershipAccess ? "checkmark.seal.fill" : "crown.fill")
+                                    .font(.system(size: 22))
+                                    .foregroundStyle(theme.palette.accent)
+                                    .frame(width: 30)
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(membership.hasMembershipAccess ? "已永久解锁" : "解锁全部表情和自定义")
+                                        .font(.body.weight(.medium))
+                                        .foregroundStyle(.primary)
+                                    Text(membership.hasMembershipAccess ? "全部权益已开启" : "一次购买，永久使用 · \(membership.product?.displayPrice ?? "¥10")")
+                                        .font(.subheadline)
+                                        .foregroundStyle(.secondary)
+                                }
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                                    .font(.subheadline.weight(.medium))
+                                    .foregroundStyle(.secondary)
+                            }
+                            .padding(18)
+                            .background(Color.white.opacity(0.72), in: RoundedRectangle(cornerRadius: 20))
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel(membership.hasMembershipAccess ? "会员，已永久解锁" : "会员，永久解锁全部表情包和自定义")
+                    }
+                    .padding(.top, 40)
+
+                    VStack(alignment: .leading, spacing: 12) {
                         Text("数据同步")
                             .font(.title3.weight(.semibold))
 
@@ -293,6 +330,10 @@ struct PersonalizationScreen: View {
             .sheet(isPresented: $isShapePickerPresented) {
                 shapePicker
                     .presentationDetents([.medium])
+            }
+            .sheet(isPresented: $isMembershipPresented) {
+                MembershipScreen()
+                    .environmentObject(membership)
             }
             .background {
                 OutsideTapMonitor(
@@ -410,6 +451,11 @@ struct PersonalizationScreen: View {
             VStack(spacing: 8) {
                 ForEach(AppTheme.allCases) { option in
                     Button {
+                        guard hasPremiumAccess || option == .pink else {
+                            isThemePickerPresented = false
+                            isMembershipPresented = true
+                            return
+                        }
                         storedTheme = option.rawValue
                     } label: {
                         HStack(spacing: 14) {
@@ -420,6 +466,11 @@ struct PersonalizationScreen: View {
                             Text(option.title)
                                 .foregroundStyle(.primary)
                             Spacer()
+                            if option != .pink && !hasPremiumAccess {
+                                Image(systemName: "lock.fill")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
                             if storedTheme == option.rawValue {
                                 Image(systemName: "checkmark")
                                     .foregroundStyle(option.palette.strongAccent)
@@ -455,6 +506,11 @@ struct PersonalizationScreen: View {
             VStack(spacing: 8) {
                 ForEach(SelectionShape.allCases) { option in
                     Button {
+                        guard hasPremiumAccess || option == .heart else {
+                            isShapePickerPresented = false
+                            isMembershipPresented = true
+                            return
+                        }
                         storedSelectionShape = option.rawValue
                     } label: {
                         HStack(spacing: 14) {
@@ -466,6 +522,11 @@ struct PersonalizationScreen: View {
                             Text(option.title)
                                 .foregroundStyle(.primary)
                             Spacer()
+                            if option == .circle && !hasPremiumAccess {
+                                Image(systemName: "lock.fill")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
                             if storedSelectionShape == option.rawValue {
                                 Image(systemName: "checkmark")
                                     .foregroundStyle(theme.palette.strongAccent)

@@ -5,8 +5,11 @@ import SwiftData
 struct EntryStore {
     let context: ModelContext
 
-    func save(day: DayKey, choice: DailyChoice, note: String) throws {
+    func save(day: DayKey, choice: DailyChoice, note: String, isMember: Bool = false) throws {
         guard day == DayKey(Date()) else { throw EntryStoreError.onlyTodayIsEditable }
+        guard choice.group == .mood || isMember || DemoData.isEnabled else {
+            throw EntryStoreError.membershipRequired
+        }
         let key = day.storageValue
         let descriptor = FetchDescriptor<MoodEntry>(predicate: #Predicate { $0.dayKey == key })
         let matchingEntries = try context.fetch(descriptor)
@@ -105,8 +108,14 @@ struct MonthlyNoteStore {
 
 private enum EntryStoreError: LocalizedError {
     case onlyTodayIsEditable
+    case membershipRequired
 
     var errorDescription: String? {
-        "只能记录或修改今天的内容。"
+        switch self {
+        case .onlyTodayIsEditable:
+            "只能记录或修改今天的内容。"
+        case .membershipRequired:
+            "解锁永久会员后才能使用这套表情。"
+        }
     }
 }

@@ -24,6 +24,9 @@
 		C91A00000000000000000001 /* MoodCalendar/Features/Monthly/MonthlyGoalScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C91A00000000000000000002 /* MoodCalendar/Features/Monthly/MonthlyGoalScreen.swift */; };
 		D5A12E830CB94AD18D911001 /* MoodCalendar/Domain/DailyChoice.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A12E830CB94AD18D911002 /* MoodCalendar/Domain/DailyChoice.swift */; };
 		F4171D7AA7BFA1ECAECEE9B0 /* MoodCalendar/Features/Calendar/SelectedDateDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D8FFAD8C7F230C3E65731BA /* MoodCalendar/Features/Calendar/SelectedDateDetail.swift */; };
+		E091A2B3C4D5E6F701234567 /* MoodCalendar/App/DailyFragmentReminder.swift in Sources */ = {isa = PBXBuildFile; fileRef = E091A2B3C4D5E6F701234568 /* MoodCalendar/App/DailyFragmentReminder.swift */; };
+		E091A2B3C4D5E6F701234569 /* MoodCalendar/App/MembershipStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E091A2B3C4D5E6F701234570 /* MoodCalendar/App/MembershipStore.swift */; };
+		E091A2B3C4D5E6F701234571 /* MoodCalendar/Features/Settings/MembershipScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = E091A2B3C4D5E6F701234572 /* MoodCalendar/Features/Settings/MembershipScreen.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -45,6 +48,9 @@
 		D441A0F31890CD8CCDA0CF48 /* MoodCalendar/Features/Calendar/DayCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Features/Calendar/DayCell.swift; sourceTree = "<group>"; };
 		D4C6790AF6A66C004E857DC6 /* MoodCalendar/Persistence/MoodEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Persistence/MoodEntry.swift; sourceTree = "<group>"; };
 		D5A12E830CB94AD18D911002 /* MoodCalendar/Domain/DailyChoice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Domain/DailyChoice.swift; sourceTree = "<group>"; };
+		E091A2B3C4D5E6F701234568 /* MoodCalendar/App/DailyFragmentReminder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/App/DailyFragmentReminder.swift; sourceTree = "<group>"; };
+		E091A2B3C4D5E6F701234570 /* MoodCalendar/App/MembershipStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/App/MembershipStore.swift; sourceTree = "<group>"; };
+		E091A2B3C4D5E6F701234572 /* MoodCalendar/Features/Settings/MembershipScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Features/Settings/MembershipScreen.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -52,6 +58,8 @@
 			isa = PBXGroup;
 			children = (
 				8C0B7456F844A41B2530A42A /* MoodCalendar/App/MoodCalendarApp.swift */,
+				E091A2B3C4D5E6F701234568 /* MoodCalendar/App/DailyFragmentReminder.swift */,
+				E091A2B3C4D5E6F701234570 /* MoodCalendar/App/MembershipStore.swift */,
 				34689774686455350911AEC2 /* MoodCalendar/Domain/DayKey.swift */,
 				9E4D6142AB9DB5CD211CAB4B /* MoodCalendar/Domain/MonthLayout.swift */,
 				7A772840AC9D4747D2365F08 /* MoodCalendar/Domain/Mood.swift */,
@@ -67,6 +75,7 @@
 				8D8FFAD8C7F230C3E65731BA /* MoodCalendar/Features/Calendar/SelectedDateDetail.swift */,
 				A104EF7CBA62193D308ADD02 /* MoodCalendar/Features/Theme/AppTheme.swift */,
 				A104EF7CBA62193D308ADD04 /* MoodCalendar/Features/Settings/PersonalizationScreen.swift */,
+				E091A2B3C4D5E6F701234572 /* MoodCalendar/Features/Settings/MembershipScreen.swift */,
 				C91A00000000000000000002 /* MoodCalendar/Features/Monthly/MonthlyGoalScreen.swift */,
 				FBDC4F23F93125BBEEAE800C /* Products */,
 			);
@@ -153,6 +162,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				1562EBB728B9E65040A47063 /* MoodCalendar/App/MoodCalendarApp.swift in Sources */,
+				E091A2B3C4D5E6F701234567 /* MoodCalendar/App/DailyFragmentReminder.swift in Sources */,
+				E091A2B3C4D5E6F701234569 /* MoodCalendar/App/MembershipStore.swift in Sources */,
+				E091A2B3C4D5E6F701234571 /* MoodCalendar/Features/Settings/MembershipScreen.swift in Sources */,
 				BA6FF04F9B7852D8CA0A079A /* MoodCalendar/Domain/DayKey.swift in Sources */,
 				063D1D5D61FAE4C7C9BDDE12 /* MoodCalendar/Domain/MonthLayout.swift in Sources */,
 				B524A5756F176F151EDB2A38 /* MoodCalendar/Domain/Mood.swift in Sources */,

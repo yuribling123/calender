@@ -3,6 +3,7 @@ import SwiftData
 
 @main
 struct MoodCalendarApp: App {
+    @StateObject private var membershipStore = MembershipStore()
     @AppStorage("appTheme") private var storedTheme = AppTheme.pink.rawValue
     @AppStorage("selectionShape") private var storedSelectionShape = SelectionShape.heart.rawValue
 
@@ -47,6 +48,7 @@ struct MoodCalendarApp: App {
                 PersonalizationScreen()
                     .tabItem { Label("我的", systemImage: "person.crop.circle") }
             }
+                .environmentObject(membershipStore)
                 .environment(\.appTheme, AppTheme(rawValue: storedTheme) ?? .pink)
                 .environment(\.selectionShape, SelectionShape(rawValue: storedSelectionShape) ?? .heart)
                 .tint((AppTheme(rawValue: storedTheme) ?? .pink).palette.strongAccent)

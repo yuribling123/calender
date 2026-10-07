@@ -16,15 +16,17 @@ enum DemoData {
     static func seed(into context: ModelContext) throws {
         let year = Calendar.current.component(.year, from: Date())
 
+        // The demo store is in-memory and recreated at every launch. Seed each
+        // example independently so a partial/early fetch cannot leave it blank.
         let seededMonthKeys = Set(try context.fetch(FetchDescriptor<MonthlyNote>()).map(\.monthKey))
-        if !seededMonthKeys.contains("\(year)-07") {
-            context.insert(MonthlyNote(monthKey: "\(year)-08", text: "慢一点，也没关系。"))
+        if !seededMonthKeys.contains("\(year)-08") {
+            context.insert(MonthlyNote(monthKey: "\(year)-08", text: "慢一点 也没关系"))
         }
         if !seededMonthKeys.contains("\(year)-09") {
             context.insert(MonthlyNote(monthKey: "\(year)-09", text: "我发现人只要一出门，就很容易花钱。买杯喝的、顺手吃点东西，最后拎着一堆东西回家并思考自己刚刚经历了什么"))
         }
 
-        guard try context.fetch(FetchDescriptor<MoodEntry>()).isEmpty else { return }
+        let existingDayKeys = Set(try context.fetch(FetchDescriptor<MoodEntry>()).map(\.dayKey))
         let examples: [(Int, Int, DailyChoice, String)] = [
             // June: 5 records, covering all three choice groups.
             (6, 3, .good, "天气很好，心里亮了一点。"),
@@ -39,7 +41,7 @@ enum DemoData {
             (8, 19, .cake, "吃到了喜欢的甜点。"),
             (8, 24, .work, ""),
             (8, 29, .relax, ""),
-            // September: 10 records, covering all three choice groups.
+            // September: 14 records, covering all three choice groups.
             (9, 1, .good, "早上吃了豆浆、油条和一个热乎乎的包子。吃完出门走了一圈，阳光暖暖的，风也很舒服，感觉整个人都放松了下来。"),
             (9, 4, .veryGood, ""),
             (9, 7, .bad, "事情有点多，先允许自己慢下来。"),
@@ -49,7 +51,11 @@ enum DemoData {
             (9, 19, .exercise, "动一动之后，状态真的回来了。"),
             (9, 22, .work, ""),
             (9, 25, .study, "终于把一直没弄懂的地方想明白了。"),
-            (9, 28, .gather, "")
+            (9, 28, .gather, ""),
+            (9, 2, .fluffy, "抱着毛绒绒发了会儿呆，软软的触感让忙乱的心也安静下来。"),
+            (9, 30, .music, "晚上戴上耳机听歌，熟悉的旋律一首接一首，把白天没来得及整理的情绪慢慢安放好。窗外渐渐安静下来，我也终于觉得今天可以结束了。"),
+            (9, 9, .thinkingOfSomeone, "今天忽然很想一个人。看到熟悉的东西时，脑海里就浮现出和他一起度过的片段。虽然没能见面，还是希望他一切都好，也期待下次再见。"),
+            (9, 12, .cake, "路过一家小店时，看到柜台里摆着一块看起来就很好吃的蛋糕。犹豫了一下还是买了下来，坐在窗边慢慢吃完。奶油不太甜，阳光刚好落在桌角，普通的一天也因为这点小小的满足变得可爱了。")
         ]
 
         let today = Calendar.current.startOfDay(for: Date())
@@ -72,7 +78,9 @@ enum DemoData {
             components.month = month
             components.day = day
             guard let date = Calendar.current.date(from: components) else { continue }
-            context.insert(MoodEntry(dayKey: DayKey(date).storageValue, choice: choice, note: note))
+            let dayKey = DayKey(date).storageValue
+            guard !existingDayKeys.contains(dayKey) else { continue }
+            context.insert(MoodEntry(dayKey: dayKey, choice: choice, note: note))
         }
         try context.save()
     }
