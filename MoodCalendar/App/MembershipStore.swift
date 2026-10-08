@@ -7,7 +7,6 @@ final class MembershipStore: ObservableObject {
     static let productID = "com.qingqing.MoodCalendar.permanentUnlock"
 
     @Published private(set) var isUnlocked = false
-    @Published private(set) var hasLoadedEntitlements = false
     @Published private(set) var product: Product?
     @Published private(set) var isLoading = false
     @Published private(set) var message: String?
@@ -93,7 +92,6 @@ final class MembershipStore: ObservableObject {
             hasUnlock = true
         }
         isUnlocked = hasUnlock
-        hasLoadedEntitlements = true
         enforceFreeCustomizationLimits()
     }
 
@@ -109,11 +107,12 @@ final class MembershipStore: ObservableObject {
     private func enforceFreeCustomizationLimits() {
         guard !isUnlocked, !DemoData.isEnabled else { return }
         let defaults = UserDefaults.standard
-        if defaults.string(forKey: "appTheme") != AppTheme.pink.rawValue {
+        let freeThemes: Set<String> = [AppTheme.pink.rawValue, AppTheme.black.rawValue]
+        if !freeThemes.contains(defaults.string(forKey: "appTheme") ?? "") {
             defaults.set(AppTheme.pink.rawValue, forKey: "appTheme")
         }
-        if defaults.string(forKey: "selectionShape") != SelectionShape.heart.rawValue {
-            defaults.set(SelectionShape.heart.rawValue, forKey: "selectionShape")
+        if defaults.string(forKey: "selectionShape") != SelectionShape.circle.rawValue {
+            defaults.set(SelectionShape.circle.rawValue, forKey: "selectionShape")
         }
     }
 }

@@ -15,9 +15,10 @@ struct EntryEditorScreen: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.appTheme) private var theme
 
-    let day: Date 
+    let day: Date
     let entry: MoodEntry?
     let initialGroup: ChoiceGroup
+    let onSaved: (DailyChoice) -> Void
 
     @State private var selectedChoice: DailyChoice?
     @State private var selectedGroup: ChoiceGroup = .mood
@@ -30,6 +31,10 @@ struct EntryEditorScreen: View {
 
     private var hasPremiumAccess: Bool { membership.hasMembershipAccess }
 
+    private func canUse(_ choice: DailyChoice) -> Bool {
+        hasPremiumAccess || choice.group == .mood || choice.group == .activity
+    }
+
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -38,112 +43,13 @@ struct EntryEditorScreen: View {
                         .font(.title2.weight(.semibold))
                         .foregroundStyle(.primary)
 
-                    HStack(spacing: 4) {
-                        ForEach(ChoiceGroup.allCases) { group in
-                            Button {
-                                if !hasPremiumAccess && group != .mood {
-                                    isMembershipPresented = true
-                                } else {
-                                    selectedGroup = group
-                                }
-                            } label: {
-                                HStack(spacing: 4) {
-                                    Text(group.rawValue)
-                                    if !hasPremiumAccess && group != .mood {
-                                        Image(systemName: "lock.fill")
-                                            .font(.system(size: 9))
-                                    }
-                                }
-                                .font(.subheadline.weight(selectedGroup == group ? .semibold : .regular))
-                                .foregroundStyle(!hasPremiumAccess && group != .mood ? .tertiary : selectedGroup == group ? .primary : .secondary)
-                                .frame(maxWidth: .infinity, minHeight: 44)
-                                .background(selectedGroup == group ? Color.white : .clear,
-                                            in: RoundedRectangle(cornerRadius: 13))
-                            }
-                            .buttonStyle(.plain)
-                            .accessibilityAddTraits(selectedGroup == group ? .isSelected : [])
-                        }
-                    }
-                    .padding(4)
-                    .background(Color.primary.opacity(0.06), in: RoundedRectangle(cornerRadius: 17))
+                    groupPicker
 
-                    HStack(alignment: .top, spacing: 4) {
-                        ForEach(DailyChoice.choices(in: selectedGroup)) { choice in
-                            Button { selectedChoice = choice } label: {
-                                VStack(spacing: 6) {
-                                    Image(choice.imageName)
-                                        .resizable()
-                                        .scaledToFit()
-                                        .frame(height: 32)
-                                        .scaleEffect(selectedGroup == .mood ? 1 : choice == .cake ? 1 : choice == .gather ? 1.48 : choice == .relax || choice == .study ? 1.38 : selectedGroup == .company ? 1.32 : 1.22)
-                                        .accessibilityHidden(true)
-                                    Text(choice.title)
-                                        .font(.caption.weight(.medium))
-                                        .foregroundStyle(.primary)
-                                        .lineLimit(1)
-                                        .minimumScaleFactor(0.8)
-                                    Circle()
-                                        .fill(theme.palette.strongAccent)
-                                        .frame(width: 6, height: 6)
-                                        .opacity(selectedChoice == choice ? 1 : 0)
-                                        .accessibilityHidden(true)
-                                }
-                                .frame(maxWidth: .infinity, minHeight: 74)
-                                .clipShape(RoundedRectangle(cornerRadius: 14))
-                                .contentShape(Rectangle())
-                            }
-                            .buttonStyle(.plain)
-                            .accessibilityLabel("\(choice.title)，\(choice.caption)")
-                            .accessibilityAddTraits(selectedChoice == choice ? .isSelected : [])
-                        }
-                    }
-                    .padding(10)
-                    .background(Color.white.opacity(0.72), in: RoundedRectangle(cornerRadius: 22))
+                    choicePicker
 
-                    VStack(alignment: .leading, spacing: 10) {
-                        if showsNote {
-                            TextEditor(text: $note)
-                                .scrollContentBackground(.hidden)
-                                .focused($isNoteFocused)
-                                .frame(minHeight: 130)
-                                .accessibilityLabel("文字记录")
-                        } else {
-                            VStack(alignment: .leading, spacing: 10) {
-                                Text("写文字")
-                                    .font(.body.weight(.medium))
-                                    .foregroundStyle(.primary)
-                                Text("文字是可选的，之后也可以修改。")
-                                    .font(.footnote)
-                                    .foregroundStyle(.secondary)
-                            }
-                            .frame(maxWidth: .infinity, minHeight: 88, alignment: .leading)
-                            .accessibilityAddTraits(.isButton)
-                            .accessibilityLabel("写文字")
-                        }
-                        if showsNote {
-                            Text("文字是可选的，之后也可以修改。")
-                                .font(.footnote)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                    .padding(18)
-                    .background {
-                        GeometryReader { proxy in
-                            RoundedRectangle(cornerRadius: 22)
-                                .fill(Color.white.opacity(0.72))
-                                .preference(
-                                    key: NoteCardFramePreferenceKey.self,
-                                    value: proxy.frame(in: .named("EntryEditor"))
-                                )
-                        }
-                    }
-                    .overlay {
-                        if !showsNote {
-                            Color.clear
-                                .contentShape(RoundedRectangle(cornerRadius: 22))
-                                .onTapGesture { beginNoteEditing() }
-                        }
-                    }
+                    selectedChoiceCaption
+
+                    noteCard
                 }
                 .padding(24)
             }
@@ -193,6 +99,147 @@ struct EntryEditorScreen: View {
         }
     }
 
+    private var groupPicker: some View {
+        HStack(spacing: 4) {
+            ForEach(ChoiceGroup.allCases) { group in
+                Button {
+                    selectedGroup = group
+                } label: {
+                    HStack(spacing: 4) {
+                        Text(group.rawValue)
+                        if !hasPremiumAccess && group != .mood && group != .activity {
+                            Image(systemName: "lock.fill")
+                                .font(.system(size: 9))
+                        }
+                    }
+                    .font(.subheadline.weight(selectedGroup == group ? .semibold : .regular))
+                    .foregroundStyle(selectedGroup == group ? .primary : .secondary)
+                    .frame(maxWidth: .infinity, minHeight: 44)
+                    .background(selectedGroup == group ? Color.white : .clear,
+                                in: RoundedRectangle(cornerRadius: 13))
+                }
+                .buttonStyle(.plain)
+                .accessibilityAddTraits(selectedGroup == group ? .isSelected : [])
+            }
+        }
+        .padding(4)
+        .background(Color.primary.opacity(0.06), in: RoundedRectangle(cornerRadius: 17))
+    }
+
+    private var choicePicker: some View {
+        HStack(alignment: .top, spacing: 4) {
+            ForEach(DailyChoice.choices(in: selectedGroup)) { choice in
+                let isAvailable = canUse(choice)
+                Button {
+                    if isAvailable {
+                        selectedChoice = choice
+                    } else {
+                        isMembershipPresented = true
+                    }
+                } label: {
+                    VStack(spacing: 6) {
+                        ZStack(alignment: .topTrailing) {
+                            Image(choice.imageName)
+                                .resizable()
+                                .scaledToFit()
+                                .frame(height: 32)
+                                .scaleEffect(selectedGroup == .mood ? 1 : choice == .cake ? 1 : choice == .gather ? 1.48 : choice == .relax || choice == .study ? 1.38 : selectedGroup == .company ? 1.32 : 1.22)
+                                .accessibilityHidden(true)
+
+                            if !isAvailable {
+                                Image(systemName: "lock.fill")
+                                    .font(.system(size: 9, weight: .semibold))
+                                    .foregroundStyle(.secondary)
+                                    .padding(4)
+                                    .background(Color.white.opacity(0.9), in: Circle())
+                                    .offset(x: 4, y: -4)
+                            }
+                        }
+                        Text(choice.title)
+                            .font(.caption.weight(.medium))
+                            .foregroundStyle(isAvailable ? .primary : .secondary)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.8)
+                        Circle()
+                            .fill(theme.palette.strongAccent)
+                            .frame(width: 6, height: 6)
+                            .opacity(selectedChoice == choice ? 1 : 0)
+                            .accessibilityHidden(true)
+                    }
+                    .frame(maxWidth: .infinity, minHeight: 74)
+                    .clipShape(RoundedRectangle(cornerRadius: 14))
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(isAvailable ? "\(choice.title)，\(choice.caption)" : "\(choice.title)，\(choice.caption)，需要会员")
+                .accessibilityAddTraits(selectedChoice == choice ? .isSelected : [])
+            }
+        }
+        .padding(10)
+        .background(Color.white.opacity(0.72), in: RoundedRectangle(cornerRadius: 22))
+    }
+
+    private var selectedChoiceCaption: some View {
+        Text(captionForSelectedChoice)
+            .font(.footnote)
+            .foregroundStyle(.secondary)
+            .lineLimit(1)
+            .padding(.leading, 8)
+            .frame(maxWidth: .infinity, minHeight: 20, alignment: .leading)
+    }
+
+    private var captionForSelectedChoice: String {
+        guard let selectedChoice, selectedChoice.group == selectedGroup else { return " " }
+        return selectedChoice.caption
+    }
+
+    private var noteCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            if showsNote {
+                TextEditor(text: $note)
+                    .scrollContentBackground(.hidden)
+                    .focused($isNoteFocused)
+                    .frame(minHeight: 130)
+                    .accessibilityLabel("文字记录")
+            } else {
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("写文字")
+                        .font(.body.weight(.medium))
+                        .foregroundStyle(.primary)
+                    Text("文字是可选的，之后也可以修改。")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity, minHeight: 88, alignment: .leading)
+                .accessibilityAddTraits(.isButton)
+                .accessibilityLabel("写文字")
+            }
+            if showsNote {
+                Text("文字是可选的，之后也可以修改。")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .padding(18)
+        .background {
+            GeometryReader { proxy in
+                RoundedRectangle(cornerRadius: 22)
+                    .fill(Color.white.opacity(0.72))
+                    .preference(
+                        key: NoteCardFramePreferenceKey.self,
+                        value: proxy.frame(in: .named("EntryEditor"))
+                    )
+            }
+        }
+        .overlay {
+            if !showsNote {
+                Color.clear
+                    .contentShape(RoundedRectangle(cornerRadius: 22))
+                    .onTapGesture { beginNoteEditing() }
+            }
+        }
+    }
+
     private func beginNoteEditing() {
         showsNote = true
         DispatchQueue.main.async {
@@ -207,6 +254,7 @@ struct EntryEditorScreen: View {
                 day: DayKey(day), choice: selectedChoice, note: showsNote ? note : "",
                 isMember: hasPremiumAccess
             )
+            onSaved(selectedChoice)
             dismiss()
         } catch {
             errorMessage = error.localizedDescription

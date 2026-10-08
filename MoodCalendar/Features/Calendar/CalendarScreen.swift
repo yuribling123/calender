@@ -14,6 +14,10 @@ struct CalendarScreen: View {
     @State private var chooserYear = Calendar.current.component(.year, from: Date())
     @State private var isEditorPresented = false
     @State private var editorInitialGroup: ChoiceGroup = .mood
+    @State private var editingDayKey: String?
+    @State private var editingChoiceRawValue: Int?
+    @State private var pendingRevealDayKey: String?
+    @State private var animatedDayKey: String?
     @State private var saveError: String?
 
     private let calendar = Calendar.current
@@ -50,13 +54,17 @@ struct CalendarScreen: View {
                                 layout: MonthLayout(containing: displayedMonth),
                                 entries: entriesByDay,
                                 selectedDay: DayKey(selectedDay),
+                                pendingRevealDayKey: pendingRevealDayKey,
+                                animatingDayKey: animatedDayKey,
                                 onSelect: { date in
+                                    guard calendar.isDate(date, equalTo: displayedMonth, toGranularity: .month) else {
+                                        return
+                                    }
                                     selectedDay = date
                                     if DayKey(date).relationToToday == .today {
                                         let key = DayKey(date).storageValue
                                         guard entriesByDay[key]?.choice == nil else { return }
-                                        editorInitialGroup = .mood
-                                        isEditorPresented = true
+                                        presentEditor(for: date, group: .mood)
                                         return
                                     }
                                     withAnimation(.easeInOut(duration: 0.3)) {
@@ -71,15 +79,9 @@ struct CalendarScreen: View {
                                 date: selectedDay,
                                 entry: selectedEntry,
                                 onRecordMood: saveMood,
-                                onChooseDaily: {
-                                    guard DayKey(selectedDay).relationToToday == .today else { return }
-                                    editorInitialGroup = .daily
-                                    isEditorPresented = true
-                                },
                                 onEditToday: {
                                     if DayKey(selectedDay).relationToToday == .today {
-                                        editorInitialGroup = selectedEntry?.choice?.group ?? .mood
-                                        isEditorPresented = true
+                                        presentEditor(for: selectedDay, group: selectedEntry?.choice?.group ?? .mood)
                                     }
                                 }
                             )
@@ -110,8 +112,13 @@ struct CalendarScreen: View {
                     await DailyFragmentReminder.refresh(recordedDayKeys: recordedDayKeys)
                 }
             }
-            .sheet(isPresented: $isEditorPresented) {
-                EntryEditorScreen(day: selectedDay, entry: selectedEntry, initialGroup: editorInitialGroup)
+            .sheet(isPresented: $isEditorPresented, onDismiss: handleEditorDismissed) {
+                EntryEditorScreen(
+                    day: selectedDay,
+                    entry: selectedEntry,
+                    initialGroup: editorInitialGroup,
+                    onSaved: handleEditorSaved
+                )
             }
             .alert("保存失败", isPresented: Binding(
                 get: { saveError != nil },
@@ -138,8 +145,6 @@ struct CalendarScreen: View {
                 } label: {
                     HStack(spacing: 5) {
                         Text(verbatim: "\(isChoosingMonth ? chooserYear : calendar.component(.year, from: displayedMonth))年")
-                        // Image(systemName: isChoosingMonth ? "chevron.up" : "chevron.down")
-                        //     .font(.system(size: 10, weight: .medium))
                     }
                     .font(.system(size: 16, weight: .regular))
                     .foregroundStyle(Color.gray)
@@ -195,9 +200,11 @@ struct CalendarScreen: View {
                         .frame(maxWidth: .infinity, minHeight: 64)
                         .background {
                             if isDisplayedMonth(month) {
-                                Image(systemName: selectionShape.systemName)
-                                    .font(.system(size: 66))
-                                    .foregroundStyle(theme.palette.selectionFill)
+                                SelectionShapeIcon(
+                                    shape: selectionShape,
+                                    color: theme.palette.selectionFill,
+                                    size: 66
+                                )
                                     .accessibilityHidden(true)
                             }
                         }
@@ -217,25 +224,30 @@ struct CalendarScreen: View {
     }
 
     private var monthSwipeGesture: some Gesture {
-        DragGesture(minimumDistance: 30)
+        DragGesture(minimumDistance: 6)
             .onEnded { value in
-                guard let step = swipeStep(for: value.translation) else { return }
+                guard let step = swipeStep(for: value) else { return }
                 moveMonth(step)
             }
     }
 
     private var yearSwipeGesture: some Gesture {
-        DragGesture(minimumDistance: 30)
+        DragGesture(minimumDistance: 6)
             .onEnded { value in
-                guard isChoosingMonth, let step = swipeStep(for: value.translation) else { return }
+                guard isChoosingMonth, let step = swipeStep(for: value) else { return }
                 chooserYear += step
             }
     }
 
-    private func swipeStep(for translation: CGSize) -> Int? {
+    private func swipeStep(for value: DragGesture.Value) -> Int? {
+        let translation = value.translation
         let horizontal = translation.width
-        guard abs(horizontal) >= 50,
-              abs(horizontal) > abs(translation.height) * 1.2 else {
+        let predictedHorizontal = value.predictedEndTranslation.width
+        let isHorizontalSwipe = abs(horizontal) >= abs(translation.height) * 0.5
+        let isLongEnough = abs(horizontal) >= 6
+        let isQuickFlick = abs(predictedHorizontal) >= 10
+
+        guard isHorizontalSwipe, isLongEnough || isQuickFlick else {
             return nil
         }
         return horizontal < 0 ? 1 : -1
@@ -296,7 +308,11 @@ struct CalendarScreen: View {
     }
 
     private var isDisplayingCurrentMonth: Bool {
-        let displayed = DayKey(displayedMonth)
+        isCurrentMonth(displayedMonth)
+    }
+
+    private func isCurrentMonth(_ month: Date) -> Bool {
+        let displayed = DayKey(month)
         let today = DayKey(Date())
         return displayed.year == today.year && displayed.month == today.month
     }
@@ -311,12 +327,9 @@ struct CalendarScreen: View {
         guard let next = calendar.date(byAdding: .month, value: amount, to: displayedMonth) else {
             return
         }
-        displayedMonth = MonthLayout(containing: next).monthStart
-        if isDisplayingCurrentMonth {
-            selectedDay = Date()
-        } else {
-            selectedDay = displayedMonth
-        }
+        let nextMonth = MonthLayout(containing: next).monthStart
+        displayedMonth = nextMonth
+        selectedDay = isCurrentMonth(nextMonth) ? Date() : nextMonth
     }
 
     private func saveMood(_ mood: Mood) {
@@ -326,6 +339,38 @@ struct CalendarScreen: View {
             try EntryStore(context: modelContext).save(day: DayKey(selectedDay), choice: choice, note: "")
         } catch {
             saveError = error.localizedDescription
+        }
+    }
+
+    private func presentEditor(for date: Date, group: ChoiceGroup) {
+        let key = DayKey(date).storageValue
+        editingDayKey = key
+        editingChoiceRawValue = entriesByDay[key]?.choice?.rawValue
+        selectedDay = date
+        editorInitialGroup = group
+        isEditorPresented = true
+    }
+
+    private func handleEditorSaved(_ choice: DailyChoice) {
+        guard let key = editingDayKey,
+              choice.rawValue != editingChoiceRawValue else { return }
+        pendingRevealDayKey = key
+    }
+
+    private func handleEditorDismissed() {
+        editingDayKey = nil
+        editingChoiceRawValue = nil
+        guard let key = pendingRevealDayKey else { return }
+
+        // Keep the saved artwork hidden until the sheet has finished closing.
+        animatedDayKey = key
+        DispatchQueue.main.async {
+            pendingRevealDayKey = nil
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.7) {
+            if animatedDayKey == key {
+                animatedDayKey = nil
+            }
         }
     }
 }

@@ -7,7 +7,7 @@ struct EntryStore {
 
     func save(day: DayKey, choice: DailyChoice, note: String, isMember: Bool = false) throws {
         guard day == DayKey(Date()) else { throw EntryStoreError.onlyTodayIsEditable }
-        guard choice.group == .mood || isMember || DemoData.isEnabled else {
+        guard choice.group == .mood || choice.group == .activity || isMember || DemoData.isEnabled else {
             throw EntryStoreError.membershipRequired
         }
         let key = day.storageValue

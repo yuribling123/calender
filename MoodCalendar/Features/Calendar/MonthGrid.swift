@@ -6,6 +6,8 @@ struct MonthGrid: View {
     let layout: MonthLayout
     let entries: [String: MoodEntry]
     let selectedDay: DayKey
+    let pendingRevealDayKey: String?
+    let animatingDayKey: String?
     let onSelect: (Date) -> Void
 
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 2), count: 7)
@@ -32,7 +34,9 @@ struct MonthGrid: View {
                             DayCell(date: date, choice: choice, hasNote: hasNote,
                                     isToday: relation == .today,
                                     isSelected: key == selectedDay,
-                                    isFuture: relation == .future)
+                                    isFuture: relation == .future,
+                                    isRevealPending: key.storageValue == pendingRevealDayKey,
+                                    isAnimating: key.storageValue == animatingDayKey)
                         }
                         .buttonStyle(.plain)
                         .accessibilityLabel(accessibilityText(for: date, relation: relation, choice: choice, hasNote: hasNote))

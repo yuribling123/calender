@@ -1,5 +1,7 @@
 import SwiftUI
+#if ICLOUD_SYNC_ENABLED
 import CloudKit
+#endif
 import UIKit
 
 private struct CalendarTitleCardFramePreferenceKey: PreferenceKey {
@@ -7,6 +9,33 @@ private struct CalendarTitleCardFramePreferenceKey: PreferenceKey {
 
     static func reduce(value: inout CGRect, nextValue: () -> CGRect) {
         value = nextValue()
+    }
+}
+
+private struct ThemePaletteIcon: View {
+    let palette: ThemePalette
+
+    var body: some View {
+        ZStack(alignment: .bottomLeading) {
+            RoundedRectangle(cornerRadius: 6)
+                .fill(palette.softHighlight)
+                .overlay {
+                    RoundedRectangle(cornerRadius: 6)
+                        .stroke(palette.accent.opacity(0.18), lineWidth: 1)
+                }
+                .frame(width: 19, height: 19)
+                .offset(x: 10, y: -7)
+
+            RoundedRectangle(cornerRadius: 6)
+                .fill(palette.selectionFill)
+                .frame(width: 21, height: 21)
+                .offset(x: 5, y: -3)
+
+            RoundedRectangle(cornerRadius: 6)
+                .fill(palette.accent)
+                .frame(width: 23, height: 23)
+        }
+        .frame(width: 33, height: 30, alignment: .bottomLeading)
     }
 }
 
@@ -82,25 +111,30 @@ private struct OutsideTapMonitor: UIViewRepresentable {
 struct PersonalizationScreen: View {
     @EnvironmentObject private var membership: MembershipStore
     @AppStorage("appTheme") private var storedTheme = AppTheme.pink.rawValue
-    @AppStorage("selectionShape") private var storedSelectionShape = SelectionShape.heart.rawValue
+    @AppStorage("selectionShape") private var storedSelectionShape = SelectionShape.circle.rawValue
+    #if ICLOUD_SYNC_ENABLED
     @AppStorage("icloudSyncEnabled") private var isICloudSyncEnabled = false
+    #endif
     @AppStorage("calendarTitle") private var storedCalendarTitle = ""
     @Environment(\.appTheme) private var theme
     @Environment(\.selectionShape) private var selectionShape
     @State private var isThemePickerPresented = false
     @State private var isShapePickerPresented = false
     @State private var isMembershipPresented = false
+    #if ICLOUD_SYNC_ENABLED
     @State private var isCheckingICloud = false
     @State private var isICloudAccountAvailable = false
     @State private var iCloudMessage = "数据仅保存在本机。"
+    #endif
     @State private var calendarTitleCardFrame: CGRect = .zero
     @FocusState private var isCalendarTitleFocused: Bool
 
+    private var hasPremiumAccess: Bool { membership.hasMembershipAccess }
+
+    #if ICLOUD_SYNC_ENABLED
     private var canEnableICloudSync: Bool {
         isICloudAccountAvailable && !isCheckingICloud && !DemoData.isEnabled
     }
-
-    private var hasPremiumAccess: Bool { membership.hasMembershipAccess }
 
     private var iCloudStatusText: String {
         if isCheckingICloud {
@@ -112,6 +146,8 @@ struct PersonalizationScreen: View {
         return iCloudMessage
     }
 
+    #endif
+
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -122,197 +158,13 @@ struct PersonalizationScreen: View {
                         .padding(.top, 4)
                         .padding(.bottom, 20)
 
-                    VStack(alignment: .leading, spacing: 16) {
-                    Text("个性化")
-                        .font(.title3.weight(.semibold))
-                        .padding(.top, 12)
+                    personalizationSection
 
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack(spacing: 14) {
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text("日历标题")
-                                    .font(.body.weight(.medium))
-                                TextField("今日份", text: $storedCalendarTitle)
-                                    .font(.subheadline)
-                                    .foregroundStyle(.secondary)
-                                    .focused($isCalendarTitleFocused)
-                                    .textInputAutocapitalization(.never)
-                                    .submitLabel(.done)
-                                    .onSubmit { isCalendarTitleFocused = false }
-                                    .accessibilityLabel("日历标题，最多六个字")
-                                    .onChange(of: storedCalendarTitle) { _, newValue in
-                                        let limitedValue = String(newValue.prefix(6))
-                                        if limitedValue != newValue {
-                                            storedCalendarTitle = limitedValue
-                                        }
-                                    }
-                            }
-                            Spacer(minLength: 8)
-                            if isCalendarTitleFocused {
-                                Text("\(storedCalendarTitle.count)/6")
-                                    .font(.footnote.monospacedDigit())
-                                    .foregroundStyle(.tertiary)
-                                    .accessibilityLabel("已输入\(storedCalendarTitle.count)个字，共六个字")
-                            }
-                        }
-                        .padding(18)
-                        .background {
-                            GeometryReader { proxy in
-                                RoundedRectangle(cornerRadius: 20)
-                                        .fill(Color.white.opacity(0.72))
-                                        .preference(
-                                            key: CalendarTitleCardFramePreferenceKey.self,
-                                            value: proxy.frame(in: .global)
-                                        )
-                            }
-                        }
-                    }
+                    membershipSection
 
-                    Button {
-                        isThemePickerPresented = true
-                    } label: {
-                        HStack(spacing: 14) {
-                            Circle()
-                                .fill(theme.palette.accent)
-                                .frame(width: 28, height: 28)
-                                .accessibilityHidden(true)
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text("主题色")
-                                    .font(.body.weight(.medium))
-                                    .foregroundStyle(.primary)
-                                Text(theme.title)
-                                    .font(.subheadline)
-                                    .foregroundStyle(.secondary)
-                            }
-                            Spacer()
-                            Image(systemName: "chevron.right")
-                                .font(.subheadline.weight(.medium))
-                                .foregroundStyle(.secondary)
-                                .accessibilityHidden(true)
-                        }
-                        .padding(18)
-                        .background(Color.white.opacity(0.72), in: RoundedRectangle(cornerRadius: 20))
-                        .contentShape(Rectangle())
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel("主题色，\(theme.title)")
-                    .accessibilityHint("选择日历的强调色")
-
-                    Button {
-                        isShapePickerPresented = true
-                    } label: {
-                        HStack(spacing: 14) {
-                            Image(systemName: selectionShape.systemName)
-                                .font(.system(size: 28))
-                                .foregroundStyle(theme.palette.accent)
-                                .frame(width: 28, height: 28)
-                                .accessibilityHidden(true)
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text("选中图形")
-                                    .font(.body.weight(.medium))
-                                    .foregroundStyle(.primary)
-                                Text(selectionShape.title)
-                                    .font(.subheadline)
-                                    .foregroundStyle(.secondary)
-                            }
-                            Spacer()
-                            Image(systemName: "chevron.right")
-                                .font(.subheadline.weight(.medium))
-                                .foregroundStyle(.secondary)
-                                .accessibilityHidden(true)
-                        }
-                        .padding(18)
-                        .background(Color.white.opacity(0.72), in: RoundedRectangle(cornerRadius: 20))
-                        .contentShape(Rectangle())
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel("选中图形，\(selectionShape.title)")
-                    .accessibilityHint("选择日期和月份的选中图形")
-
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("会员")
-                            .font(.title3.weight(.semibold))
-
-                        Button {
-                            isMembershipPresented = true
-                        } label: {
-                            HStack(spacing: 14) {
-                                Image(systemName: membership.hasMembershipAccess ? "checkmark.seal.fill" : "crown.fill")
-                                    .font(.system(size: 22))
-                                    .foregroundStyle(theme.palette.accent)
-                                    .frame(width: 30)
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text(membership.hasMembershipAccess ? "已永久解锁" : "解锁全部表情和自定义")
-                                        .font(.body.weight(.medium))
-                                        .foregroundStyle(.primary)
-                                    Text(membership.hasMembershipAccess ? "全部权益已开启" : "一次购买，永久使用 · \(membership.product?.displayPrice ?? "¥12")")
-                                        .font(.subheadline)
-                                        .foregroundStyle(.secondary)
-                                }
-                                Spacer()
-                                Image(systemName: "chevron.right")
-                                    .font(.subheadline.weight(.medium))
-                                    .foregroundStyle(.secondary)
-                            }
-                            .padding(18)
-                            .background(Color.white.opacity(0.72), in: RoundedRectangle(cornerRadius: 20))
-                        }
-                        .buttonStyle(.plain)
-                        .accessibilityLabel(membership.hasMembershipAccess ? "会员，已永久解锁" : "会员，永久解锁全部表情包和自定义")
-                    }
-                    .padding(.top, 40)
-
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("数据同步")
-                            .font(.title3.weight(.semibold))
-
-                        HStack(spacing: 16) {
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text("iCloud 同步")
-                                    .font(.body.weight(.medium))
-                                    .foregroundStyle(.primary)
-                                Text(iCloudStatusText)
-                                    .font(.subheadline)
-                                    .foregroundStyle(.secondary)
-                            }
-                            Spacer(minLength: 8)
-                            if isCheckingICloud {
-                                ProgressView()
-                                    .tint(theme.palette.strongAccent)
-                                    .frame(width: 52, height: 32)
-                                    .accessibilityLabel("正在检查 iCloud")
-                            } else {
-                                Toggle("iCloud 同步", isOn: iCloudToggleBinding)
-                                    .labelsHidden()
-                                    .tint(theme.palette.strongAccent)
-                                    .disabled(!canEnableICloudSync && !isICloudSyncEnabled)
-                                    .accessibilityLabel("iCloud 同步")
-                            }
-                        }
-                        .padding(18)
-                        .background(Color.white.opacity(0.72), in: RoundedRectangle(cornerRadius: 20))
-                        .opacity(isICloudAccountAvailable || isCheckingICloud ? 1 : 0.58)
-                        .overlay(alignment: .topTrailing) {
-                            if !isICloudAccountAvailable && !isCheckingICloud {
-                                Image(systemName: "lock.fill")
-                                    .font(.system(size: 11, weight: .semibold))
-                                    .foregroundStyle(.secondary)
-                                    .padding(7)
-                                    .background(theme.palette.background, in: Circle())
-                                    .offset(x: -8, y: 8)
-                                    .accessibilityHidden(true)
-                            }
-                        }
-
-                        Text("开启或关闭均在完全退出并重新打开 App 后生效")
-                            .font(.footnote)
-                            .foregroundStyle(.secondary)
-                            .padding(.horizontal, 4)
-                    }
-                    .padding(.top, 40)
+                    #if ICLOUD_SYNC_ENABLED
+                    syncSection
+                    #endif
                 }
                 .padding(24)
             }
@@ -322,7 +174,9 @@ struct PersonalizationScreen: View {
                 calendarTitleCardFrame = $0
             }
             .toolbar(.hidden, for: .navigationBar)
+            #if ICLOUD_SYNC_ENABLED
             .task { await validateSavedICloudSetting() }
+            #endif
             .sheet(isPresented: $isThemePickerPresented) {
                 themePicker
                     .presentationDetents([.medium])
@@ -345,6 +199,205 @@ struct PersonalizationScreen: View {
                 .frame(width: 0, height: 0)
             }
         }
+    }
+
+    private var personalizationSection: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("个性化")
+                .font(.title3.weight(.semibold))
+                .padding(.top, 12)
+
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(spacing: 14) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("日历标题")
+                            .font(.body.weight(.medium))
+                        TextField("今日份", text: $storedCalendarTitle)
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                            .focused($isCalendarTitleFocused)
+                            .textInputAutocapitalization(.never)
+                            .submitLabel(.done)
+                            .onSubmit { isCalendarTitleFocused = false }
+                            .accessibilityLabel("日历标题，最多六个字")
+                            .onChange(of: storedCalendarTitle) { _, newValue in
+                                let limitedValue = String(newValue.prefix(6))
+                                if limitedValue != newValue {
+                                    storedCalendarTitle = limitedValue
+                                }
+                            }
+                    }
+                    Spacer(minLength: 8)
+                    if isCalendarTitleFocused {
+                        Text("\(storedCalendarTitle.count)/6")
+                            .font(.footnote.monospacedDigit())
+                            .foregroundStyle(.tertiary)
+                            .accessibilityLabel("已输入\(storedCalendarTitle.count)个字，共六个字")
+                    }
+                }
+                .padding(18)
+                .background {
+                    GeometryReader { proxy in
+                        RoundedRectangle(cornerRadius: 20)
+                            .fill(Color.white.opacity(0.72))
+                            .preference(
+                                key: CalendarTitleCardFramePreferenceKey.self,
+                                value: proxy.frame(in: .global)
+                            )
+                    }
+                }
+            }
+
+            Button {
+                isThemePickerPresented = true
+            } label: {
+                HStack(spacing: 14) {
+                    ThemePaletteIcon(palette: theme.palette)
+                        .accessibilityHidden(true)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("主题色")
+                            .font(.body.weight(.medium))
+                            .foregroundStyle(.primary)
+                        Text(theme.title)
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(.secondary)
+                        .accessibilityHidden(true)
+                }
+                .padding(18)
+                .background(Color.white.opacity(0.72), in: RoundedRectangle(cornerRadius: 20))
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("主题色，\(theme.title)")
+            .accessibilityHint("选择日历的强调色")
+
+            Button {
+                isShapePickerPresented = true
+            } label: {
+                HStack(spacing: 14) {
+                    SelectionShapeIcon(
+                        shape: selectionShape,
+                        color: theme.palette.accent,
+                        size: 28
+                    )
+                        .accessibilityHidden(true)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("选中图形")
+                            .font(.body.weight(.medium))
+                            .foregroundStyle(.primary)
+                        Text(selectionShape.title)
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(.secondary)
+                        .accessibilityHidden(true)
+                }
+                .padding(18)
+                .background(Color.white.opacity(0.72), in: RoundedRectangle(cornerRadius: 20))
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("选中图形，\(selectionShape.title)")
+            .accessibilityHint("选择日期和月份的选中图形")
+
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var membershipSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("会员")
+                .font(.title3.weight(.semibold))
+
+            Button {
+                isMembershipPresented = true
+            } label: {
+                HStack(spacing: 14) {
+                    Image(systemName: membership.hasMembershipAccess ? "checkmark.seal.fill" : "crown.fill")
+                        .font(.system(size: 22))
+                        .foregroundStyle(theme.palette.accent)
+                        .frame(width: 30)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(membership.hasMembershipAccess ? "已永久解锁" : "解锁全部表情和自定义")
+                            .font(.body.weight(.medium))
+                            .foregroundStyle(.primary)
+                        Text(membership.hasMembershipAccess ? "全部权益已开启" : "一次购买，永久使用 · \(membership.product?.displayPrice ?? "¥12")")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(.secondary)
+                }
+                .padding(18)
+                .background(Color.white.opacity(0.72), in: RoundedRectangle(cornerRadius: 20))
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(membership.hasMembershipAccess ? "会员，已永久解锁" : "会员，永久解锁全部表情包和自定义")
+        }
+        .padding(.top, 40)
+    }
+
+    // Temporarily excluded for Personal Team device testing.
+    #if ICLOUD_SYNC_ENABLED
+    private var syncSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("数据同步")
+                .font(.title3.weight(.semibold))
+
+            HStack(spacing: 16) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("iCloud 同步")
+                        .font(.body.weight(.medium))
+                        .foregroundStyle(.primary)
+                    Text(iCloudStatusText)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer(minLength: 8)
+                if isCheckingICloud {
+                    ProgressView()
+                        .tint(theme.palette.strongAccent)
+                        .frame(width: 52, height: 32)
+                        .accessibilityLabel("正在检查 iCloud")
+                } else {
+                    Toggle("iCloud 同步", isOn: iCloudToggleBinding)
+                        .labelsHidden()
+                        .tint(theme.palette.strongAccent)
+                        .disabled(!canEnableICloudSync && !isICloudSyncEnabled)
+                        .accessibilityLabel("iCloud 同步")
+                }
+            }
+            .padding(18)
+            .background(Color.white.opacity(0.72), in: RoundedRectangle(cornerRadius: 20))
+            .opacity(isICloudAccountAvailable || isCheckingICloud ? 1 : 0.58)
+            .overlay(alignment: .topTrailing) {
+                if !isICloudAccountAvailable && !isCheckingICloud {
+                    Image(systemName: "lock.fill")
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundStyle(.secondary)
+                        .padding(7)
+                        .background(theme.palette.background, in: Circle())
+                        .offset(x: -8, y: 8)
+                        .accessibilityHidden(true)
+                }
+            }
+
+            Text("开启或关闭均在完全退出并重新打开 App 后生效")
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+                .padding(.horizontal, 4)
+        }
+        .padding(.top, 40)
     }
 
     private var iCloudToggleBinding: Binding<Bool> {
@@ -446,67 +499,97 @@ struct PersonalizationScreen: View {
         iCloudMessage = message
     }
 
+    #endif
+
     private var themePicker: some View {
-        NavigationStack {
-            VStack(spacing: 8) {
-                ForEach(AppTheme.allCases) { option in
-                    Button {
-                        guard hasPremiumAccess || option == .pink else {
-                            isThemePickerPresented = false
-                            isMembershipPresented = true
-                            return
-                        }
-                        storedTheme = option.rawValue
-                    } label: {
-                        HStack(spacing: 14) {
-                            Circle()
-                                .fill(option.palette.accent)
-                                .frame(width: 28, height: 28)
-                                .accessibilityHidden(true)
-                            Text(option.title)
-                                .foregroundStyle(.primary)
-                            Spacer()
-                            if option != .pink && !hasPremiumAccess {
-                                Image(systemName: "lock.fill")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                            }
-                            if storedTheme == option.rawValue {
-                                Image(systemName: "checkmark")
-                                    .foregroundStyle(option.palette.strongAccent)
-                                    .accessibilityHidden(true)
-                            }
-                        }
-                        .padding(.horizontal, 16)
-                        .frame(minHeight: 48)
-                        .background(storedTheme == option.rawValue ? option.palette.softHighlight : .clear,
-                                    in: RoundedRectangle(cornerRadius: 14))
-                        .contentShape(Rectangle())
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel(option.title)
-                    .accessibilityAddTraits(storedTheme == option.rawValue ? .isSelected : [])
-                }
-                Spacer(minLength: 0)
-            }
-            .padding(20)
-            .background(theme.palette.background)
-            .navigationTitle("主题色")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
+        VStack(spacing: 16) {
+            ZStack {
+                Text("主题色")
+                    .font(.headline.weight(.semibold))
+
+                HStack {
+                    Spacer()
                     Button("完成") { isThemePickerPresented = false }
+                        .font(.headline.weight(.semibold))
+                        .foregroundStyle(theme.palette.strongAccent)
+                        .frame(minWidth: 44, minHeight: 44, alignment: .trailing)
+                        .contentShape(Rectangle())
                 }
             }
+            .frame(minHeight: 40)
+
+            ScrollView {
+                VStack(spacing: 8) {
+                    ForEach(AppTheme.allCases) { option in
+                        Button {
+                            guard hasPremiumAccess || option == .pink || option == .black else {
+                                isThemePickerPresented = false
+                                isMembershipPresented = true
+                                return
+                            }
+                            storedTheme = option.rawValue
+                        } label: {
+                            HStack(spacing: 14) {
+                                Circle()
+                                    .fill(option.palette.accent)
+                                    .frame(width: 28, height: 28)
+                                    .accessibilityHidden(true)
+                                Text(option.title)
+                                    .foregroundStyle(.primary)
+                                Spacer()
+                                if option != .pink && option != .black && !hasPremiumAccess {
+                                    Image(systemName: "lock.fill")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                                if storedTheme == option.rawValue {
+                                    Image(systemName: "checkmark")
+                                        .foregroundStyle(option.palette.strongAccent)
+                                        .accessibilityHidden(true)
+                                }
+                            }
+                            .padding(.horizontal, 16)
+                            .frame(minHeight: 48)
+                            .background(storedTheme == option.rawValue ? option.palette.softHighlight : .clear,
+                                        in: RoundedRectangle(cornerRadius: 14))
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel(option.title)
+                        .accessibilityAddTraits(storedTheme == option.rawValue ? .isSelected : [])
+                    }
+                }
+            }
+            .scrollIndicators(.hidden)
         }
+        .frame(maxHeight: .infinity, alignment: .top)
+        .padding(.horizontal, 20)
+        .padding(.top, 22)
+        .padding(.bottom, 20)
+        .background(theme.palette.background)
     }
 
     private var shapePicker: some View {
-        NavigationStack {
+        VStack(spacing: 16) {
+            ZStack {
+                Text("选中图形")
+                    .font(.headline.weight(.semibold))
+
+                HStack {
+                    Spacer()
+                    Button("完成") { isShapePickerPresented = false }
+                        .font(.headline.weight(.semibold))
+                        .foregroundStyle(theme.palette.strongAccent)
+                        .frame(minWidth: 44, minHeight: 44, alignment: .trailing)
+                        .contentShape(Rectangle())
+                }
+            }
+            .frame(minHeight: 40)
+
             VStack(spacing: 8) {
                 ForEach(SelectionShape.allCases) { option in
                     Button {
-                        guard hasPremiumAccess || option == .heart else {
+                        guard hasPremiumAccess || option == .circle else {
                             isShapePickerPresented = false
                             isMembershipPresented = true
                             return
@@ -514,15 +597,17 @@ struct PersonalizationScreen: View {
                         storedSelectionShape = option.rawValue
                     } label: {
                         HStack(spacing: 14) {
-                            Image(systemName: option.systemName)
-                                .font(.system(size: 28))
-                                .foregroundStyle(theme.palette.accent)
-                                .frame(width: 28, height: 28)
+                            SelectionShapeIcon(
+                                shape: option,
+                                color: theme.palette.accent,
+                                size: [.star, .sakura, .leaf, .cat].contains(option) ? 32 : 28
+                            )
+                                .frame(width: 32, height: 32)
                                 .accessibilityHidden(true)
                             Text(option.title)
                                 .foregroundStyle(.primary)
                             Spacer()
-                            if option == .circle && !hasPremiumAccess {
+                            if option != .circle && !hasPremiumAccess {
                                 Image(systemName: "lock.fill")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
@@ -545,15 +630,10 @@ struct PersonalizationScreen: View {
                 }
                 Spacer(minLength: 0)
             }
-            .padding(20)
-            .background(theme.palette.background)
-            .navigationTitle("选中图形")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("完成") { isShapePickerPresented = false }
-                }
-            }
         }
+        .padding(.horizontal, 20)
+        .padding(.top, 22)
+        .padding(.bottom, 20)
+        .background(theme.palette.background)
     }
 }

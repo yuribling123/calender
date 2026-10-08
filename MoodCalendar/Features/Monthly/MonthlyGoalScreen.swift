@@ -6,9 +6,9 @@ struct MonthlyGoalScreen: View {
     @Environment(\.appTheme) private var theme
     @Query private var entries: [MoodEntry]
     @Query private var monthlyNotes: [MonthlyNote]
-    @State private var draftThemeText = ""
-    @State private var isEditingCurrentTheme = false
-    @FocusState private var isCurrentThemeFocused: Bool
+    @State private var draftNoteText = ""
+    @State private var isEditingCurrentNote = false
+    @FocusState private var isCurrentNoteFocused: Bool
     @State private var saveError: String?
 
     private let calendar = Calendar.current
@@ -181,28 +181,28 @@ struct MonthlyGoalScreen: View {
 
     private var currentMonthEditor: some View {
         VStack(alignment: .leading, spacing: 10) {
-            if isEditingCurrentTheme {
-                TextEditor(text: $draftThemeText)
+            if isEditingCurrentNote {
+                TextEditor(text: $draftNoteText)
                     .font(.system(size: 18, weight: .regular))
                     .foregroundStyle(.primary)
-                    .focused($isCurrentThemeFocused)
+                    .focused($isCurrentNoteFocused)
                     .scrollContentBackground(.hidden)
                     .frame(minHeight: 88)
-                    .onChange(of: draftThemeText) { _, value in
-                        if value.count > 40 { draftThemeText = String(value.prefix(40)) }
+                    .onChange(of: draftNoteText) { _, value in
+                        if value.count > 40 { draftNoteText = String(value.prefix(40)) }
                     }
                     .accessibilityLabel("编辑本月主题")
 
                 HStack {
-                    Text("\(draftThemeText.count) / 40")
+                    Text("\(draftNoteText.count) / 40")
                         .font(.system(size: 13))
                         .foregroundStyle(.secondary)
                     Spacer()
-                    Button("保存") { saveCurrentTheme() }
+                    Button("保存") { saveCurrentNote() }
                         .font(.system(size: 15, weight: .semibold))
                         .foregroundStyle(theme.palette.strongAccent)
                 }
-            } else if currentThemeText.isEmpty {
+            } else if currentNoteText.isEmpty {
                 HStack(spacing: 5) {
                     Text("写一句话，留给这个月。")
                         .foregroundStyle(.secondary)
@@ -211,21 +211,21 @@ struct MonthlyGoalScreen: View {
                 }
                 .font(.system(size: 17, weight: .regular))
                 .contentShape(Rectangle())
-                .onTapGesture { beginCurrentThemeEditing() }
+                .onTapGesture { beginCurrentNoteEditing() }
                 .accessibilityAddTraits(.isButton)
                 .accessibilityLabel("写一句话，留给这个月")
             } else {
-                Text(currentThemeText)
+                Text(currentNoteText)
                     .font(.system(size: 18, weight: .regular))
                     .foregroundStyle(.primary)
                     .lineLimit(3)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .contentShape(Rectangle())
-                    .onTapGesture { beginCurrentThemeEditing() }
+                    .onTapGesture { beginCurrentNoteEditing() }
 
                 HStack {
                     Spacer()
-                    Button { beginCurrentThemeEditing() } label: {
+                    Button { beginCurrentNoteEditing() } label: {
                         Label("编辑", systemImage: "pencil")
                             .font(.system(size: 12, weight: .medium))
                             .foregroundStyle(theme.palette.strongAccent.opacity(0.82))
@@ -236,22 +236,22 @@ struct MonthlyGoalScreen: View {
         }
     }
 
-    private func beginCurrentThemeEditing() {
-        draftThemeText = currentThemeText
-        isEditingCurrentTheme = true
+    private func beginCurrentNoteEditing() {
+        draftNoteText = currentNoteText
+        isEditingCurrentNote = true
         DispatchQueue.main.async {
-            isCurrentThemeFocused = true
+            isCurrentNoteFocused = true
         }
     }
 
-    private func saveCurrentTheme() {
+    private func saveCurrentNote() {
         do {
             try MonthlyNoteStore(context: modelContext).save(
                 monthKey: monthKey(for: startOfCurrentMonth),
-                text: String(draftThemeText.prefix(40))
+                text: String(draftNoteText.prefix(40))
             )
-            isCurrentThemeFocused = false
-            isEditingCurrentTheme = false
+            isCurrentNoteFocused = false
+            isEditingCurrentNote = false
         } catch {
             saveError = error.localizedDescription
         }
@@ -267,7 +267,7 @@ struct MonthlyGoalScreen: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
             if let choice = data.choice {
-                summaryRow(title: "那个月常常在", value: displayTitle(for: choice), imageName: choice.imageName)
+                summaryRow(title: "那个月常常在", value: displayTitle(for: choice))
             }
         }
         .padding(.top, 16)
@@ -294,7 +294,7 @@ struct MonthlyGoalScreen: View {
         return formatter.string(from: date).uppercased()
     }
 
-    private func summaryRow(title: String, value: String, imageName: String? = nil) -> some View {
+    private func summaryRow(title: String, value: String) -> some View {
         HStack(alignment: .center, spacing: 10) {
             Text(title)
                 .font(.system(size: 15, weight: .medium))
@@ -304,23 +304,17 @@ struct MonthlyGoalScreen: View {
                 .font(.system(size: 15, weight: .regular))
                 .foregroundStyle(.primary)
                 .lineLimit(3)
-
-//            if let imageName {
-//                Image(imageName)
-//                    .resizable()
-//                    .scaledToFit()
-//                    .frame(width: 66, height: 48)
-//                    .padding(.leading, -14)
-//                    .accessibilityHidden(true)
-//            }
         }
     }
-    
-    private struct MonthData { let note: String?; let choice: DailyChoice? }
+
+    private struct MonthData {
+        let note: String?
+        let choice: DailyChoice?
+    }
 
     private func monthData(for date: Date) -> MonthData {
         let monthEntries = entriesForEachDay.filter { $0.dayKey.hasPrefix(monthKey(for: date)) }
-        return MonthData(note: storedTheme(for: date), choice: mostCommon(in: monthEntries))
+        return MonthData(note: storedNote(for: date), choice: mostCommon(in: monthEntries))
     }
 
     private var entriesForEachDay: [MoodEntry] {
@@ -348,15 +342,18 @@ struct MonthlyGoalScreen: View {
     }
 
     private func hasContent(for date: Date) -> Bool {
-        storedTheme(for: date) != nil || entriesForEachDay.contains { $0.dayKey.hasPrefix(monthKey(for: date)) }
+        storedNote(for: date) != nil || entriesForEachDay.contains { $0.dayKey.hasPrefix(monthKey(for: date)) }
     }
 
-    private func monthKey(for date: Date) -> String { String(format: "%04d-%02d", calendar.component(.year, from: date), calendar.component(.month, from: date)) }
-    private func storedTheme(for date: Date) -> String? {
+    private func monthKey(for date: Date) -> String {
+        String(format: "%04d-%02d", calendar.component(.year, from: date), calendar.component(.month, from: date))
+    }
+
+    private func storedNote(for date: Date) -> String? {
         monthlyNotes
             .filter { $0.monthKey == monthKey(for: date) }
             .max { $0.updatedAt < $1.updatedAt }?
             .text
     }
-    private var currentThemeText: String { storedTheme(for: startOfCurrentMonth) ?? "" }
+    private var currentNoteText: String { storedNote(for: startOfCurrentMonth) ?? "" }
 }

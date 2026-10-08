@@ -45,3 +45,7 @@
 - `App/MembershipStore.swift`：使用 StoreKit 2 校验永久解锁购买和恢复权益。
 
 日历日以用户记录时的本地年月日保存，例如 `2026-10-04`。以后跨时区查看时，这条记录仍显示在原来的日历日。开发约定见 `AGENTS.md`。
+
+### iCloud 暂时封存
+
+当前为 Personal Team 真机测试暂时禁用 iCloud：同步入口和 CloudKit 调用保留在 `#if ICLOUD_SYNC_ENABLED` 中，默认不编译；所有数据仅保存在原本的本地存储。entitlements 的 iCloud 权限已注释，Xcode iCloud capability 已关闭。以后恢复时需使用支持 iCloud 的开发团队、配置容器和签名、恢复正确的 iCloud entitlements/capability，并在 Debug 和 Release 的 Swift Active Compilation Conditions 加入 `ICLOUD_SYNC_ENABLED`。仅添加编译标记不足以启用同步。

@@ -23,10 +23,10 @@
 		C23C5056806ADFA9AB9C9215 /* MoodCalendar/Features/Calendar/DayCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = D441A0F31890CD8CCDA0CF48 /* MoodCalendar/Features/Calendar/DayCell.swift */; };
 		C91A00000000000000000001 /* MoodCalendar/Features/Monthly/MonthlyGoalScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C91A00000000000000000002 /* MoodCalendar/Features/Monthly/MonthlyGoalScreen.swift */; };
 		D5A12E830CB94AD18D911001 /* MoodCalendar/Domain/DailyChoice.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A12E830CB94AD18D911002 /* MoodCalendar/Domain/DailyChoice.swift */; };
-		F4171D7AA7BFA1ECAECEE9B0 /* MoodCalendar/Features/Calendar/SelectedDateDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D8FFAD8C7F230C3E65731BA /* MoodCalendar/Features/Calendar/SelectedDateDetail.swift */; };
 		E091A2B3C4D5E6F701234567 /* MoodCalendar/App/DailyFragmentReminder.swift in Sources */ = {isa = PBXBuildFile; fileRef = E091A2B3C4D5E6F701234568 /* MoodCalendar/App/DailyFragmentReminder.swift */; };
 		E091A2B3C4D5E6F701234569 /* MoodCalendar/App/MembershipStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E091A2B3C4D5E6F701234570 /* MoodCalendar/App/MembershipStore.swift */; };
 		E091A2B3C4D5E6F701234571 /* MoodCalendar/Features/Settings/MembershipScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = E091A2B3C4D5E6F701234572 /* MoodCalendar/Features/Settings/MembershipScreen.swift */; };
+		F4171D7AA7BFA1ECAECEE9B0 /* MoodCalendar/Features/Calendar/SelectedDateDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D8FFAD8C7F230C3E65731BA /* MoodCalendar/Features/Calendar/SelectedDateDetail.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -120,8 +120,12 @@
 					0E8A3AD980EC179856012B7E = {
 						CreatedOnToolsVersion = 16.0;
 						SystemCapabilities = {
-							com.apple.BackgroundModes = { enabled = 1; };
-							com.apple.iCloud = { enabled = 1; };
+							com.apple.BackgroundModes = {
+								enabled = 1;
+							};
+							com.apple.iCloud = {
+								enabled = 0;
+							};
 						};
 					};
 				};
@@ -189,10 +193,10 @@
 		0BA094C68170D90CEF675522 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_STYLE = Automatic;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CODE_SIGN_ENTITLEMENTS = MoodCalendar/MoodCalendar.entitlements;
+				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 2A2N95V422;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = MoodCalendar/Info.plist;
@@ -234,10 +238,10 @@
 		E4CC03D48D772ABF5D72D504 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_STYLE = Automatic;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CODE_SIGN_ENTITLEMENTS = MoodCalendar/MoodCalendar.entitlements;
+				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 2A2N95V422;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = MoodCalendar/Info.plist;

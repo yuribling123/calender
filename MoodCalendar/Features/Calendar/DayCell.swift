@@ -11,6 +11,11 @@ struct DayCell: View {
     let isToday: Bool
     let isSelected: Bool
     let isFuture: Bool
+    let isRevealPending: Bool
+    let isAnimating: Bool
+
+    @State private var revealScale: CGFloat = 1
+    @State private var revealOpacity: CGFloat = 1
 
     var body: some View {
         GeometryReader { geometry in
@@ -39,9 +44,11 @@ struct DayCell: View {
                     )
                     .background {
                         if isSelected {
-                            Image(systemName: selectionShape.systemName)
-                                .font(.system(size: 34))
-                                .foregroundStyle(theme.palette.selectionFill)
+                            SelectionShapeIcon(
+                                shape: selectionShape,
+                                color: theme.palette.selectionFill,
+                                size: 34
+                            )
                         }
                     }
 
@@ -61,6 +68,8 @@ struct DayCell: View {
                                 .scaleEffect(
                                     choice == .cake ? 1.05 : choice.group == .daily ? 1.2:choice.group == .mood ? 1 : choice == .gather ? 1.6 : choice.group == .company ? 1.5 : 1.4
                                 )
+                                .scaleEffect(revealScale)
+                                .opacity(isRevealPending ? 0 : revealOpacity)
                                 .accessibilityHidden(true)
                         } else {
                             Color.clear
@@ -91,5 +100,23 @@ struct DayCell: View {
             )
         }
         .frame(height: 74)
+        .onAppear {
+            if isRevealPending { prepareReveal() }
+        }
+        .onChange(of: isRevealPending) { _, isPending in
+            if isPending {
+                prepareReveal()
+            } else if isAnimating {
+                withAnimation(.spring(response: 0.42, dampingFraction: 0.68)) {
+                    revealScale = 1
+                    revealOpacity = 1
+                }
+            }
+        }
+    }
+
+    private func prepareReveal() {
+        revealScale = 0.55
+        revealOpacity = 0
     }
 }
