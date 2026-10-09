@@ -12,12 +12,13 @@ struct MonthlyGoalScreen: View {
     @State private var saveError: String?
 
     private let calendar = Calendar.current
-    private let monthCount = 12
     private var today: Date { Date() }
     private var startOfCurrentMonth: Date { calendar.date(from: calendar.dateComponents([.year, .month], from: today)) ?? today }
-    private var monthDates: [Date] { (0..<monthCount).compactMap { calendar.date(byAdding: .month, value: -$0, to: startOfCurrentMonth) } }
     private var visibleMonthDates: [Date] {
-        monthDates.filter { calendar.isDate($0, equalTo: startOfCurrentMonth, toGranularity: .month) || hasContent(for: $0) }
+        let savedMonthKeys = Set(entries.map { String($0.dayKey.prefix(7)) } + monthlyNotes.map(\.monthKey))
+        let historicalMonths = savedMonthKeys.compactMap(monthDate(for:))
+            .filter { $0 < startOfCurrentMonth }
+        return ([startOfCurrentMonth] + historicalMonths).sorted(by: >)
     }
 
     var body: some View {
@@ -341,8 +342,13 @@ struct MonthlyGoalScreen: View {
         choice.group == .mood ? choice.title : choice.caption
     }
 
-    private func hasContent(for date: Date) -> Bool {
-        storedNote(for: date) != nil || entriesForEachDay.contains { $0.dayKey.hasPrefix(monthKey(for: date)) }
+    private func monthDate(for key: String) -> Date? {
+        let parts = key.split(separator: "-", omittingEmptySubsequences: false)
+        guard parts.count == 2, parts[0].count == 4, parts[1].count == 2,
+              let year = Int(parts[0]), let month = Int(parts[1]),
+              let date = calendar.date(from: DateComponents(year: year, month: month, day: 1)),
+              monthKey(for: date) == key else { return nil }
+        return date
     }
 
     private func monthKey(for date: Date) -> String {

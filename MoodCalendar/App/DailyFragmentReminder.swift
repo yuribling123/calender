@@ -5,10 +5,20 @@ enum DailyFragmentReminder {
     private static let identifierPrefix = "daily-fragment-reminder-"
     private static let scheduledDayLimit = 60
 
-    static func refresh(recordedDayKeys: Set<String>) async {
+    static func refresh(recordedDayKeys: Set<String>, isEnabled: Bool) async {
         guard !DemoData.isEnabled else { return }
 
         let center = UNUserNotificationCenter.current()
+        let existingRequests = await center.pendingNotificationRequests()
+        let reminderIDs = existingRequests
+            .map(\.identifier)
+            .filter { $0.hasPrefix(identifierPrefix) }
+
+        guard isEnabled else {
+            center.removePendingNotificationRequests(withIdentifiers: reminderIDs)
+            return
+        }
+
         let settings = await center.notificationSettings()
         var isAuthorized = settings.authorizationStatus == .authorized
             || settings.authorizationStatus == .provisional
@@ -17,10 +27,6 @@ enum DailyFragmentReminder {
             isAuthorized = (try? await center.requestAuthorization(options: [.alert, .sound])) ?? false
         }
 
-        let existingRequests = await center.pendingNotificationRequests()
-        let reminderIDs = existingRequests
-            .map(\.identifier)
-            .filter { $0.hasPrefix(identifierPrefix) }
         center.removePendingNotificationRequests(withIdentifiers: reminderIDs)
 
         center.removeDeliveredNotifications(
@@ -46,13 +52,13 @@ enum DailyFragmentReminder {
             guard let day = calendar.date(byAdding: .day, value: offset, to: today) else { continue }
             let dayKey = DayKey(day).storageValue
             guard !recordedDayKeys.contains(dayKey),
-                  let fireDate = calendar.date(bySettingHour: 9, minute: 30, second: 0, of: day),
+                  let fireDate = calendar.date(bySettingHour: 21, minute: 30, second: 0, of: day),
                   fireDate > now else {
                 continue
             }
 
             var components = calendar.dateComponents([.year, .month, .day], from: day)
-            components.hour = 9
+            components.hour = 21
             components.minute = 30
 
             let content = UNMutableNotificationContent()

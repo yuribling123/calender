@@ -47,7 +47,7 @@ struct DayCell: View {
                             SelectionShapeIcon(
                                 shape: selectionShape,
                                 color: theme.palette.selectionFill,
-                                size: 34
+                                size: selectionShape == .sakura || selectionShape == .leaf ? 40 : 34
                             )
                         }
                     }

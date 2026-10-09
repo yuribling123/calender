@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import UIKit
 
 struct CalendarScreen: View {
     @Environment(\.modelContext) private var modelContext
@@ -7,9 +8,13 @@ struct CalendarScreen: View {
     @Environment(\.selectionShape) private var selectionShape
     @Environment(\.scenePhase) private var scenePhase
     @AppStorage("calendarTitle") private var storedCalendarTitle = ""
+    @AppStorage("dailyReminderEnabled") private var isDailyReminderEnabled = true
     @Query private var entries: [MoodEntry]
     @State private var displayedMonth = MonthLayout(containing: Date()).monthStart
     @State private var selectedDay = Date()
+    @State private var lastObservedToday = DayKey(Date())
+    @State private var lastObservedTimeZoneID = TimeZone.current.identifier
+    @State private var midnightTimer: Timer?
     @State private var isChoosingMonth = false
     @State private var chooserYear = Calendar.current.component(.year, from: Date())
     @State private var isEditorPresented = false
@@ -20,7 +25,7 @@ struct CalendarScreen: View {
     @State private var animatedDayKey: String?
     @State private var saveError: String?
 
-    private let calendar = Calendar.current
+    private var calendar: Calendar { .autoupdatingCurrent }
 
     private var selectedEntry: MoodEntry? {
         let key = DayKey(selectedDay).storageValue
@@ -39,59 +44,50 @@ struct CalendarScreen: View {
 
     var body: some View {
         NavigationStack {
-            ScrollViewReader { scrollProxy in
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 0) {
-                        intro
-                            .padding(.bottom, 4)
-                        if isChoosingMonth {
-                            monthChooser
-                        } else {
-                            monthHeader
-                                .padding(.bottom, 30)
-                                .simultaneousGesture(monthSwipeGesture)
-                            MonthGrid(
-                                layout: MonthLayout(containing: displayedMonth),
-                                entries: entriesByDay,
-                                selectedDay: DayKey(selectedDay),
-                                pendingRevealDayKey: pendingRevealDayKey,
-                                animatingDayKey: animatedDayKey,
-                                onSelect: { date in
-                                    guard calendar.isDate(date, equalTo: displayedMonth, toGranularity: .month) else {
-                                        return
-                                    }
-                                    selectedDay = date
-                                    if DayKey(date).relationToToday == .today {
-                                        let key = DayKey(date).storageValue
-                                        guard entriesByDay[key]?.choice == nil else { return }
-                                        presentEditor(for: date, group: .mood)
-                                        return
-                                    }
-                                    withAnimation(.easeInOut(duration: 0.3)) {
-                                        scrollProxy.scrollTo("detailBottom", anchor: .bottom)
-                                    }
-                                }
-                            )
-                            .offset(y: -8)
-                            .padding(.bottom, 8)
+            ScrollView {
+                VStack(alignment: .leading, spacing: 0) {
+                    intro
+                        .padding(.bottom, 4)
+                    if isChoosingMonth {
+                        monthChooser
+                    } else {
+                        monthHeader
+                            .padding(.bottom, 30)
                             .simultaneousGesture(monthSwipeGesture)
-                            SelectedDateDetail(
-                                date: selectedDay,
-                                entry: selectedEntry,
-                                onRecordMood: saveMood,
-                                onEditToday: {
-                                    if DayKey(selectedDay).relationToToday == .today {
-                                        presentEditor(for: selectedDay, group: selectedEntry?.choice?.group ?? .mood)
-                                    }
+                        MonthGrid(
+                            layout: MonthLayout(containing: displayedMonth),
+                            entries: entriesByDay,
+                            selectedDay: DayKey(selectedDay),
+                            pendingRevealDayKey: pendingRevealDayKey,
+                            animatingDayKey: animatedDayKey,
+                            onSelect: { date in
+                                guard calendar.isDate(date, equalTo: displayedMonth, toGranularity: .month) else {
+                                    return
                                 }
-                            )
-                            Color.clear
-                                .frame(height: 80)
-                                .id("detailBottom")
-                        }
+                                selectedDay = date
+                                if DayKey(date).relationToToday == .today {
+                                    let key = DayKey(date).storageValue
+                                    guard entriesByDay[key]?.choice == nil else { return }
+                                    presentEditor(for: date, group: .mood)
+                                }
+                            }
+                        )
+                        .offset(y: -8)
+                        .padding(.bottom, 8)
+                        .simultaneousGesture(monthSwipeGesture)
+                        SelectedDateDetail(
+                            date: selectedDay,
+                            entry: selectedEntry,
+                            onRecordMood: saveMood,
+                            onEditToday: {
+                                if DayKey(selectedDay).relationToToday == .today {
+                                    presentEditor(for: selectedDay, group: selectedEntry?.choice?.group ?? .mood)
+                                }
+                            }
+                        )
                     }
-                    .padding(24)
                 }
+                .padding(24)
             }
             .background(theme.palette.background)
             .toolbar(.hidden, for: .navigationBar)
@@ -99,18 +95,46 @@ struct CalendarScreen: View {
                 try? EntryStore(context: modelContext).reconcileDuplicates()
             }
             .task {
-                await DailyFragmentReminder.refresh(recordedDayKeys: recordedDayKeys)
+                await DailyFragmentReminder.refresh(
+                    recordedDayKeys: recordedDayKeys,
+                    isEnabled: isDailyReminderEnabled
+                )
             }
             .onChange(of: recordedDayKeys.sorted()) { _, _ in
                 Task {
-                    await DailyFragmentReminder.refresh(recordedDayKeys: recordedDayKeys)
+                    await DailyFragmentReminder.refresh(
+                        recordedDayKeys: recordedDayKeys,
+                        isEnabled: isDailyReminderEnabled
+                    )
                 }
             }
+            .onAppear {
+                refreshSelectedDayIfNeeded()
+                scheduleMidnightCheck()
+            }
+            .onDisappear {
+                midnightTimer?.invalidate()
+                midnightTimer = nil
+            }
             .onChange(of: scenePhase) { _, newPhase in
-                guard newPhase == .active else { return }
-                Task {
-                    await DailyFragmentReminder.refresh(recordedDayKeys: recordedDayKeys)
+                guard newPhase == .active else {
+                    midnightTimer?.invalidate()
+                    midnightTimer = nil
+                    return
                 }
+                refreshSelectedDayIfNeeded()
+                scheduleMidnightCheck()
+                Task {
+                    await DailyFragmentReminder.refresh(
+                        recordedDayKeys: recordedDayKeys,
+                        isEnabled: isDailyReminderEnabled
+                    )
+                }
+            }
+            .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in
+                guard scenePhase == .active else { return }
+                refreshSelectedDayIfNeeded()
+                scheduleMidnightCheck()
             }
             .sheet(isPresented: $isEditorPresented, onDismiss: handleEditorDismissed) {
                 EntryEditorScreen(
@@ -301,7 +325,7 @@ struct CalendarScreen: View {
             .font(.subheadline.weight(.medium))
             .foregroundStyle(theme.palette.onStrongAccent)
             .frame(minWidth: 44, minHeight: 44)
-            .background(theme.palette.strongAccent)
+            .background(theme.palette.todayButtonFill)
             .clipShape(Capsule())
             .buttonStyle(.plain)
             .accessibilityLabel("回到今天")
@@ -319,8 +343,35 @@ struct CalendarScreen: View {
 
     private func showCurrentMonth() {
         let today = Date()
-        displayedMonth = MonthLayout(containing: today).monthStart
+        displayedMonth = MonthLayout(containing: today, calendar: calendar).monthStart
         selectedDay = today
+    }
+
+    private func refreshSelectedDayIfNeeded() {
+        let now = Date()
+        let today = DayKey(now, calendar: calendar)
+        let timeZoneID = calendar.timeZone.identifier
+        guard today != lastObservedToday || timeZoneID != lastObservedTimeZoneID else { return }
+        lastObservedToday = today
+        lastObservedTimeZoneID = timeZoneID
+        displayedMonth = MonthLayout(containing: now, calendar: calendar).monthStart
+        selectedDay = now
+        chooserYear = today.year
+        isChoosingMonth = false
+    }
+
+    private func scheduleMidnightCheck() {
+        midnightTimer?.invalidate()
+        guard scenePhase == .active else { return }
+        let now = Date()
+        guard let nextMidnight = calendar.date(byAdding: .day, value: 1,
+                                               to: calendar.startOfDay(for: now)) else { return }
+        let timer = Timer(timeInterval: max(1, nextMidnight.timeIntervalSince(now) + 0.2), repeats: false) { _ in
+            refreshSelectedDayIfNeeded()
+            scheduleMidnightCheck()
+        }
+        RunLoop.main.add(timer, forMode: .common)
+        midnightTimer = timer
     }
 
     private func moveMonth(_ amount: Int) {
@@ -337,6 +388,7 @@ struct CalendarScreen: View {
         do {
             guard let choice = DailyChoice(rawValue: mood.rawValue) else { return }
             try EntryStore(context: modelContext).save(day: DayKey(selectedDay), choice: choice, note: "")
+            SaveFeedback.play()
         } catch {
             saveError = error.localizedDescription
         }
@@ -364,6 +416,7 @@ struct CalendarScreen: View {
 
         // Keep the saved artwork hidden until the sheet has finished closing.
         animatedDayKey = key
+        SaveFeedback.play()
         DispatchQueue.main.async {
             pendingRevealDayKey = nil
         }

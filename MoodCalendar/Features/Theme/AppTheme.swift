@@ -21,36 +21,37 @@ enum AppTheme: String, CaseIterable, Identifiable {
     var palette: ThemePalette {
         switch self {
         case .pink:
-            ThemePalette(accent: rgb(242, 141, 178), selectionFill: rgb(249, 211, 226),
+            ThemePalette(accent: rgb(242, 141, 178), selectionFill: rgb(245, 184, 207),
                          softHighlight: rgb(253, 234, 242),
-                         strongAccent: rgb(176, 69, 102))
+                         strongAccent: rgb(176, 69, 102), todayButtonFill: rgb(211, 96, 134))
         case .apricot:
-            ThemePalette(accent: rgb(241, 165, 126), selectionFill: rgb(250, 221, 202),
+            ThemePalette(accent: rgb(241, 165, 126), selectionFill: rgb(245, 199, 172),
                          softHighlight: rgb(252, 238, 227),
-                         strongAccent: rgb(150, 82, 48))
+                         strongAccent: rgb(150, 82, 48), todayButtonFill: rgb(193, 122, 86))
         case .sage:
-            ThemePalette(accent: rgb(155, 188, 158), selectionFill: rgb(216, 235, 215),
+            ThemePalette(accent: rgb(155, 188, 158), selectionFill: rgb(194, 222, 195),
                          softHighlight: rgb(234, 243, 232),
-                         strongAccent: rgb(71, 112, 77))
+                         strongAccent: rgb(71, 112, 77), todayButtonFill: rgb(111, 147, 114))
         case .blue:
-            ThemePalette(accent: rgb(142, 179, 207), selectionFill: rgb(211, 229, 242),
+            ThemePalette(accent: rgb(142, 179, 207), selectionFill: rgb(189, 216, 234),
                          softHighlight: rgb(233, 242, 248),
-                         strongAccent: rgb(63, 105, 139))
+                         strongAccent: rgb(63, 105, 139), todayButtonFill: rgb(104, 145, 174))
         case .lavender:
-            ThemePalette(accent: rgb(177, 159, 203), selectionFill: rgb(231, 219, 242),
+            ThemePalette(accent: rgb(177, 159, 203), selectionFill: rgb(214, 194, 233),
                          softHighlight: rgb(242, 235, 248),
-                         strongAccent: rgb(101, 77, 134))
+                         strongAccent: rgb(101, 77, 134), todayButtonFill: rgb(134, 113, 164))
         case .caramel:
-            ThemePalette(accent: rgb(185, 130, 91), selectionFill: rgb(235, 216, 198),
+            ThemePalette(accent: rgb(185, 130, 91), selectionFill: rgb(217, 185, 159),
                          softHighlight: rgb(246, 237, 226),
-                         strongAccent: rgb(112, 72, 43))
+                         strongAccent: rgb(112, 72, 43), todayButtonFill: rgb(157, 110, 77))
         case .creamYellow:
-            ThemePalette(accent: rgb(232, 197, 106), selectionFill: rgb(247, 235, 194),
+            ThemePalette(accent: rgb(232, 197, 106), selectionFill: rgb(240, 216, 137),
                          softHighlight: rgb(251, 246, 227),
-                         strongAccent: rgb(119, 91, 34))
+                         strongAccent: rgb(119, 91, 34), todayButtonFill: rgb(168, 138, 69))
         case .black:
             ThemePalette(accent: rgb(38, 38, 38), selectionFill: rgb(38, 38, 38),
                          softHighlight: rgb(236, 234, 231), strongAccent: rgb(38, 38, 38),
+                         todayButtonFill: rgb(102, 102, 102),
                          onSelection: rgb(252, 250, 247))
         }
     }
@@ -61,6 +62,7 @@ struct ThemePalette {
     let selectionFill: Color
     let softHighlight: Color
     let strongAccent: Color
+    let todayButtonFill: Color
     var onSelection: Color = .primary
 
     let background = rgb(252, 250, 247)
@@ -83,7 +85,7 @@ extension EnvironmentValues {
 }
 
 enum SelectionShape: String, CaseIterable, Identifiable {
-    case circle, heart, star, sakura, leaf, cat
+    case circle, star, heart, sakura, leaf, cat
 
     var id: String { rawValue }
     var title: String {

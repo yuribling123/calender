@@ -97,11 +97,11 @@ final class MembershipStore: ObservableObject {
 
     private func apply(_ result: VerificationResult<Transaction>) async {
         guard case .verified(let transaction) = result,
-              transaction.productID == Self.productID,
-              transaction.revocationDate == nil else { return }
-        isUnlocked = true
-        enforceFreeCustomizationLimits()
+              transaction.productID == Self.productID else { return }
         await transaction.finish()
+        // A transaction update can also report a refund or revocation. Re-read
+        // the current entitlement instead of assuming every update grants access.
+        await refreshEntitlements()
     }
 
     private func enforceFreeCustomizationLimits() {
@@ -111,7 +111,8 @@ final class MembershipStore: ObservableObject {
         if !freeThemes.contains(defaults.string(forKey: "appTheme") ?? "") {
             defaults.set(AppTheme.pink.rawValue, forKey: "appTheme")
         }
-        if defaults.string(forKey: "selectionShape") != SelectionShape.circle.rawValue {
+        let freeShapes = [SelectionShape.circle.rawValue, SelectionShape.star.rawValue]
+        if !freeShapes.contains(defaults.string(forKey: "selectionShape") ?? "") {
             defaults.set(SelectionShape.circle.rawValue, forKey: "selectionShape")
         }
     }

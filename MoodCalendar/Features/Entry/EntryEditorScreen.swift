@@ -32,7 +32,7 @@ struct EntryEditorScreen: View {
     private var hasPremiumAccess: Bool { membership.hasMembershipAccess }
 
     private func canUse(_ choice: DailyChoice) -> Bool {
-        hasPremiumAccess || choice.group == .mood || choice.group == .activity
+        hasPremiumAccess || choice.group == .mood || choice.group == .activity || choice.group == .company
     }
 
     var body: some View {
@@ -100,14 +100,14 @@ struct EntryEditorScreen: View {
     }
 
     private var groupPicker: some View {
-        HStack(spacing: 4) {
+        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 3), spacing: 4) {
             ForEach(ChoiceGroup.allCases) { group in
                 Button {
                     selectedGroup = group
                 } label: {
                     HStack(spacing: 4) {
                         Text(group.rawValue)
-                        if !hasPremiumAccess && group != .mood && group != .activity {
+                        if !hasPremiumAccess && group != .mood && group != .activity && group != .company {
                             Image(systemName: "lock.fill")
                                 .font(.system(size: 9))
                         }

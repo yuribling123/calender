@@ -25,6 +25,9 @@ enum DemoData {
         if !seededMonthKeys.contains("\(year)-09") {
             context.insert(MonthlyNote(monthKey: "\(year)-09", text: "我发现人只要一出门，就很容易花钱。买杯喝的、顺手吃点东西，最后拎着一堆东西回家并思考自己刚刚经历了什么"))
         }
+        if !seededMonthKeys.contains("2022-02") {
+            context.insert(MonthlyNote(monthKey: "2022-02", text: "很久以前的一个月，也值得好好记住。"))
+        }
 
         let existingDayKeys = Set(try context.fetch(FetchDescriptor<MoodEntry>()).map(\.dayKey))
         let examples: [(Int, Int, DailyChoice, String)] = [
@@ -81,6 +84,10 @@ enum DemoData {
             let dayKey = DayKey(date).storageValue
             guard !existingDayKeys.contains(dayKey) else { continue }
             context.insert(MoodEntry(dayKey: dayKey, choice: choice, note: note))
+        }
+        if !existingDayKeys.contains("2022-02-14") {
+            context.insert(MoodEntry(dayKey: "2022-02-14", choice: .heart,
+                                     note: "翻到 2022 年，看看月便签里还能不能找到这个月。"))
         }
         try context.save()
     }

@@ -22,8 +22,8 @@ struct MembershipScreen: View {
                 }
 
                 VStack(alignment: .leading, spacing: 16) {
-                    benefit("全部表情包", detail: "心情、小日常、做点事和陪伴")
-                    benefit("个性化自定义", detail: "解锁全部主题色和选中图形")
+                    benefit("表情包", detail: "解锁全部表情包")
+                    benefit("个性化设置", detail: "自定义日历标题，解锁全部主题色和选中图形")
                 }
                 .padding(20)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -52,12 +52,14 @@ struct MembershipScreen: View {
                 }
                 .disabled(membership.hasMembershipAccess || membership.product == nil || membership.isLoading)
 
-                Button("恢复购买") {
-                    Task { await membership.restorePurchases() }
+                if !membership.hasMembershipAccess {
+                    Button("恢复购买") {
+                        Task { await membership.restorePurchases() }
+                    }
+                    .font(.footnote.weight(.medium))
+                    .foregroundStyle(theme.palette.strongAccent)
+                    .disabled(membership.isLoading || DemoData.isEnabled)
                 }
-                .font(.footnote.weight(.medium))
-                .foregroundStyle(theme.palette.strongAccent)
-                .disabled(membership.isLoading || DemoData.isEnabled)
 
                 if DemoData.isEnabled {
                     Text("演示模式不支持 App Store 购买")

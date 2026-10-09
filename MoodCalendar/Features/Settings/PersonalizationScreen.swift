@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 #if ICLOUD_SYNC_ENABLED
 import CloudKit
 #endif
@@ -116,14 +117,23 @@ struct PersonalizationScreen: View {
     @AppStorage("icloudSyncEnabled") private var isICloudSyncEnabled = false
     #endif
     @AppStorage("calendarTitle") private var storedCalendarTitle = ""
+    @AppStorage("dailyReminderEnabled") private var isDailyReminderEnabled = true
+    @Environment(\.modelContext) private var modelContext
+    @Environment(\.openURL) private var openURL
     @Environment(\.appTheme) private var theme
     @Environment(\.selectionShape) private var selectionShape
+    @Query private var entries: [MoodEntry]
     @State private var isThemePickerPresented = false
     @State private var isShapePickerPresented = false
     @State private var isMembershipPresented = false
+    @State private var backupDocument: DataBackupDocument?
+    @State private var isShowingBackupExporter = false
+    @State private var exportError: String?
     #if ICLOUD_SYNC_ENABLED
     @State private var isCheckingICloud = false
     @State private var isICloudAccountAvailable = false
+    @State private var isPreviewingICloudAccountAvailable = false
+    @State private var isPreviewingICloudEnabled = false
     @State private var iCloudMessage = "数据仅保存在本机。"
     #endif
     @State private var calendarTitleCardFrame: CGRect = .zero
@@ -133,15 +143,22 @@ struct PersonalizationScreen: View {
 
     #if ICLOUD_SYNC_ENABLED
     private var canEnableICloudSync: Bool {
-        isICloudAccountAvailable && !isCheckingICloud && !DemoData.isEnabled
+        (isICloudAccountAvailable || isPreviewingICloudAccountAvailable)
+            && !isCheckingICloud && !DemoData.isEnabled
     }
 
     private var iCloudStatusText: String {
         if isCheckingICloud {
             return "正在检查 iCloud 账号和访问权限…"
         }
+        if isPreviewingICloudEnabled {
+            return "预览：完全退出并重新打开 App 后开始同步"
+        }
+        if isPreviewingICloudAccountAvailable {
+            return "预览：可以开启 iCloud 同步"
+        }
         if isICloudSyncEnabled {
-            return "iCloud 已连接；完全退出并重新打开 App 后开始同步。"
+            return "完全退出并重新打开 App 后开始同步"
         }
         return iCloudMessage
     }
@@ -162,9 +179,15 @@ struct PersonalizationScreen: View {
 
                     membershipSection
 
+                    reminderSection
+
                     #if ICLOUD_SYNC_ENABLED
                     syncSection
                     #endif
+
+                    dataExportSection
+
+                    feedbackSection
                 }
                 .padding(24)
             }
@@ -174,6 +197,21 @@ struct PersonalizationScreen: View {
                 calendarTitleCardFrame = $0
             }
             .toolbar(.hidden, for: .navigationBar)
+            .fileExporter(
+                isPresented: $isShowingBackupExporter,
+                document: backupDocument,
+                contentType: .zip,
+                defaultFilename: "今日份",
+                onCompletion: handleBackupExport
+            )
+            .alert("导出失败", isPresented: Binding(
+                get: { exportError != nil },
+                set: { if !$0 { exportError = nil } }
+            )) {
+                Button("好", role: .cancel) { exportError = nil }
+            } message: {
+                Text(exportError ?? "请稍后再试。")
+            }
             #if ICLOUD_SYNC_ENABLED
             .task { await validateSavedICloudSetting() }
             #endif
@@ -210,12 +248,20 @@ struct PersonalizationScreen: View {
             VStack(alignment: .leading, spacing: 8) {
                 HStack(spacing: 14) {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("日历标题")
+                        HStack(spacing: 6) {
+                            Text("日历标题")
+                            if !hasPremiumAccess {
+                                Image(systemName: "lock.fill")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
                             .font(.body.weight(.medium))
                         TextField("今日份", text: $storedCalendarTitle)
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                             .focused($isCalendarTitleFocused)
+                            .disabled(!hasPremiumAccess)
                             .textInputAutocapitalization(.never)
                             .submitLabel(.done)
                             .onSubmit { isCalendarTitleFocused = false }
@@ -246,6 +292,12 @@ struct PersonalizationScreen: View {
                             )
                     }
                 }
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    if !hasPremiumAccess {
+                        isMembershipPresented = true
+                    }
+                }
             }
 
             Button {
@@ -254,6 +306,7 @@ struct PersonalizationScreen: View {
                 HStack(spacing: 14) {
                     ThemePaletteIcon(palette: theme.palette)
                         .accessibilityHidden(true)
+                        .frame(width: 33, height: 30)
                     VStack(alignment: .leading, spacing: 4) {
                         Text("主题色")
                             .font(.body.weight(.medium))
@@ -286,6 +339,7 @@ struct PersonalizationScreen: View {
                         size: 28
                     )
                         .accessibilityHidden(true)
+                        .frame(width: 33, height: 30)
                     VStack(alignment: .leading, spacing: 4) {
                         Text("选中图形")
                             .font(.body.weight(.medium))
@@ -347,6 +401,145 @@ struct PersonalizationScreen: View {
         .padding(.top, 40)
     }
 
+    private var dataExportSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("数据管理")
+                .font(.title3.weight(.semibold))
+
+            Button(action: prepareDataBackup) {
+                HStack(spacing: 14) {
+                    Image(systemName: "square.and.arrow.up")
+                        .font(.system(size: 22))
+                        .foregroundStyle(theme.palette.accent)
+                        .frame(width: 30)
+                        .accessibilityHidden(true)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("导出数据")
+                            .font(.body.weight(.medium))
+                            .foregroundStyle(.primary)
+                        Text("保存每日记录和月便签")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                    Spacer(minLength: 8)
+                    Image(systemName: "chevron.right")
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(.secondary)
+                        .accessibilityHidden(true)
+                }
+                .padding(18)
+                .background(Color.white.opacity(0.72), in: RoundedRectangle(cornerRadius: 20))
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("导出数据")
+            .accessibilityHint("将每日记录和月便签保存为今日份 ZIP 文件")
+        }
+        .padding(.top, 32)
+    }
+
+    private func prepareDataBackup() {
+        do {
+            let entries = try modelContext.fetch(FetchDescriptor<MoodEntry>())
+            let monthlyNotes = try modelContext.fetch(FetchDescriptor<MonthlyNote>())
+            backupDocument = DataBackupDocument(
+                data: try DataBackupExporter.makeArchive(entries: entries, monthlyNotes: monthlyNotes)
+            )
+            isShowingBackupExporter = true
+        } catch {
+            exportError = error.localizedDescription
+        }
+    }
+
+    private func handleBackupExport(_ result: Result<URL, Error>) {
+        if case .failure(let error) = result {
+            exportError = error.localizedDescription
+        }
+    }
+
+    private var feedbackSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("反馈")
+                .font(.title3.weight(.semibold))
+
+            Button {
+                openURL(feedbackEmailURL)
+            } label: {
+                HStack(spacing: 14) {
+                    Image(systemName: "envelope")
+                        .font(.system(size: 22))
+                        .foregroundStyle(theme.palette.accent)
+                        .frame(width: 30)
+                        .accessibilityHidden(true)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("联系")
+                            .font(.body.weight(.medium))
+                            .foregroundStyle(.primary)
+                        Text(verbatim: "yui480145@gmail.com")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                    Spacer(minLength: 8)
+                    Image(systemName: "chevron.right")
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(.secondary)
+                        .accessibilityHidden(true)
+                }
+                .padding(18)
+                .background(Color.white.opacity(0.72), in: RoundedRectangle(cornerRadius: 20))
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("联系，yui480145@gmail.com")
+            .accessibilityHint("打开邮件发送反馈")
+        }
+        .padding(.top, 32)
+    }
+
+    private var feedbackEmailURL: URL {
+        URL(string: "mailto:yui480145@gmail.com?subject=%E4%BB%8A%E6%97%A5%E4%BB%BD%E5%8F%8D%E9%A6%88")!
+    }
+
+    private var reminderSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("提醒")
+                .font(.title3.weight(.semibold))
+
+            HStack(spacing: 16) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("每日提醒")
+                        .font(.body.weight(.medium))
+                        .foregroundStyle(.primary)
+                }
+                Spacer(minLength: 8)
+                Toggle("每日提醒", isOn: dailyReminderToggleBinding)
+                    .labelsHidden()
+                    .tint(theme.palette.strongAccent)
+                    .disabled(DemoData.isEnabled)
+                    .accessibilityLabel("每日提醒")
+            }
+            .padding(18)
+            .background(Color.white.opacity(0.72), in: RoundedRectangle(cornerRadius: 20))
+        }
+        .padding(.top, 32)
+    }
+
+    private var dailyReminderToggleBinding: Binding<Bool> {
+        Binding(
+            get: { isDailyReminderEnabled },
+            set: { enabled in
+                isDailyReminderEnabled = enabled
+                let recordedDayKeys = Set(entries.filter { $0.choice != nil }.map(\.dayKey))
+                Task {
+                    await DailyFragmentReminder.refresh(
+                        recordedDayKeys: recordedDayKeys,
+                        isEnabled: enabled
+                    )
+                }
+            }
+        )
+    }
+
     // Temporarily excluded for Personal Team device testing.
     #if ICLOUD_SYNC_ENABLED
     private var syncSection: some View {
@@ -373,15 +566,15 @@ struct PersonalizationScreen: View {
                     Toggle("iCloud 同步", isOn: iCloudToggleBinding)
                         .labelsHidden()
                         .tint(theme.palette.strongAccent)
-                        .disabled(!canEnableICloudSync && !isICloudSyncEnabled)
+                        .disabled(!canEnableICloudSync && !isICloudSyncEnabled && !isPreviewingICloudEnabled)
                         .accessibilityLabel("iCloud 同步")
                 }
             }
             .padding(18)
             .background(Color.white.opacity(0.72), in: RoundedRectangle(cornerRadius: 20))
-            .opacity(isICloudAccountAvailable || isCheckingICloud ? 1 : 0.58)
+            .opacity(isICloudAccountAvailable || isCheckingICloud || isPreviewingICloudEnabled || isPreviewingICloudAccountAvailable ? 1 : 0.58)
             .overlay(alignment: .topTrailing) {
-                if !isICloudAccountAvailable && !isCheckingICloud {
+                if !isICloudAccountAvailable && !isCheckingICloud && !isPreviewingICloudEnabled && !isPreviewingICloudAccountAvailable {
                     Image(systemName: "lock.fill")
                         .font(.system(size: 11, weight: .semibold))
                         .foregroundStyle(.secondary)
@@ -392,18 +585,45 @@ struct PersonalizationScreen: View {
                 }
             }
 
-            Text("开启或关闭均在完全退出并重新打开 App 后生效")
-                .font(.footnote)
-                .foregroundStyle(.secondary)
-                .padding(.horizontal, 4)
+
+            #if DEBUG
+            VStack(alignment: .leading, spacing: 8) {
+                Button("预览已登录、未开启（仅调试，不会同步）") {
+                    isPreviewingICloudAccountAvailable = true
+                    isPreviewingICloudEnabled = false
+                }
+                Button("预览已开启（仅调试，不会同步）") {
+                    isPreviewingICloudAccountAvailable = false
+                    isPreviewingICloudEnabled = true
+                }
+                if isPreviewingICloudAccountAvailable || isPreviewingICloudEnabled {
+                    Button("退出 iCloud 预览") {
+                        isPreviewingICloudAccountAvailable = false
+                        isPreviewingICloudEnabled = false
+                    }
+                }
+            }
+            .font(.footnote.weight(.medium))
+            .foregroundStyle(theme.palette.strongAccent)
+            .padding(.horizontal, 4)
+            #endif
         }
         .padding(.top, 40)
     }
 
     private var iCloudToggleBinding: Binding<Bool> {
         Binding(
-            get: { isICloudSyncEnabled },
+            get: {
+                if isPreviewingICloudAccountAvailable { return false }
+                if isPreviewingICloudEnabled { return true }
+                return isICloudSyncEnabled
+            },
             set: { wantsICloudSync in
+                if isPreviewingICloudEnabled || isPreviewingICloudAccountAvailable {
+                    isPreviewingICloudAccountAvailable = !wantsICloudSync
+                    isPreviewingICloudEnabled = wantsICloudSync
+                    return
+                }
                 guard canEnableICloudSync || !wantsICloudSync else { return }
                 if wantsICloudSync {
                     Task { @MainActor in await enableICloudSyncAfterValidation() }
@@ -589,7 +809,7 @@ struct PersonalizationScreen: View {
             VStack(spacing: 8) {
                 ForEach(SelectionShape.allCases) { option in
                     Button {
-                        guard hasPremiumAccess || option == .circle else {
+                        guard hasPremiumAccess || option == .circle || option == .star else {
                             isShapePickerPresented = false
                             isMembershipPresented = true
                             return
@@ -607,7 +827,7 @@ struct PersonalizationScreen: View {
                             Text(option.title)
                                 .foregroundStyle(.primary)
                             Spacer()
-                            if option != .circle && !hasPremiumAccess {
+                            if option != .circle && option != .star && !hasPremiumAccess {
                                 Image(systemName: "lock.fill")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
