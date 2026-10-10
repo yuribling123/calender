@@ -4,6 +4,7 @@ import SwiftData
 import CloudKit
 #endif
 import UIKit
+import UserNotifications
 
 private struct CalendarTitleCardFramePreferenceKey: PreferenceKey {
     static var defaultValue: CGRect = .zero
@@ -120,6 +121,7 @@ struct PersonalizationScreen: View {
     @AppStorage("dailyReminderEnabled") private var isDailyReminderEnabled = true
     @Environment(\.modelContext) private var modelContext
     @Environment(\.openURL) private var openURL
+    @Environment(\.scenePhase) private var scenePhase
     @Environment(\.appTheme) private var theme
     @Environment(\.selectionShape) private var selectionShape
     @Query private var entries: [MoodEntry]
@@ -129,6 +131,8 @@ struct PersonalizationScreen: View {
     @State private var backupDocument: DataBackupDocument?
     @State private var isShowingBackupExporter = false
     @State private var exportError: String?
+    @State private var reminderPermissionDenied = false
+    @State private var isReminderSettingsAlertPresented = false
     #if ICLOUD_SYNC_ENABLED
     @State private var isCheckingICloud = false
     @State private var isICloudAccountAvailable = false
@@ -197,6 +201,12 @@ struct PersonalizationScreen: View {
                 calendarTitleCardFrame = $0
             }
             .toolbar(.hidden, for: .navigationBar)
+            .task { await checkReminderPermission() }
+            .onChange(of: scenePhase) { _, phase in
+                if phase == .active {
+                    Task { await checkReminderPermission() }
+                }
+            }
             .fileExporter(
                 isPresented: $isShowingBackupExporter,
                 document: backupDocument,
@@ -510,18 +520,44 @@ struct PersonalizationScreen: View {
                     Text("每日提醒")
                         .font(.body.weight(.medium))
                         .foregroundStyle(.primary)
+                    if reminderPermissionDenied {
+                        Text("系统通知已关闭，请在设置中允许通知")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
                 }
                 Spacer(minLength: 8)
-                Toggle("每日提醒", isOn: dailyReminderToggleBinding)
-                    .labelsHidden()
-                    .tint(theme.palette.strongAccent)
-                    .disabled(DemoData.isEnabled)
-                    .accessibilityLabel("每日提醒")
+                if reminderPermissionDenied {
+                    Button("去设置") { isReminderSettingsAlertPresented = true }
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(theme.palette.strongAccent)
+                        .accessibilityLabel("打开系统设置，允许每日提醒通知")
+                } else {
+                    Toggle("每日提醒", isOn: dailyReminderToggleBinding)
+                        .labelsHidden()
+                        .tint(theme.palette.strongAccent)
+                        .accessibilityLabel("每日提醒")
+                }
             }
             .padding(18)
             .background(Color.white.opacity(0.72), in: RoundedRectangle(cornerRadius: 20))
         }
         .padding(.top, 32)
+        .alert("需要开启系统通知", isPresented: $isReminderSettingsAlertPresented) {
+            Button("打开设置") {
+                if let url = URL(string: UIApplication.openSettingsURLString) {
+                    openURL(url)
+                }
+            }
+            Button("取消", role: .cancel) {}
+        } message: {
+            Text("请在 iPhone 设置中允许今日份发送通知，然后回来开启每日提醒。")
+        }
+    }
+
+    private func checkReminderPermission() async {
+        let settings = await UNUserNotificationCenter.current().notificationSettings()
+        reminderPermissionDenied = settings.authorizationStatus == .denied
     }
 
     private var dailyReminderToggleBinding: Binding<Bool> {
@@ -535,6 +571,7 @@ struct PersonalizationScreen: View {
                         recordedDayKeys: recordedDayKeys,
                         isEnabled: enabled
                     )
+                    await checkReminderPermission()
                 }
             }
         )

@@ -15,6 +15,7 @@ enum DemoData {
     @MainActor
     static func seed(into context: ModelContext) throws {
         let year = Calendar.current.component(.year, from: Date())
+        let currentMonth = Calendar.current.component(.month, from: Date())
 
         // The demo store is in-memory and recreated at every launch. Seed each
         // example independently so a partial/early fetch cannot leave it blank.
@@ -27,6 +28,13 @@ enum DemoData {
         }
         if !seededMonthKeys.contains("2022-02") {
             context.insert(MonthlyNote(monthKey: "2022-02", text: "很久以前的一个月，也值得好好记住。"))
+        }
+        let currentMonthKey = String(format: "%04d-%02d", year, currentMonth)
+        if !seededMonthKeys.contains(currentMonthKey) {
+            context.insert(MonthlyNote(
+                monthKey: currentMonthKey,
+                text: "这个月，见了想见的人，也有认真听完的一首歌。\n把日子慢慢过好，平常的小事也值得记下来。"
+            ))
         }
 
         let existingDayKeys = Set(try context.fetch(FetchDescriptor<MoodEntry>()).map(\.dayKey))
@@ -62,7 +70,6 @@ enum DemoData {
         ]
 
         let today = Calendar.current.startOfDay(for: Date())
-        let currentMonth = Calendar.current.component(.month, from: today)
         let currentDay = Calendar.current.component(.day, from: today)
         var launchExamples = examples
         let hasVisibleCurrentMonthExample = examples.contains {

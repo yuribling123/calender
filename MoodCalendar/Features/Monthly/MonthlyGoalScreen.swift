@@ -11,6 +11,8 @@ struct MonthlyGoalScreen: View {
     @FocusState private var isCurrentNoteFocused: Bool
     @State private var saveError: String?
 
+    private let noteCharacterLimit = 100
+    private let noteVerticalSpacing: CGFloat = 32
     private let calendar = Calendar.current
     private var today: Date { Date() }
     private var startOfCurrentMonth: Date { calendar.date(from: calendar.dateComponents([.year, .month], from: today)) ?? today }
@@ -83,7 +85,7 @@ struct MonthlyGoalScreen: View {
             Rectangle()
                 .fill(Color.secondary.opacity(0.08))
                 .frame(height: 1)
-            Text("之前")
+            Text("往月记录")
                 .font(.system(size: 12, weight: .medium))
                 .foregroundStyle(.secondary)
                 .fixedSize()
@@ -92,7 +94,7 @@ struct MonthlyGoalScreen: View {
                 .frame(height: 1)
         }
         .padding(.top, 60)
-        .padding(.bottom, 60)
+        .padding(.bottom, 24)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("之前的月份")
     }
@@ -136,7 +138,6 @@ struct MonthlyGoalScreen: View {
             }
             .padding(.bottom, isCurrent ? 0 : 48)
         }
-        .padding(.bottom, isCurrent ? 34 : 0)
     }
 
     private func historyTimelineNode(startsLine: Bool, endsLine: Bool) -> some View {
@@ -147,7 +148,7 @@ struct MonthlyGoalScreen: View {
                 path.move(to: CGPoint(x: centerX, y: startsLine ? nodeCenterY : 0))
                 path.addLine(to: CGPoint(x: centerX, y: endsLine ? nodeCenterY : proxy.size.height))
             }
-            .stroke(Color.secondary.opacity(0.14), lineWidth: 1)
+            .stroke(Color.secondary.opacity(0.22), lineWidth: 1)
 
             Circle()
                 .fill(Color.secondary.opacity(0.38))
@@ -175,7 +176,7 @@ struct MonthlyGoalScreen: View {
             .font(.system(size: 11, weight: .medium))
 
             currentMonthEditor
-                .padding(.top, 24)
+                .padding(.top, noteVerticalSpacing)
         }
         .accessibilityElement(children: .contain)
     }
@@ -190,12 +191,14 @@ struct MonthlyGoalScreen: View {
                     .scrollContentBackground(.hidden)
                     .frame(minHeight: 88)
                     .onChange(of: draftNoteText) { _, value in
-                        if value.count > 40 { draftNoteText = String(value.prefix(40)) }
+                        if value.count > noteCharacterLimit {
+                            draftNoteText = String(value.prefix(noteCharacterLimit))
+                        }
                     }
                     .accessibilityLabel("编辑本月主题")
 
                 HStack {
-                    Text("\(draftNoteText.count) / 40")
+                    Text("\(draftNoteText.count) / \(noteCharacterLimit)")
                         .font(.system(size: 13))
                         .foregroundStyle(.secondary)
                     Spacer()
@@ -216,23 +219,31 @@ struct MonthlyGoalScreen: View {
                 .accessibilityAddTraits(.isButton)
                 .accessibilityLabel("写一句话，留给这个月")
             } else {
-                Text(currentNoteText)
-                    .font(.system(size: 18, weight: .regular))
-                    .foregroundStyle(.primary)
-                    .lineLimit(3)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .contentShape(Rectangle())
-                    .onTapGesture { beginCurrentNoteEditing() }
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(currentNoteText)
+                        .font(.system(size: 18, weight: .regular))
+                        .foregroundStyle(.primary)
+                        .lineSpacing(8)
+                        .frame(maxWidth: .infinity, alignment: .leading)
 
-                HStack {
-                    Spacer()
-                    Button { beginCurrentNoteEditing() } label: {
-                        Label("编辑", systemImage: "pencil")
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundStyle(theme.palette.strongAccent.opacity(0.82))
-                    }
-                    .accessibilityLabel("编辑本月主题")
+                    NoteWaveMark()
+                        .stroke(theme.palette.accent.opacity(0.42), style: StrokeStyle(lineWidth: 1.3, lineCap: .round))
+                        .frame(width: 26, height: 7)
+                        .padding(.top, noteVerticalSpacing)
                 }
+                .contentShape(Rectangle())
+                    .onTapGesture { beginCurrentNoteEditing() }
+                    .accessibilityAddTraits(.isButton)
+
+                // HStack {
+                //     Spacer()
+                //     Button { beginCurrentNoteEditing() } label: {
+                //         Label("编辑", systemImage: "pencil")
+                //             .font(.system(size: 12, weight: .medium))
+                //             .foregroundStyle(theme.palette.strongAccent.opacity(0.82))
+                //     }
+                //     .accessibilityLabel("编辑本月主题")
+                // }
             }
         }
     }
@@ -249,7 +260,7 @@ struct MonthlyGoalScreen: View {
         do {
             try MonthlyNoteStore(context: modelContext).save(
                 monthKey: monthKey(for: startOfCurrentMonth),
-                text: String(draftNoteText.prefix(40))
+                text: String(draftNoteText.prefix(noteCharacterLimit))
             )
             isCurrentNoteFocused = false
             isEditingCurrentNote = false
@@ -264,7 +275,7 @@ struct MonthlyGoalScreen: View {
                 Text(note)
                     .font(.system(size: 15, weight: .regular))
                     .foregroundStyle(theme.palette.strongAccent)
-                    .lineLimit(3)
+                    .lineSpacing(4)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
             if let choice = data.choice {
@@ -362,4 +373,22 @@ struct MonthlyGoalScreen: View {
             .text
     }
     private var currentNoteText: String { storedNote(for: startOfCurrentMonth) ?? "" }
+}
+
+private struct NoteWaveMark: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        path.move(to: CGPoint(x: rect.minX, y: rect.midY))
+        path.addCurve(
+            to: CGPoint(x: rect.midX, y: rect.midY),
+            control1: CGPoint(x: rect.width * 0.16, y: rect.minY),
+            control2: CGPoint(x: rect.width * 0.34, y: rect.maxY)
+        )
+        path.addCurve(
+            to: CGPoint(x: rect.maxX, y: rect.midY),
+            control1: CGPoint(x: rect.width * 0.66, y: rect.minY),
+            control2: CGPoint(x: rect.width * 0.84, y: rect.maxY)
+        )
+        return path
+    }
 }
