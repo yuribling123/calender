@@ -60,8 +60,8 @@ enum DailyFragmentReminder {
             components.minute = 30
 
             let content = UNMutableNotificationContent()
-            content.title = "今天的零碎"
-            content.body = "捡一件喜欢的回来"
+            content.title = localized("今天的零碎")
+            content.body = localized("捡一件喜欢的回来")
             content.sound = .default
 
             let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)

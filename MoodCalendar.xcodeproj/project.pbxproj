@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		C8649DE90000000000000001 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = C8649DE90000000000000002 /* Localizable.xcstrings */; };
+		C8649DE90000000000000003 /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = C8649DE90000000000000004 /* InfoPlist.xcstrings */; };
 		063D1D5D61FAE4C7C9BDDE12 /* MoodCalendar/Domain/MonthLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E4D6142AB9DB5CD211CAB4B /* MoodCalendar/Domain/MonthLayout.swift */; };
 		1562EBB728B9E65040A47063 /* MoodCalendar/App/MoodCalendarApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C0B7456F844A41B2530A42A /* MoodCalendar/App/MoodCalendarApp.swift */; };
 		222F0DBFFE5EB23DCD3FD16F /* MoodCalendar/Resources/Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5B04B2273026590A440D27C9 /* MoodCalendar/Resources/Assets.xcassets */; };
@@ -34,6 +36,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		C8649DE90000000000000002 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = MoodCalendar/Resources/Localizable.xcstrings; sourceTree = "<group>"; };
+		C8649DE90000000000000004 /* InfoPlist.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = MoodCalendar/Resources/InfoPlist.xcstrings; sourceTree = "<group>"; };
 		152329B8FA3DC8602E5E97F0 /* MoodCalendar/Persistence/EntryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Persistence/EntryStore.swift; sourceTree = "<group>"; };
 		B8E4A6C13D5F7092AAE4B502 /* MoodCalendar/Persistence/DataBackup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Persistence/DataBackup.swift; sourceTree = "<group>"; };
 		26EE3BBB2D46F5FB94E3D3D6 /* MoodCalendar/App/DemoData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/App/DemoData.swift; sourceTree = "<group>"; };
@@ -65,6 +69,8 @@
 		B28B7AF69320201D1CF206EB = {
 			isa = PBXGroup;
 			children = (
+				C8649DE90000000000000002 /* Localizable.xcstrings */,
+				C8649DE90000000000000004 /* InfoPlist.xcstrings */,
 				8C0B7456F844A41B2530A42A /* MoodCalendar/App/MoodCalendarApp.swift */,
 				E091A2B3C4D5E6F701234568 /* MoodCalendar/App/DailyFragmentReminder.swift */,
 				E091A2B3C4D5E6F701234574 /* MoodCalendar/App/SaveFeedback.swift */,
@@ -149,6 +155,8 @@
 			knownRegions = (
 				"zh-Hans",
 				en,
+				ja,
+				ko,
 				Base,
 			);
 			mainGroup = B28B7AF69320201D1CF206EB;
@@ -166,6 +174,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C8649DE90000000000000001 /* Localizable.xcstrings in Resources */,
+				C8649DE90000000000000003 /* InfoPlist.xcstrings in Resources */,
 				222F0DBFFE5EB23DCD3FD16F /* MoodCalendar/Resources/Assets.xcassets in Resources */,
 				E091A2B3C4D5E6F701234575 /* MoodCalendar/Resources/Sounds/save-chime.wav in Resources */,
 				E091A2B3C4D5E6F701234577 /* MoodCalendar/PrivacyInfo.xcprivacy in Resources */,
@@ -257,7 +267,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
-				CODE_SIGN_ENTITLEMENTS = MoodCalendar/MoodCalendar.entitlements;
+				CODE_SIGN_ENTITLEMENTS = "";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 2A2N95V422;
 				GENERATE_INFOPLIST_FILE = NO;
@@ -268,7 +278,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.qingqing.MoodCalendar;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG ICLOUD_SYNC_ENABLED";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
 			};

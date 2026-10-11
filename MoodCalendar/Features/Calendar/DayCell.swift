@@ -66,7 +66,7 @@ struct DayCell: View {
                                     height: 26
                                 )
                                 .scaleEffect(
-                                    choice == .cake ? 1.05 : choice.group == .daily ? 1.2:choice.group == .mood ? 1 : choice == .gather ? 1.6 : choice.group == .company ? 1.5 : 1.4
+                                    [DailyChoice.poutyRabbit, .absentRabbit, .glassesRabbit, .tearfulRabbit].contains(choice) ? 1.26 : choice == .cake ? 1.05 : choice.group == .daily ? 1.2:choice.group == .mood ? 1 : choice == .gather ? 1.6 : choice.group == .company ? 1.5 : 1.4
                                 )
                                 .scaleEffect(revealScale)
                                 .opacity(isRevealPending ? 0 : revealOpacity)

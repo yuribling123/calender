@@ -7,21 +7,21 @@ enum Mood: Int, CaseIterable, Identifiable, Codable {
 
     var title: String {
         switch self {
-        case .veryGood: "极好"
-        case .good: "好"
-        case .okay: "一般"
-        case .bad: "不好"
-        case .veryBad: "很差"
+        case .veryGood: localized("极好")
+        case .good: localized("好")
+        case .okay: localized("一般")
+        case .bad: localized("不好")
+        case .veryBad: localized("很差")
         }
     }
 
     var caption: String {
         switch self {
-        case .veryGood: "幸福到融化"
-        case .good: "心里软乎乎"
-        case .okay: "今天就这样"
-        case .bad: "小小不开心"
-        case .veryBad: "快要碎掉了"
+        case .veryGood: localized("幸福到融化")
+        case .good: localized("心里软乎乎")
+        case .okay: localized("今天就这样")
+        case .bad: localized("小小不开心")
+        case .veryBad: localized("快要碎掉了")
         }
     }
 

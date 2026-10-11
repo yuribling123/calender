@@ -111,6 +111,7 @@ private struct OutsideTapMonitor: UIViewRepresentable {
 }
 
 struct PersonalizationScreen: View {
+    @AppStorage("appLanguage") private var storedLanguage = AppLanguage.selection
     @EnvironmentObject private var membership: MembershipStore
     @AppStorage("appTheme") private var storedTheme = AppTheme.pink.rawValue
     @AppStorage("selectionShape") private var storedSelectionShape = SelectionShape.circle.rawValue
@@ -138,7 +139,7 @@ struct PersonalizationScreen: View {
     @State private var isICloudAccountAvailable = false
     @State private var isPreviewingICloudAccountAvailable = false
     @State private var isPreviewingICloudEnabled = false
-    @State private var iCloudMessage = "数据仅保存在本机。"
+    @State private var iCloudMessage = localized("数据仅保存在本机。")
     #endif
     @State private var calendarTitleCardFrame: CGRect = .zero
     @FocusState private var isCalendarTitleFocused: Bool
@@ -153,16 +154,16 @@ struct PersonalizationScreen: View {
 
     private var iCloudStatusText: String {
         if isCheckingICloud {
-            return "正在检查 iCloud 账号和访问权限…"
+            return localized("正在检查 iCloud 账号和访问权限…")
         }
         if isPreviewingICloudEnabled {
-            return "预览：完全退出并重新打开 App 后开始同步"
+            return localized("预览：完全退出并重新打开 App 后开始同步")
         }
         if isPreviewingICloudAccountAvailable {
-            return "预览：可以开启 iCloud 同步"
+            return localized("预览：可以开启 iCloud 同步")
         }
         if isICloudSyncEnabled {
-            return "完全退出并重新打开 App 后开始同步"
+            return localized("完全退出并重新打开 App 后开始同步")
         }
         return iCloudMessage
     }
@@ -173,7 +174,7 @@ struct PersonalizationScreen: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
-                    Text("我的")
+                    Text(localized("我的"))
                         .font(.system(size: 32, weight: .semibold))
                         .foregroundStyle(.black)
                         .padding(.top, 4)
@@ -192,6 +193,8 @@ struct PersonalizationScreen: View {
                     dataExportSection
 
                     feedbackSection
+
+                    languageSection
                 }
                 .padding(24)
             }
@@ -211,16 +214,16 @@ struct PersonalizationScreen: View {
                 isPresented: $isShowingBackupExporter,
                 document: backupDocument,
                 contentType: .zip,
-                defaultFilename: "今日份",
+                defaultFilename: localized("今日份"),
                 onCompletion: handleBackupExport
             )
-            .alert("导出失败", isPresented: Binding(
+            .alert(localized("导出失败"), isPresented: Binding(
                 get: { exportError != nil },
                 set: { if !$0 { exportError = nil } }
             )) {
-                Button("好", role: .cancel) { exportError = nil }
+                Button(localized("确定"), role: .cancel) { exportError = nil }
             } message: {
-                Text(exportError ?? "请稍后再试。")
+                Text(exportError ?? localized("请稍后再试。"))
             }
             #if ICLOUD_SYNC_ENABLED
             .task { await validateSavedICloudSetting() }
@@ -251,7 +254,7 @@ struct PersonalizationScreen: View {
 
     private var personalizationSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("个性化")
+            Text(localized("个性化"))
                 .font(.title3.weight(.semibold))
                 .padding(.top, 12)
 
@@ -259,7 +262,7 @@ struct PersonalizationScreen: View {
                 HStack(spacing: 14) {
                     VStack(alignment: .leading, spacing: 4) {
                         HStack(spacing: 6) {
-                            Text("日历标题")
+                            Text(localized("日历标题"))
                             if !hasPremiumAccess {
                                 Image(systemName: "lock.fill")
                                     .font(.caption)
@@ -267,7 +270,7 @@ struct PersonalizationScreen: View {
                             }
                         }
                             .font(.body.weight(.medium))
-                        TextField("今日份", text: $storedCalendarTitle)
+                        TextField(localized("今日份"), text: $storedCalendarTitle)
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                             .focused($isCalendarTitleFocused)
@@ -275,7 +278,7 @@ struct PersonalizationScreen: View {
                             .textInputAutocapitalization(.never)
                             .submitLabel(.done)
                             .onSubmit { isCalendarTitleFocused = false }
-                            .accessibilityLabel("日历标题，最多六个字")
+                            .accessibilityLabel(localized("日历标题，最多六个字"))
                             .onChange(of: storedCalendarTitle) { _, newValue in
                                 let limitedValue = String(newValue.prefix(6))
                                 if limitedValue != newValue {
@@ -288,7 +291,7 @@ struct PersonalizationScreen: View {
                         Text("\(storedCalendarTitle.count)/6")
                             .font(.footnote.monospacedDigit())
                             .foregroundStyle(.tertiary)
-                            .accessibilityLabel("已输入\(storedCalendarTitle.count)个字，共六个字")
+                            .accessibilityLabel(localized("已输入%@个字，共六个字", String(describing: storedCalendarTitle.count)))
                     }
                 }
                 .padding(18)
@@ -318,7 +321,7 @@ struct PersonalizationScreen: View {
                         .accessibilityHidden(true)
                         .frame(width: 33, height: 30)
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("主题色")
+                        Text(localized("主题色"))
                             .font(.body.weight(.medium))
                             .foregroundStyle(.primary)
                         Text(theme.title)
@@ -336,8 +339,8 @@ struct PersonalizationScreen: View {
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .accessibilityLabel("主题色，\(theme.title)")
-            .accessibilityHint("选择日历的强调色")
+            .accessibilityLabel(localized("主题色，%@", String(describing: theme.title)))
+            .accessibilityHint(localized("选择日历的强调色"))
 
             Button {
                 isShapePickerPresented = true
@@ -351,7 +354,7 @@ struct PersonalizationScreen: View {
                         .accessibilityHidden(true)
                         .frame(width: 33, height: 30)
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("选中图形")
+                        Text(localized("选中图形"))
                             .font(.body.weight(.medium))
                             .foregroundStyle(.primary)
                         Text(selectionShape.title)
@@ -369,8 +372,8 @@ struct PersonalizationScreen: View {
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .accessibilityLabel("选中图形，\(selectionShape.title)")
-            .accessibilityHint("选择日期和月份的选中图形")
+            .accessibilityLabel(localized("选中图形，%@", String(describing: selectionShape.title)))
+            .accessibilityHint(localized("选择日期和月份的选中图形"))
 
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -378,7 +381,7 @@ struct PersonalizationScreen: View {
 
     private var membershipSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("会员")
+            Text(localized("会员"))
                 .font(.title3.weight(.semibold))
 
             Button {
@@ -390,10 +393,10 @@ struct PersonalizationScreen: View {
                         .foregroundStyle(theme.palette.accent)
                         .frame(width: 30)
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(membership.hasMembershipAccess ? "已永久解锁" : "解锁全部表情和自定义")
+                        Text(membership.hasMembershipAccess ? localized("已永久解锁") : localized("解锁全部表情和自定义"))
                             .font(.body.weight(.medium))
                             .foregroundStyle(.primary)
-                        Text(membership.hasMembershipAccess ? "全部权益已开启" : "一次购买，永久使用 · \(membership.product?.displayPrice ?? "¥12")")
+                        Text(membership.hasMembershipAccess ? localized("全部权益已开启") : membership.product.map { localized("一次购买，永久使用 · %@", $0.displayPrice) } ?? localized("一次购买，永久使用"))
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                     }
@@ -406,14 +409,14 @@ struct PersonalizationScreen: View {
                 .background(Color.white.opacity(0.72), in: RoundedRectangle(cornerRadius: 20))
             }
             .buttonStyle(.plain)
-            .accessibilityLabel(membership.hasMembershipAccess ? "会员，已永久解锁" : "会员，永久解锁全部表情包和自定义")
+            .accessibilityLabel(membership.hasMembershipAccess ? localized("会员，已永久解锁") : localized("会员，永久解锁全部表情包和自定义"))
         }
         .padding(.top, 40)
     }
 
     private var dataExportSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("数据管理")
+            Text(localized("数据管理"))
                 .font(.title3.weight(.semibold))
 
             Button(action: prepareDataBackup) {
@@ -424,10 +427,10 @@ struct PersonalizationScreen: View {
                         .frame(width: 30)
                         .accessibilityHidden(true)
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("导出数据")
+                        Text(localized("导出数据"))
                             .font(.body.weight(.medium))
                             .foregroundStyle(.primary)
-                        Text("保存每日记录和月便签")
+                        Text(localized("保存每日记录和月便签"))
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                     }
@@ -442,8 +445,8 @@ struct PersonalizationScreen: View {
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .accessibilityLabel("导出数据")
-            .accessibilityHint("将每日记录和月便签保存为今日份 ZIP 文件")
+            .accessibilityLabel(localized("导出数据"))
+            .accessibilityHint(localized("将每日记录和月便签保存为今日份 ZIP 文件"))
         }
         .padding(.top, 32)
     }
@@ -467,9 +470,31 @@ struct PersonalizationScreen: View {
         }
     }
 
+    private var languageSection: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text(localized("语言"))
+                .font(.system(size: 22, weight: .semibold))
+                .foregroundStyle(.black)
+            HStack {
+                Text(localized("App 语言"))
+                    .foregroundStyle(.black)
+                Spacer()
+                Picker(localized("App 语言"), selection: $storedLanguage) {
+                    ForEach(AppLanguage.options, id: \.self) { code in
+                        Text(AppLanguage.name(code)).tag(code)
+                    }
+                }
+                .pickerStyle(.menu)
+            }
+            .padding(20)
+            .background(.white, in: RoundedRectangle(cornerRadius: 24))
+        }
+        .padding(.top, 28)
+    }
+
     private var feedbackSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("反馈")
+            Text(localized("反馈"))
                 .font(.title3.weight(.semibold))
 
             Button {
@@ -482,7 +507,7 @@ struct PersonalizationScreen: View {
                         .frame(width: 30)
                         .accessibilityHidden(true)
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("联系")
+                        Text(localized("联系"))
                             .font(.body.weight(.medium))
                             .foregroundStyle(.primary)
                         Text(verbatim: "yui480145@gmail.com")
@@ -500,8 +525,8 @@ struct PersonalizationScreen: View {
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .accessibilityLabel("联系，yui480145@gmail.com")
-            .accessibilityHint("打开邮件发送反馈")
+            .accessibilityLabel(localized("联系，yui480145@gmail.com"))
+            .accessibilityHint(localized("打开邮件发送反馈"))
         }
         .padding(.top, 32)
     }
@@ -512,46 +537,46 @@ struct PersonalizationScreen: View {
 
     private var reminderSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("提醒")
+            Text(localized("提醒"))
                 .font(.title3.weight(.semibold))
 
             HStack(spacing: 16) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("每日提醒")
+                    Text(localized("每日提醒"))
                         .font(.body.weight(.medium))
                         .foregroundStyle(.primary)
                     if reminderPermissionDenied {
-                        Text("系统通知已关闭，请在设置中允许通知")
+                        Text(localized("系统通知已关闭，请在设置中允许通知"))
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
                 }
                 Spacer(minLength: 8)
                 if reminderPermissionDenied {
-                    Button("去设置") { isReminderSettingsAlertPresented = true }
+                    Button(localized("去设置")) { isReminderSettingsAlertPresented = true }
                         .font(.subheadline.weight(.medium))
                         .foregroundStyle(theme.palette.strongAccent)
-                        .accessibilityLabel("打开系统设置，允许每日提醒通知")
+                        .accessibilityLabel(localized("打开系统设置，允许每日提醒通知"))
                 } else {
-                    Toggle("每日提醒", isOn: dailyReminderToggleBinding)
+                    Toggle(localized("每日提醒"), isOn: dailyReminderToggleBinding)
                         .labelsHidden()
                         .tint(theme.palette.strongAccent)
-                        .accessibilityLabel("每日提醒")
+                        .accessibilityLabel(localized("每日提醒"))
                 }
             }
             .padding(18)
             .background(Color.white.opacity(0.72), in: RoundedRectangle(cornerRadius: 20))
         }
         .padding(.top, 32)
-        .alert("需要开启系统通知", isPresented: $isReminderSettingsAlertPresented) {
-            Button("打开设置") {
+        .alert(localized("需要开启系统通知"), isPresented: $isReminderSettingsAlertPresented) {
+            Button(localized("打开设置")) {
                 if let url = URL(string: UIApplication.openSettingsURLString) {
                     openURL(url)
                 }
             }
-            Button("取消", role: .cancel) {}
+            Button(localized("取消"), role: .cancel) {}
         } message: {
-            Text("请在 iPhone 设置中允许今日份发送通知，然后回来开启每日提醒。")
+            Text(localized("请在 iPhone 设置中允许今日份发送通知，然后回来开启每日提醒。"))
         }
     }
 
@@ -581,12 +606,12 @@ struct PersonalizationScreen: View {
     #if ICLOUD_SYNC_ENABLED
     private var syncSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("数据同步")
+            Text(localized("数据同步"))
                 .font(.title3.weight(.semibold))
 
             HStack(spacing: 16) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("iCloud 同步")
+                    Text(localized("iCloud 同步"))
                         .font(.body.weight(.medium))
                         .foregroundStyle(.primary)
                     Text(iCloudStatusText)
@@ -598,13 +623,13 @@ struct PersonalizationScreen: View {
                     ProgressView()
                         .tint(theme.palette.strongAccent)
                         .frame(width: 52, height: 32)
-                        .accessibilityLabel("正在检查 iCloud")
+                        .accessibilityLabel(localized("正在检查 iCloud"))
                 } else {
-                    Toggle("iCloud 同步", isOn: iCloudToggleBinding)
+                    Toggle(localized("iCloud 同步"), isOn: iCloudToggleBinding)
                         .labelsHidden()
                         .tint(theme.palette.strongAccent)
                         .disabled(!canEnableICloudSync && !isICloudSyncEnabled && !isPreviewingICloudEnabled)
-                        .accessibilityLabel("iCloud 同步")
+                        .accessibilityLabel(localized("iCloud 同步"))
                 }
             }
             .padding(18)
@@ -625,16 +650,16 @@ struct PersonalizationScreen: View {
 
             #if DEBUG
             VStack(alignment: .leading, spacing: 8) {
-                Button("预览已登录、未开启（仅调试，不会同步）") {
+                Button(localized("预览已登录、未开启（仅调试，不会同步）")) {
                     isPreviewingICloudAccountAvailable = true
                     isPreviewingICloudEnabled = false
                 }
-                Button("预览已开启（仅调试，不会同步）") {
+                Button(localized("预览已开启（仅调试，不会同步）")) {
                     isPreviewingICloudAccountAvailable = false
                     isPreviewingICloudEnabled = true
                 }
                 if isPreviewingICloudAccountAvailable || isPreviewingICloudEnabled {
-                    Button("退出 iCloud 预览") {
+                    Button(localized("退出 iCloud 预览")) {
                         isPreviewingICloudAccountAvailable = false
                         isPreviewingICloudEnabled = false
                     }
@@ -666,7 +691,7 @@ struct PersonalizationScreen: View {
                     Task { @MainActor in await enableICloudSyncAfterValidation() }
                 } else {
                     isICloudSyncEnabled = false
-                    iCloudMessage = "已关闭；完全退出并重新打开 App 后停止同步"
+                    iCloudMessage = localized("已关闭；完全退出并重新打开 App 后停止同步")
                 }
             }
         )
@@ -683,22 +708,22 @@ struct PersonalizationScreen: View {
     private func checkICloudAccountAvailability() async {
         guard !DemoData.isEnabled else {
             isICloudAccountAvailable = false
-            iCloudMessage = "演示模式不支持 iCloud 同步"
+            iCloudMessage = localized("演示模式不支持 iCloud 同步")
             return
         }
         do {
             let status = try await CKContainer(identifier: "iCloud.com.qingqing.MoodCalendar").accountStatus()
             isICloudAccountAvailable = status == .available
             if status == .noAccount {
-                iCloudMessage = "请先在系统设置中登录 iCloud"
+                iCloudMessage = localized("请先在系统设置中登录 iCloud")
             } else if status == .available && !isICloudSyncEnabled {
-                iCloudMessage = "可以开启 iCloud 同步"
+                iCloudMessage = localized("可以开启 iCloud 同步")
             } else if status != .available {
-                iCloudMessage = "当前无法使用 iCloud；请检查系统设置"
+                iCloudMessage = localized("当前无法使用 iCloud；请检查系统设置")
             }
         } catch {
             isICloudAccountAvailable = false
-            iCloudMessage = "无法访问 iCloud；请检查系统设置和网络"
+            iCloudMessage = localized("无法访问 iCloud；请检查系统设置和网络")
         }
     }
 
@@ -706,12 +731,12 @@ struct PersonalizationScreen: View {
     private func enableICloudSyncAfterValidation() async {
         guard !isCheckingICloud else { return }
         isCheckingICloud = true
-        iCloudMessage = "正在检查 iCloud 账号和访问权限…"
+        iCloudMessage = localized("正在检查 iCloud 账号和访问权限…")
         defer { isCheckingICloud = false }
 
         guard !DemoData.isEnabled else {
             isICloudSyncEnabled = false
-            iCloudMessage = "演示模式不支持 iCloud 同步"
+            iCloudMessage = localized("演示模式不支持 iCloud 同步")
             return
         }
 
@@ -722,36 +747,38 @@ struct PersonalizationScreen: View {
                 _ = try await cloudContainer.userRecordID()
                 isICloudAccountAvailable = true
                 isICloudSyncEnabled = true
-                iCloudMessage = "iCloud 已连接；完全退出并重新打开 App 后开始自动同步。"
+                iCloudMessage = localized("iCloud 已连接；完全退出并重新打开 App 后开始自动同步。")
             case .noAccount:
                 isICloudAccountAvailable = false
-                failToEnableICloud("请先在系统设置中登录 iCloud")
+                failToEnableICloud(localized("请先在系统设置中登录 iCloud"))
             case .restricted:
                 isICloudAccountAvailable = false
-                failToEnableICloud("此设备当前无法使用 iCloud")
+                failToEnableICloud(localized("此设备当前无法使用 iCloud"))
             case .temporarilyUnavailable:
                 isICloudAccountAvailable = false
-                failToEnableICloud("iCloud 暂时不可用，请稍后再试")
+                failToEnableICloud(localized("iCloud 暂时不可用，请稍后再试"))
             case .couldNotDetermine:
                 isICloudAccountAvailable = false
-                failToEnableICloud("暂时无法确认 iCloud 状态，请稍后再试")
+                failToEnableICloud(localized("暂时无法确认 iCloud 状态，请稍后再试"))
             @unknown default:
                 isICloudAccountAvailable = false
-                failToEnableICloud("无法确认 iCloud 状态，请稍后再试")
+                failToEnableICloud(localized("无法确认 iCloud 状态，请稍后再试"))
             }
         } catch {
             isICloudAccountAvailable = false
+            UserDefaults.standard.set(true, forKey: "icloudEnableFailurePending")
             isICloudSyncEnabled = false
             if let cloudError = error as? CKError, cloudError.code == .notAuthenticated {
-                iCloudMessage = "请先在系统设置中登录 iCloud"
+                iCloudMessage = localized("请先在系统设置中登录 iCloud")
             } else {
-                iCloudMessage = "无法访问此 App 的 iCloud 容器，请检查开发者签名和网络后重试"
+                iCloudMessage = localized("无法访问此 App 的 iCloud 容器，请检查开发者签名和网络后重试")
             }
         }
     }
 
     @MainActor
     private func failToEnableICloud(_ message: String) {
+        UserDefaults.standard.set(true, forKey: "icloudEnableFailurePending")
         isICloudSyncEnabled = false
         iCloudMessage = message
     }
@@ -761,12 +788,12 @@ struct PersonalizationScreen: View {
     private var themePicker: some View {
         VStack(spacing: 16) {
             ZStack {
-                Text("主题色")
+                Text(localized("主题色"))
                     .font(.headline.weight(.semibold))
 
                 HStack {
                     Spacer()
-                    Button("完成") { isThemePickerPresented = false }
+                    Button(localized("完成")) { isThemePickerPresented = false }
                         .font(.headline.weight(.semibold))
                         .foregroundStyle(theme.palette.strongAccent)
                         .frame(minWidth: 44, minHeight: 44, alignment: .trailing)
@@ -829,12 +856,12 @@ struct PersonalizationScreen: View {
     private var shapePicker: some View {
         VStack(spacing: 16) {
             ZStack {
-                Text("选中图形")
+                Text(localized("选中图形"))
                     .font(.headline.weight(.semibold))
 
                 HStack {
                     Spacer()
-                    Button("完成") { isShapePickerPresented = false }
+                    Button(localized("完成")) { isShapePickerPresented = false }
                         .font(.headline.weight(.semibold))
                         .foregroundStyle(theme.palette.strongAccent)
                         .frame(minWidth: 44, minHeight: 44, alignment: .trailing)

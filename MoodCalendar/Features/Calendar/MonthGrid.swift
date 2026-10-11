@@ -50,16 +50,17 @@ struct MonthGrid: View {
     }
 
     private var weekdayNames: [String] {
-        let calendar = Calendar.current
+        var calendar = Calendar.current
+        calendar.locale = AppLanguage.locale
         let symbols = calendar.veryShortStandaloneWeekdaySymbols
         return (0..<7).map { symbols[(calendar.firstWeekday - 1 + $0) % 7] }
     }
 
     private func accessibilityText(for date: Date, relation: DayRelation, choice: DailyChoice?, hasNote: Bool) -> String {
-        let dateText = date.formatted(.dateTime.year().month().day())
-        if relation == .future { return "\(dateText)，还没到来" }
-        let entryText = choice.map { "\(dateText)，\($0.group.rawValue)，\($0.title)" } ?? "\(dateText)，未记录"
-        let todayText = relation == .today ? "今天，\(entryText)" : entryText
-        return hasNote ? "\(todayText)，有文字记录" : todayText
+        let dateText = date.formatted(.dateTime.locale(AppLanguage.locale).year().month().day())
+        if relation == .future { return localized("%@，还没到来", String(describing: dateText)) }
+        let entryText = choice.map { "\(dateText), \($0.group.title), \($0.title)" } ?? localized("%@，未记录", String(describing: dateText))
+        let todayText = relation == .today ? localized("今天，%@", String(describing: entryText)) : entryText
+        return hasNote ? localized("%@，有文字记录", String(describing: todayText)) : todayText
     }
 }

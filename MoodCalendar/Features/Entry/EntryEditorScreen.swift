@@ -39,15 +39,11 @@ struct EntryEditorScreen: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
-                    Text("今天想记什么？")
-                        .font(.title2.weight(.semibold))
-                        .foregroundStyle(.primary)
+                    editorHeading
 
                     groupPicker
 
                     choicePicker
-
-                    selectedChoiceCaption
 
                     noteCard
                 }
@@ -67,24 +63,24 @@ struct EntryEditorScreen: View {
                         isNoteFocused = false
                     }
             )
-            .navigationTitle(day.formatted(.dateTime.month().day()))
+            .navigationTitle(day.formatted(.dateTime.locale(AppLanguage.locale).month().day()))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("取消") { dismiss() }
+                    Button(localized("取消")) { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("保存") { save() }
+                    Button(localized("保存")) { save() }
                         .disabled(selectedChoice == nil)
                 }
             }
-            .alert("保存失败", isPresented: Binding(
+            .alert(localized("保存失败"), isPresented: Binding(
                 get: { errorMessage != nil },
                 set: { if !$0 { errorMessage = nil } }
             )) {
-                Button("好", role: .cancel) { errorMessage = nil }
+                Button(localized("确定"), role: .cancel) { errorMessage = nil }
             } message: {
-                Text(errorMessage ?? "请稍后再试。")
+                Text(errorMessage ?? localized("请稍后再试。"))
             }
             .sheet(isPresented: $isMembershipPresented) {
                 MembershipScreen()
@@ -100,30 +96,52 @@ struct EntryEditorScreen: View {
     }
 
     private var groupPicker: some View {
-        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 3), spacing: 4) {
+        ViewThatFits(in: .horizontal) {
+            groupPickerRow
+            ScrollView(.horizontal) {
+                groupPickerRow
+            }
+            .scrollIndicators(.hidden)
+        }
+    }
+
+    private var groupPickerRow: some View {
+        HStack(spacing: 4) {
             ForEach(ChoiceGroup.allCases) { group in
                 Button {
                     selectedGroup = group
                 } label: {
-                    HStack(spacing: 4) {
-                        Text(group.rawValue)
-                        if !hasPremiumAccess && group != .mood && group != .activity && group != .company {
-                            Image(systemName: "lock.fill")
-                                .font(.system(size: 9))
+                    Text(group.title)
+                        .lineLimit(1)
+                        .fixedSize(horizontal: true, vertical: false)
+                        .font(.subheadline.weight(selectedGroup == group ? .semibold : .regular))
+                        .foregroundStyle(selectedGroup == group ? Color.primary : Color(white: 0.44))
+                        .background(alignment: .bottom) {
+                            if selectedGroup == group {
+                                GroupHighlightBrush()
+                                    .fill(theme.palette.accent.opacity(0.24))
+                                    .padding(.horizontal, -7)
+                                    .frame(height: 15)
+                                    .offset(y: 2)
+                                    .accessibilityHidden(true)
+                            }
                         }
-                    }
-                    .font(.subheadline.weight(selectedGroup == group ? .semibold : .regular))
-                    .foregroundStyle(selectedGroup == group ? .primary : .secondary)
+                        .overlay(alignment: .trailing) {
+                            if !hasPremiumAccess && group != .mood && group != .activity && group != .company {
+                                Image(systemName: "lock.fill")
+                                    .font(.system(size: 9))
+                                    .offset(x: 13)
+                            }
+                        }
                     .frame(maxWidth: .infinity, minHeight: 44)
-                    .background(selectedGroup == group ? Color.white : .clear,
-                                in: RoundedRectangle(cornerRadius: 13))
+                    .padding(.horizontal, hasPremiumAccess ? 6 : 12)
+                    .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
                 .accessibilityAddTraits(selectedGroup == group ? .isSelected : [])
             }
         }
         .padding(4)
-        .background(Color.primary.opacity(0.06), in: RoundedRectangle(cornerRadius: 17))
     }
 
     private var choicePicker: some View {
@@ -158,8 +176,10 @@ struct EntryEditorScreen: View {
                         Text(choice.title)
                             .font(.caption.weight(.medium))
                             .foregroundStyle(isAvailable ? .primary : .secondary)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.8)
+                            .lineLimit(2)
+                            .minimumScaleFactor(0.9)
+                            .multilineTextAlignment(.center)
+                            .frame(minHeight: 30, alignment: .top)
                         Circle()
                             .fill(theme.palette.strongAccent)
                             .frame(width: 6, height: 6)
@@ -171,7 +191,7 @@ struct EntryEditorScreen: View {
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel(isAvailable ? "\(choice.title)，\(choice.caption)" : "\(choice.title)，\(choice.caption)，需要会员")
+                .accessibilityLabel(isAvailable ? "\(choice.title)，\(choice.caption)" : localized("%@，%@，需要会员", String(describing: choice.title), String(describing: choice.caption)))
                 .accessibilityAddTraits(selectedChoice == choice ? .isSelected : [])
             }
         }
@@ -179,13 +199,34 @@ struct EntryEditorScreen: View {
         .background(Color.white.opacity(0.72), in: RoundedRectangle(cornerRadius: 22))
     }
 
-    private var selectedChoiceCaption: some View {
-        Text(captionForSelectedChoice)
-            .font(.footnote)
-            .foregroundStyle(.secondary)
-            .lineLimit(1)
-            .padding(.leading, 8)
-            .frame(maxWidth: .infinity, minHeight: 20, alignment: .leading)
+    private var editorHeading: some View {
+        ViewThatFits(in: .horizontal) {
+            HStack(alignment: .center, spacing: 12) {
+                editorTitle.fixedSize()
+                Spacer(minLength: 0)
+                if let choice = selectedChoice, choice.group == selectedGroup {
+                    Text(choice.caption)
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                        .fixedSize()
+                }
+            }
+            VStack(alignment: .leading, spacing: 8) {
+                editorTitle
+                if let choice = selectedChoice, choice.group == selectedGroup {
+                    Text(choice.caption)
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var editorTitle: some View {
+        Text(localized("今天想记什么？"))
+            .font(.title2.weight(.semibold))
+            .foregroundStyle(.primary)
     }
 
     private var captionForSelectedChoice: String {
@@ -200,22 +241,22 @@ struct EntryEditorScreen: View {
                     .scrollContentBackground(.hidden)
                     .focused($isNoteFocused)
                     .frame(minHeight: 130)
-                    .accessibilityLabel("文字记录")
+                    .accessibilityLabel(localized("文字记录"))
             } else {
                 VStack(alignment: .leading, spacing: 10) {
-                    Text("写文字")
+                    Text(localized("写文字"))
                         .font(.body.weight(.medium))
                         .foregroundStyle(.primary)
-                    Text("文字是可选的，之后也可以修改。")
+                    Text(localized("文字可选，今天内可以修改。"))
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }
                 .frame(maxWidth: .infinity, minHeight: 88, alignment: .leading)
                 .accessibilityAddTraits(.isButton)
-                .accessibilityLabel("写文字")
+                .accessibilityLabel(localized("写文字"))
             }
             if showsNote {
-                Text("文字是可选的，之后也可以修改。")
+                Text(localized("文字可选，今天内可以修改。"))
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }
@@ -259,5 +300,21 @@ struct EntryEditorScreen: View {
         } catch {
             errorMessage = error.localizedDescription
         }
+    }
+}
+
+private struct GroupHighlightBrush: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        path.move(to: CGPoint(x: rect.minX + 2, y: rect.height * 0.18))
+        path.addCurve(to: CGPoint(x: rect.maxX - 1, y: rect.height * 0.10),
+                      control1: CGPoint(x: rect.width * 0.30, y: rect.height * 0.02),
+                      control2: CGPoint(x: rect.width * 0.72, y: rect.height * 0.22))
+        path.addLine(to: CGPoint(x: rect.maxX - 3, y: rect.height * 0.90))
+        path.addCurve(to: CGPoint(x: rect.minX, y: rect.height * 0.85),
+                      control1: CGPoint(x: rect.width * 0.65, y: rect.height * 0.78),
+                      control2: CGPoint(x: rect.width * 0.25, y: rect.height * 1.02))
+        path.closeSubpath()
+        return path
     }
 }

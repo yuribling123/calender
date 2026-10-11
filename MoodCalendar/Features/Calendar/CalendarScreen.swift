@@ -3,6 +3,7 @@ import SwiftData
 import UIKit
 
 struct CalendarScreen: View {
+    @Binding var requestedMonth: Date?
     @Environment(\.modelContext) private var modelContext
     @Environment(\.appTheme) private var theme
     @Environment(\.selectionShape) private var selectionShape
@@ -10,6 +11,7 @@ struct CalendarScreen: View {
     @AppStorage("calendarTitle") private var storedCalendarTitle = ""
     @AppStorage("dailyReminderEnabled") private var isDailyReminderEnabled = true
     @Query private var entries: [MoodEntry]
+    @GestureState private var isHorizontalMonthSwipe = false
     @State private var displayedMonth = MonthLayout(containing: Date()).monthStart
     @State private var selectedDay = Date()
     @State private var lastObservedToday = DayKey(Date())
@@ -53,6 +55,7 @@ struct CalendarScreen: View {
                     } else {
                         monthHeader
                             .padding(.bottom, 30)
+                            .contentShape(Rectangle())
                             .simultaneousGesture(monthSwipeGesture)
                         MonthGrid(
                             layout: MonthLayout(containing: displayedMonth),
@@ -74,6 +77,7 @@ struct CalendarScreen: View {
                         )
                         .offset(y: -8)
                         .padding(.bottom, 8)
+                        .contentShape(Rectangle())
                         .simultaneousGesture(monthSwipeGesture)
                         SelectedDateDetail(
                             date: selectedDay,
@@ -89,6 +93,7 @@ struct CalendarScreen: View {
                 }
                 .padding(24)
             }
+            .scrollDisabled(isHorizontalMonthSwipe)
             .background(theme.palette.background)
             .toolbar(.hidden, for: .navigationBar)
             .onChange(of: entries.map { "\($0.id.uuidString)-\($0.updatedAt.timeIntervalSince1970)" }) { _, _ in
@@ -110,7 +115,11 @@ struct CalendarScreen: View {
             }
             .onAppear {
                 refreshSelectedDayIfNeeded()
+                openRequestedMonth()
                 scheduleMidnightCheck()
+            }
+            .onChange(of: requestedMonth) { _, _ in
+                openRequestedMonth()
             }
             .onDisappear {
                 midnightTimer?.invalidate()
@@ -144,23 +153,34 @@ struct CalendarScreen: View {
                     onSaved: handleEditorSaved
                 )
             }
-            .alert("保存失败", isPresented: Binding(
+            .alert(localized("保存失败"), isPresented: Binding(
                 get: { saveError != nil },
                 set: { if !$0 { saveError = nil } }
             )) {
-                Button("好", role: .cancel) { saveError = nil }
+                Button(localized("确定"), role: .cancel) { saveError = nil }
             } message: {
-                Text(saveError ?? "请稍后再试。")
+                Text(saveError ?? localized("请稍后再试。"))
             }
         }
+    }
+
+    private func openRequestedMonth() {
+        guard let date = requestedMonth else { return }
+        displayedMonth = MonthLayout(containing: date, calendar: calendar).monthStart
+        selectedDay = displayedMonth
+        isChoosingMonth = false
+        requestedMonth = nil
     }
 
     private var intro: some View {
         VStack(alignment: .leading, spacing: 2) {
             HStack(alignment: .firstTextBaseline, spacing: 12) {
-                Text(storedCalendarTitle.isEmpty ? "今日份" : storedCalendarTitle)
+                Text(storedCalendarTitle.isEmpty ? localized("今日份") : storedCalendarTitle)
                     .font(.system(size: 32, weight: .semibold))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
                     .foregroundStyle(.black)
+                if !isChoosingMonth {
                 Button {
                     if !isChoosingMonth {
                         chooserYear = calendar.component(.year, from: displayedMonth)
@@ -168,13 +188,14 @@ struct CalendarScreen: View {
                     isChoosingMonth.toggle()
                 } label: {
                     HStack(spacing: 5) {
-                        Text(verbatim: "\(isChoosingMonth ? chooserYear : calendar.component(.year, from: displayedMonth))年")
+                        yearLabel(calendar.component(.year, from: displayedMonth), size: 16)
                     }
                     .font(.system(size: 16, weight: .regular))
                     .foregroundStyle(Color.gray)
                     .frame(minHeight: 44, alignment: .leading)
                 }
-                .accessibilityLabel(isChoosingMonth ? "关闭月份选择" : "选择月份")
+                .accessibilityLabel(localized("选择月份"))
+                }
                 Spacer()
 
                 if !isChoosingMonth && !isDisplayingCurrentMonth {
@@ -185,24 +206,34 @@ struct CalendarScreen: View {
             HStack {
 
                 if isChoosingMonth {
-                    Spacer()
-                    Button { chooserYear -= 1 } label: {
+                    Button { moveYear(-1) } label: {
                         Image(systemName: "chevron.left")
+                            .foregroundStyle(theme.palette.strongAccent.opacity(0.7))
                             .frame(width: 44, height: 44)
                     }
-                    .accessibilityLabel("上一年")
-                    Button { chooserYear += 1 } label: {
+                    .accessibilityLabel(localized("上一年"))
+                    Spacer()
+                    Button { isChoosingMonth = false } label: {
+                        yearLabel(chooserYear, size: 18)
+                            .foregroundStyle(.primary)
+                            .frame(minHeight: 44)
+                    }
+                    .accessibilityLabel(localized("关闭月份选择"))
+                    Spacer()
+                    Button { moveYear(1) } label: {
                         Image(systemName: "chevron.right")
+                            .foregroundStyle(theme.palette.strongAccent.opacity(0.7))
                             .frame(width: 44, height: 44)
                     }
-                    .accessibilityLabel("下一年")
+                    .accessibilityLabel(localized("下一年"))
                 }
             }
             .buttonStyle(.plain)
-            .simultaneousGesture(yearSwipeGesture)
+            .contentShape(Rectangle())
+            .highPriorityGesture(yearSwipeGesture)
             #if DEBUG
             if DemoData.isEnabled {
-                Text("演示数据")
+                Text(localized("演示数据"))
                     .font(.caption.weight(.medium))
                     .foregroundStyle(.secondary)
             }
@@ -211,35 +242,83 @@ struct CalendarScreen: View {
         .padding(.top, 4)
     }
 
+    private func yearLabel(_ year: Int, size: CGFloat) -> some View {
+        (Text(verbatim: "\(year)")
+            .font(.system(size: size, weight: .light, design: .rounded))
+         + Text(localized("年"))
+            .font(.system(size: size, weight: .regular)))
+    }
+
     private var monthChooser: some View {
-        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: 3), spacing: 32) {
-            ForEach(1...12, id: \.self) { month in
-                Button {
-                    chooseMonth(month)
-                } label: {
-                    Text("\(month)月")
-                        .font(.system(size: 18, weight: isDisplayedMonth(month) ? .semibold : .medium))
-                        .foregroundStyle(isDisplayedMonth(month) ? theme.palette.onSelection : Color.primary)
-                        .frame(minWidth: 68, minHeight: 44)
-                        .frame(maxWidth: .infinity, minHeight: 64)
-                        .background {
-                            if isDisplayedMonth(month) {
-                                SelectionShapeIcon(
-                                    shape: selectionShape,
-                                    color: theme.palette.selectionFill,
-                                    size: 66
-                                )
-                                    .accessibilityHidden(true)
+        VStack(alignment: .trailing, spacing: 0) {
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: 3), spacing: 32) {
+                ForEach(1...12, id: \.self) { month in
+                    Button {
+                        chooseMonth(month)
+                    } label: {
+                        Text(monthTitle(month, abbreviated: true))
+                            .font(.system(size: 18, weight: isDisplayedMonth(month) ? .semibold : .medium))
+                            .foregroundStyle(isDisplayedMonth(month) ? theme.palette.onSelection : Color.primary)
+                            .frame(minWidth: 68, minHeight: 44)
+                            .frame(maxWidth: .infinity, minHeight: 64)
+                            .background {
+                                if isDisplayedMonth(month) {
+                                    SelectionShapeIcon(
+                                        shape: selectionShape,
+                                        color: theme.palette.selectionFill,
+                                        size: 66
+                                    )
+                                        .accessibilityHidden(true)
+                                }
                             }
-                        }
-                        .contentShape(Rectangle())
+                            .overlay(alignment: .bottom) {
+                                if let choice = representativeChoice(in: month) {
+                                    Image(choice.imageName)
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 58, height: 38)
+                                        .offset(y: 31)
+                                        .accessibilityHidden(true)
+                                }
+                            }
+                            .contentShape(Rectangle())
+                    }
+                    .accessibilityLabel(Text(verbatim: localized("%@年%@月", String(describing: chooserYear), String(describing: month))))
+                    .accessibilityValue(representativeChoice(in: month).map { localized("代表表情，%@", String(describing: $0.title)) } ?? localized("无记录"))
+                    .accessibilityAddTraits(isDisplayedMonth(month) ? .isSelected : [])
                 }
-                .accessibilityLabel(Text(verbatim: "\(chooserYear)年\(month)月"))
-                .accessibilityAddTraits(isDisplayedMonth(month) ? .isSelected : [])
             }
+            Button(localized("返回")) { isChoosingMonth = false }
+                .font(.subheadline.weight(.medium))
+                .foregroundStyle(theme.palette.strongAccent)
+                .frame(minHeight: 44)
+                .padding(.top, 28)
+                .padding(.trailing, 10)
+                .accessibilityLabel(localized("返回日历"))
         }
         .buttonStyle(.plain)
         .padding(.top, 22)
+        .contentShape(Rectangle())
+        .highPriorityGesture(yearSwipeGesture)
+    }
+
+    private func representativeChoice(in month: Int) -> DailyChoice? {
+        let prefix = String(format: "%04d-%02d-", chooserYear, month)
+        let monthEntries = entriesByDay.values.filter { $0.dayKey.hasPrefix(prefix) }
+        let grouped = Dictionary(grouping: monthEntries.filter { $0.choice != nil }) { $0.choice! }
+        return grouped.keys.max { lhs, rhs in
+            let left = grouped[lhs]!
+            let right = grouped[rhs]!
+            if left.count != right.count { return left.count < right.count }
+            return (left.map(\.dayKey).max() ?? "") < (right.map(\.dayKey).max() ?? "")
+        }
+    }
+
+    private func monthTitle(_ month: Int, abbreviated: Bool = false) -> String {
+        let formatter = DateFormatter()
+        formatter.locale = AppLanguage.locale
+        let symbols = abbreviated ? formatter.shortStandaloneMonthSymbols! : formatter.standaloneMonthSymbols!
+        return symbols[month - 1]
     }
 
     private func isDisplayedMonth(_ month: Int) -> Bool {
@@ -249,17 +328,32 @@ struct CalendarScreen: View {
 
     private var monthSwipeGesture: some Gesture {
         DragGesture(minimumDistance: 6)
+            .updating($isHorizontalMonthSwipe) { value, isHorizontal, _ in
+                let movement = value.translation
+                if abs(movement.width) > abs(movement.height) {
+                    isHorizontal = true
+                }
+            }
             .onEnded { value in
-                guard let step = swipeStep(for: value) else { return }
+                guard abs(value.translation.width) > abs(value.translation.height),
+                      let step = swipeStep(for: value) else { return }
                 moveMonth(step)
             }
     }
 
     private var yearSwipeGesture: some Gesture {
         DragGesture(minimumDistance: 6)
+            .updating($isHorizontalMonthSwipe) { value, isHorizontal, _ in
+                let movement = value.translation
+                if abs(movement.width) > abs(movement.height) {
+                    isHorizontal = true
+                }
+            }
             .onEnded { value in
-                guard isChoosingMonth, let step = swipeStep(for: value) else { return }
-                chooserYear += step
+                guard isChoosingMonth,
+                      abs(value.translation.width) > abs(value.translation.height),
+                      let step = swipeStep(for: value) else { return }
+                moveYear(step)
             }
     }
 
@@ -291,28 +385,30 @@ struct CalendarScreen: View {
             HStack {
                 Button { moveMonth(-1) } label: {
                     Image(systemName: "chevron.left")
+                        .foregroundStyle(theme.palette.strongAccent.opacity(0.7))
                         .frame(width: 44, height: 44)
                 }
-                .accessibilityLabel("上个月")
+                .accessibilityLabel(localized("上个月"))
 
                 Spacer()
 
                 Button { moveMonth(1) } label: {
                     Image(systemName: "chevron.right")
+                        .foregroundStyle(theme.palette.strongAccent.opacity(0.7))
                         .frame(width: 44, height: 44)
                 }
-                .accessibilityLabel("下个月")
+                .accessibilityLabel(localized("下个月"))
             }
             .padding(.horizontal, 10)
             .overlay {
                 HStack(alignment: .firstTextBaseline, spacing: 10) {
-                    Text("\(calendar.component(.month, from: displayedMonth))月")
+                    Text(monthTitle(calendar.component(.month, from: displayedMonth)))
                         .font(.system(size: 23, weight: .semibold))
                         .foregroundStyle(.black)
                 }
                 .fixedSize()
                 .accessibilityElement(children: .ignore)
-                .accessibilityLabel(displayedMonth.formatted(.dateTime.year().month(.wide)))
+                .accessibilityLabel(displayedMonth.formatted(.dateTime.locale(AppLanguage.locale).year().month(.wide)))
                 .allowsHitTesting(false)
             }
 
@@ -321,14 +417,14 @@ struct CalendarScreen: View {
     }
 
     private var todayButton: some View {
-        Button("今天") { showCurrentMonth() }
+        Button(localized("今天")) { showCurrentMonth() }
             .font(.subheadline.weight(.medium))
             .foregroundStyle(theme.palette.onStrongAccent)
             .frame(minWidth: 44, minHeight: 44)
             .background(theme.palette.todayButtonFill)
             .clipShape(Capsule())
             .buttonStyle(.plain)
-            .accessibilityLabel("回到今天")
+            .accessibilityLabel(localized("回到今天"))
     }
 
     private var isDisplayingCurrentMonth: Bool {
@@ -381,6 +477,12 @@ struct CalendarScreen: View {
         let nextMonth = MonthLayout(containing: next).monthStart
         displayedMonth = nextMonth
         selectedDay = isCurrentMonth(nextMonth) ? Date() : nextMonth
+        PageTurnFeedback.play()
+    }
+
+    private func moveYear(_ amount: Int) {
+        chooserYear += amount
+        PageTurnFeedback.play()
     }
 
     private func saveMood(_ mood: Mood) {
@@ -429,6 +531,6 @@ struct CalendarScreen: View {
 }
 
 #Preview {
-    CalendarScreen()
+    CalendarScreen(requestedMonth: .constant(nil))
         .modelContainer(for: MoodEntry.self, inMemory: true)
 }

@@ -2,6 +2,7 @@ import SwiftUI
 import SwiftData
 
 struct MonthlyGoalScreen: View {
+    let onOpenMonth: (Date) -> Void
     @Environment(\.modelContext) private var modelContext
     @Environment(\.appTheme) private var theme
     @Query private var entries: [MoodEntry]
@@ -27,7 +28,7 @@ struct MonthlyGoalScreen: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
-                    Text("月便签")
+                    Text(localized("月便签"))
                         .font(.system(size: 32, weight: .semibold))
                         .foregroundStyle(.black)
                         .padding(.top, 4)
@@ -60,13 +61,13 @@ struct MonthlyGoalScreen: View {
             .onChange(of: monthlyNotes.map { "\($0.id.uuidString)-\($0.updatedAt.timeIntervalSince1970)" }) { _, _ in
                 try? MonthlyNoteStore(context: modelContext).reconcileDuplicates()
             }
-            .alert("保存失败", isPresented: Binding(
+            .alert(localized("保存失败"), isPresented: Binding(
                 get: { saveError != nil },
                 set: { if !$0 { saveError = nil } }
             )) {
-                Button("好", role: .cancel) { saveError = nil }
+                Button(localized("确定"), role: .cancel) { saveError = nil }
             } message: {
-                Text(saveError ?? "请稍后再试。")
+                Text(saveError ?? localized("请稍后再试。"))
             }
         }
     }
@@ -85,7 +86,7 @@ struct MonthlyGoalScreen: View {
             Rectangle()
                 .fill(Color.secondary.opacity(0.08))
                 .frame(height: 1)
-            Text("往月记录")
+            Text(localized("往月记录"))
                 .font(.system(size: 12, weight: .medium))
                 .foregroundStyle(.secondary)
                 .fixedSize()
@@ -96,22 +97,22 @@ struct MonthlyGoalScreen: View {
         .padding(.top, 60)
         .padding(.bottom, 24)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("之前的月份")
+        .accessibilityLabel(localized("之前的月份"))
     }
 
     private var historyEmptyState: some View {
         VStack(spacing: 8) {
-            Text("还没有留下记录")
+            Text(localized("还没有留下记录"))
                 .font(.system(size: 17, weight: .medium))
                 .foregroundStyle(.primary.opacity(0.76))
-            Text("试试来写吧")
+            Text(localized("试试来写吧"))
                 .font(.system(size: 14, weight: .regular))
                 .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity, minHeight: 156, alignment: .center)
         .multilineTextAlignment(.center)
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("之前还没有留下记录，试试来写吧")
+        .accessibilityLabel(localized("之前还没有留下记录，试试来写吧"))
     }
 
     private func monthSection(
@@ -170,7 +171,7 @@ struct MonthlyGoalScreen: View {
                     .foregroundStyle(.secondary)
                 Text("·")
                     .foregroundStyle(.secondary)
-                Text("本月")
+                Text(localized("本月"))
                     .foregroundStyle(theme.palette.strongAccent)
             }
             .font(.system(size: 11, weight: .medium))
@@ -195,20 +196,20 @@ struct MonthlyGoalScreen: View {
                             draftNoteText = String(value.prefix(noteCharacterLimit))
                         }
                     }
-                    .accessibilityLabel("编辑本月主题")
+                    .accessibilityLabel(localized("编辑本月主题"))
 
                 HStack {
                     Text("\(draftNoteText.count) / \(noteCharacterLimit)")
                         .font(.system(size: 13))
                         .foregroundStyle(.secondary)
                     Spacer()
-                    Button("保存") { saveCurrentNote() }
+                    Button(localized("保存")) { saveCurrentNote() }
                         .font(.system(size: 15, weight: .semibold))
                         .foregroundStyle(theme.palette.strongAccent)
                 }
             } else if currentNoteText.isEmpty {
                 HStack(spacing: 5) {
-                    Text("写一句话，留给这个月。")
+                    Text(localized("写一句话，留给这个月。"))
                         .foregroundStyle(.secondary)
                     Text("→")
                         .foregroundStyle(theme.palette.strongAccent)
@@ -217,7 +218,7 @@ struct MonthlyGoalScreen: View {
                 .contentShape(Rectangle())
                 .onTapGesture { beginCurrentNoteEditing() }
                 .accessibilityAddTraits(.isButton)
-                .accessibilityLabel("写一句话，留给这个月")
+                .accessibilityLabel(localized("写一句话，留给这个月"))
             } else {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(currentNoteText)
@@ -279,35 +280,39 @@ struct MonthlyGoalScreen: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
             if let choice = data.choice {
-                summaryRow(title: "那个月常常在", value: displayTitle(for: choice))
+                summaryRow(title: data.recordCount < 3 ? localized("那个月记下了") : localized("出现最多的是"), value: choice.title)
             }
         }
         .padding(.top, 16)
     }
 
     private func historicalMonthHeader(for date: Date) -> some View {
-        VStack(alignment: .leading, spacing: 1) {
-            Text(String(format: "%02d", calendar.component(.month, from: date)))
-                .font(.system(size: 25, weight: .semibold))
-                .foregroundStyle(.primary)
-            Text(monthAbbreviation(for: date))
-                .font(.system(size: 11, weight: .semibold))
-                .tracking(1.1)
-                .foregroundStyle(.secondary)
+        Button { onOpenMonth(date) } label: {
+            VStack(alignment: .leading, spacing: 1) {
+                Text(String(format: "%02d", calendar.component(.month, from: date)))
+                    .font(.system(size: 25, weight: .semibold))
+                    .foregroundStyle(.primary)
+                Text(monthAbbreviation(for: date))
+                    .font(.system(size: 11, weight: .semibold))
+                    .tracking(1.1)
+                    .foregroundStyle(.secondary)
+            }
         }
+        .buttonStyle(.plain)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("\(calendar.component(.month, from: date))月")
+        .accessibilityLabel(localized("%@年%@月", String(describing: calendar.component(.year, from: date)), String(describing: calendar.component(.month, from: date))))
+        .accessibilityHint(localized("查看这个月的日历"))
     }
 
     private func monthAbbreviation(for date: Date) -> String {
         let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.locale = AppLanguage.locale
         formatter.dateFormat = "MMM"
         return formatter.string(from: date).uppercased()
     }
 
     private func summaryRow(title: String, value: String) -> some View {
-        HStack(alignment: .center, spacing: 10) {
+        VStack(alignment: .leading, spacing: 5) {
             Text(title)
                 .font(.system(size: 15, weight: .medium))
                 .foregroundStyle(.secondary)
@@ -322,11 +327,12 @@ struct MonthlyGoalScreen: View {
     private struct MonthData {
         let note: String?
         let choice: DailyChoice?
+        let recordCount: Int
     }
 
     private func monthData(for date: Date) -> MonthData {
         let monthEntries = entriesForEachDay.filter { $0.dayKey.hasPrefix(monthKey(for: date)) }
-        return MonthData(note: storedNote(for: date), choice: mostCommon(in: monthEntries))
+        return MonthData(note: storedNote(for: date), choice: mostCommon(in: monthEntries), recordCount: monthEntries.compactMap(\.choice).count)
     }
 
     private var entriesForEachDay: [MoodEntry] {
@@ -347,10 +353,6 @@ struct MonthlyGoalScreen: View {
             if counts[lhs] != counts[rhs] { return counts[lhs]! < counts[rhs]! }
             return (latest[lhs] ?? "") < (latest[rhs] ?? "")
         }
-    }
-
-    private func displayTitle(for choice: DailyChoice) -> String {
-        choice.group == .mood ? choice.title : choice.caption
     }
 
     private func monthDate(for key: String) -> Date? {

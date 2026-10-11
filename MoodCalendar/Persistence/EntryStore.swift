@@ -113,9 +113,9 @@ private enum EntryStoreError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .onlyTodayIsEditable:
-            "只能记录或修改今天的内容。"
+            localized("只能记录或修改今天的内容。")
         case .membershipRequired:
-            "解锁永久会员后才能使用这套表情。"
+            localized("解锁永久会员后才能使用这套表情。")
         }
     }
 }

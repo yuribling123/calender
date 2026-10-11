@@ -7,14 +7,14 @@ enum AppTheme: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .pink: "樱粉"
-        case .apricot: "暖杏"
-        case .sage: "鼠尾草绿"
-        case .blue: "雾蓝"
-        case .lavender: "淡紫"
-        case .caramel: "焦糖棕"
-        case .creamYellow: "奶油黄"
-        case .black: "黑色"
+        case .pink: localized("樱粉")
+        case .apricot: localized("暖杏")
+        case .sage: localized("鼠尾草绿")
+        case .blue: localized("雾蓝")
+        case .lavender: localized("淡紫")
+        case .caramel: localized("焦糖棕")
+        case .creamYellow: localized("奶油黄")
+        case .black: localized("黑色")
         }
     }
 
@@ -90,12 +90,12 @@ enum SelectionShape: String, CaseIterable, Identifiable {
     var id: String { rawValue }
     var title: String {
         switch self {
-        case .circle: "圆形"
-        case .heart: "爱心"
-        case .star: "星星"
-        case .sakura: "樱花"
-        case .leaf: "叶子"
-        case .cat: "猫猫"
+        case .circle: localized("圆形")
+        case .heart: localized("爱心")
+        case .star: localized("星星")
+        case .sakura: localized("樱花")
+        case .leaf: localized("叶子")
+        case .cat: localized("猫猫")
         }
     }
 

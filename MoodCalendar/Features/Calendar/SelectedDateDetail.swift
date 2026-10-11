@@ -18,7 +18,7 @@ struct SelectedDateDetail: View {
 
             HStack {
                 Text(relation == .today
-                     ? "今天"
+                     ? localized("今天")
                      : "\(date.formatted(.dateTime.month().day())) · \(date.formatted(.dateTime.weekday(.wide)))")
                     .font(.subheadline.weight(.medium))
                     .foregroundStyle(.secondary)
@@ -34,7 +34,7 @@ struct SelectedDateDetail: View {
                             .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
-                    .accessibilityLabel("修改记录")
+                    .accessibilityLabel(localized("修改记录"))
                     .transition(.scale(scale: 0.72).combined(with: .opacity))
                 }
             }
@@ -46,7 +46,7 @@ struct SelectedDateDetail: View {
                     recordedChoice(choice)
                 } else {
                     HStack {
-                        Text("今天什么心情？")
+                        Text(localized("今天什么心情？"))
                             .font(.subheadline.weight(.medium))
 
                     }
@@ -62,19 +62,25 @@ struct SelectedDateDetail: View {
                                     .scaleEffect(1.3)
                             }
                             .buttonStyle(.plain)
-                            .accessibilityLabel("记录今天的心情：\(mood.title)")
+                            .accessibilityLabel(localized("记录今天的心情：%@", String(describing: mood.title)))
                         }
                     }
+
+                    Button(localized("选其他表情"), action: onEditToday)
+                        .font(.footnote.weight(.medium))
+                        .foregroundStyle(theme.palette.strongAccent)
+                        .padding(.vertical, 8)
+                        .buttonStyle(.plain)
 
                 }
             case .past:
                 if let choice = entry?.choice {
                     recordedChoice(choice)
                 } else {
-                    statusMessage("这一天没有留下记录")
+                    statusMessage(localized("这一天没有留下记录"))
                 }
             case .future:
-                statusMessage("这一天还没到来")
+                statusMessage(localized("这一天还没到来"))
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -85,7 +91,7 @@ struct SelectedDateDetail: View {
             .resizable()
             .scaledToFit()
             .frame(width: 60, height: 52) // 图片渲染尺寸，不要改
-            .scaleEffect(choice.group == .mood ? 1 : choice == .cake ? 1.15 : 1.3)
+            .scaleEffect([DailyChoice.poutyRabbit, .absentRabbit, .glassesRabbit, .tearfulRabbit].contains(choice) ? 1.17 : choice.group == .mood ? 1 : choice == .cake ? 1.15 : 1.3)
             .offset(x: choice.group == .mood ? 0 : -10)
             .frame(
                 width: choice.group == .mood ? 60 : 44,
@@ -107,7 +113,7 @@ struct SelectedDateDetail: View {
                         .foregroundStyle(.secondary)
                 }
                 .accessibilityElement(children: .combine)
-                .accessibilityLabel("\(choice.group.rawValue)，\(choice.title)，\(choice.caption)")
+                .accessibilityLabel("\(choice.group.title), \(choice.title), \(choice.caption)")
             }
             if let note = entry?.note, !note.isEmpty {
                 Text(note)

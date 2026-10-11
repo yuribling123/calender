@@ -14,16 +14,18 @@ struct MembershipScreen: View {
                     .padding(.top, 22)
 
                 VStack(spacing: 8) {
-                    Text(membership.hasMembershipAccess ? "已永久解锁" : "解锁今日份完整体验")
+                    Text(membership.hasMembershipAccess ? localized("已永久解锁") : localized("解锁今日份完整体验"))
                         .font(.title2.weight(.semibold))
-                    Text("一次购买，永久使用")
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Text(localized("一次购买，永久使用"))
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
 
                 VStack(alignment: .leading, spacing: 16) {
-                    benefit("表情包", detail: "解锁全部表情包")
-                    benefit("个性化设置", detail: "自定义日历标题，解锁全部主题色和选中图形")
+                    benefit(localized("表情包"), detail: localized("解锁全部表情包"))
+                    benefit(localized("个性化设置"), detail: localized("自定义日历标题，解锁全部主题色和选中图形"))
                 }
                 .padding(20)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -36,6 +38,15 @@ struct MembershipScreen: View {
                         .multilineTextAlignment(.center)
                 }
 
+                if membership.productLoadFailed && !membership.hasMembershipAccess {
+                    Button(localized("重试")) {
+                        Task { await membership.loadProduct() }
+                    }
+                    .font(.footnote.weight(.medium))
+                    .foregroundStyle(theme.palette.strongAccent)
+                    .disabled(membership.isLoading)
+                }
+
                 Spacer(minLength: 0)
 
                 Button {
@@ -43,7 +54,7 @@ struct MembershipScreen: View {
                 } label: {
                     HStack {
                         if membership.isLoading { ProgressView().tint(.white) }
-                        Text(membership.hasMembershipAccess ? "已永久解锁" : purchaseTitle)
+                        Text(membership.hasMembershipAccess ? localized("已永久解锁") : purchaseTitle)
                             .font(.body.weight(.semibold))
                     }
                     .foregroundStyle(.white)
@@ -53,7 +64,7 @@ struct MembershipScreen: View {
                 .disabled(membership.hasMembershipAccess || membership.product == nil || membership.isLoading)
 
                 if !membership.hasMembershipAccess {
-                    Button("恢复购买") {
+                    Button(localized("恢复购买")) {
                         Task { await membership.restorePurchases() }
                     }
                     .font(.footnote.weight(.medium))
@@ -62,18 +73,18 @@ struct MembershipScreen: View {
                 }
 
                 if DemoData.isEnabled {
-                    Text("演示模式不支持 App Store 购买")
+                    Text(localized("演示模式不支持 App Store 购买"))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
             }
             .padding(24)
             .background(theme.palette.background.ignoresSafeArea())
-            .navigationTitle("永久解锁")
+            .navigationTitle(localized("永久解锁"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("完成") { dismiss() }
+                    Button(localized("完成")) { dismiss() }
                 }
             }
             .task { await membership.loadProduct() }
@@ -81,9 +92,9 @@ struct MembershipScreen: View {
     }
 
     private var purchaseTitle: String {
-        if membership.hasMembershipAccess { return "已永久解锁" }
-        if let price = membership.product?.displayPrice { return "永久解锁 · \(price)" }
-        return membership.isLoading ? "正在连接 App Store…" : "永久解锁 · ¥12"
+        if membership.hasMembershipAccess { return localized("已永久解锁") }
+        if let price = membership.product?.displayPrice { return localized("永久解锁 · %@", String(describing: price)) }
+        return membership.isLoading ? localized("正在连接 App Store…") : localized("永久解锁")
     }
 
     private func benefit(_ title: String, detail: String) -> some View {

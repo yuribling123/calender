@@ -26,7 +26,7 @@ enum DataBackupExporter {
         let dateFormatter = ISO8601DateFormatter()
         let manifest = Manifest(
             appIdentifier: "com.qingqing.MoodCalendar",
-            appName: "今日份",
+            appName: localized("今日份"),
             formatVersion: 1,
             exportedAt: dateFormatter.string(from: .now)
         )
@@ -54,8 +54,26 @@ enum DataBackupExporter {
         let payloadData = try encoder.encode(payload)
         return try ZipArchive.make(files: [
             (name: "manifest.json", contents: manifestData),
-            (name: "data.json", contents: payloadData)
+            (name: "data.json", contents: payloadData),
+            (name: localized("记录.txt"), contents: Data(readableText(entries: entries, monthlyNotes: monthlyNotes).utf8))
         ])
+    }
+    static func readableText(entries: [MoodEntry], monthlyNotes: [MonthlyNote]) -> String {
+        var lines = [localized("今日份 · 记录导出"), "", localized("每日记录"), ""]
+        for entry in entries.sorted(by: { $0.dayKey < $1.dayKey }) {
+            lines.append("\(entry.dayKey) · \(entry.choice?.title ?? localized("Unknown sticker (%@)", String(entry.moodValue)))")
+            if !entry.note.isEmpty { lines.append(entry.note) }
+            lines.append("")
+        }
+        if entries.isEmpty { lines.append(localized("暂无每日记录\n")) }
+        lines.append(contentsOf: [localized("月便签"), ""])
+        for note in monthlyNotes.sorted(by: { $0.monthKey < $1.monthKey }) {
+            lines.append(note.monthKey)
+            lines.append(note.text)
+            lines.append("")
+        }
+        if monthlyNotes.isEmpty { lines.append(localized("暂无月便签")) }
+        return lines.joined(separator: "\n") + "\n"
     }
 }
 
