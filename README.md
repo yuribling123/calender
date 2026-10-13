@@ -16,9 +16,13 @@ Current-month note and previous-month history:
 
 ## Features
 
+- Save and page-turn effects mix with other apps' audio and respect the iPhone Silent switch.
+
+- First-time users see a brief calendar guide. Acknowledging it hides it permanently for this installation; users with saved records skip it. Demo uses a separate acknowledgement flag.
+
 - Supports Simplified Chinese, English, Japanese, and Korean, initially selecting the system language when supported (otherwise English), with an in-app language picker in Settings that applies immediately and remembers manual choices. Translations live in `MoodCalendar/Resources/Localizable.xcstrings`; the Home Screen name is localized in `InfoPlist.xcstrings`. Month and weekday labels use the current locale, long sticker names wrap, and the category row scrolls horizontally when needed. User-written notes, saved IDs, and backup JSON structure remain stable.
 
-- The month grid uses fixed-size date cells. The selected date shows its marker; when viewing another date, today's number uses the accent color. The 12-month picker uses the selected marker for the displayed month. Swipe horizontally to change months, tap the year to open the month picker, swipe on the year to change years, or use the arrows to return to today.
+- The month grid uses fixed-size date cells. The selected date shows its marker; when viewing another date, today's number uses the accent color. The 12-month picker uses the selected marker for the displayed month. Swipe horizontally to change months, tap the year to open the month picker, swipe on the year to change years, tap “This year” to return to the current year, or use the arrows to return to today.
 - The five supplied mood illustrations are transparent PNGs. Calendar, detail, and editing screens show the full artwork without cropping its sides.
 - Days with a text note show two short, light-gray lines beneath the illustration.
 - Saving a new selection plays a small entrance animation and an original, gentle paper-sticker sound.
@@ -33,7 +37,7 @@ Current-month note and previous-month history:
 - Export daily entries and monthly notes to `今日份.zip`. The archive contains `manifest.json` (format version and export time), `data.json`, and a readable `记录.txt`. Export is supported; import may be added later.
 - Settings can enable iCloud sync. After changing the setting, fully quit and reopen the app. CloudKit syncs local entries and notes when the user is signed in to iCloud and sync is available. Turning sync off stops future syncing but does not delete existing cloud copies. The developer must configure the `iCloud.com.qingqing.MoodCalendar` container for `com.qingqing.MoodCalendar` in the Apple Developer account.
 - Debug builds include previews for “signed in, sync off” and “sync on” states. These previews only change what the screen shows; they do not enable CloudKit or alter the real sync setting.
-- The app requests notification permission on the first visit to Calendar and schedules a daily reminder while today has no entry. You can turn reminders off or on in Settings. Turning them off cancels pending reminders. If system notifications are denied, Settings offers a shortcut to iPhone Settings. The Debug demo also supports testing reminder controls.
+- The app requests notification permission on launch before showing the first-use guide and schedules a daily reminder while today has no entry. You can turn reminders off or on in Settings. Turning them off cancels pending reminders. If system notifications are denied, Settings offers a shortcut to iPhone Settings. The Debug demo also supports testing reminder controls.
 - A one-time permanent unlock is available through StoreKit 2, with purchase validation and Restore Purchases. Free access includes the Cherry Blossom and Black themes, circle and star markers, and the Mood, Daily Life, and Company sticker groups. The calendar title and other themes, markers, and groups require the unlock. App Store Connect must have the non-consumable product `com.qingqing.MoodCalendar.permanentUnlock` priced at CNY ¥12; without it, purchase is unavailable.
 
 ## Run
@@ -74,6 +78,12 @@ Calendar days are stored as the local year, month, and day when the entry is cre
 
 ## 第一版功能
 
+- 年份选择页左下方的「今年」可回到当前年份，右下方「返回」回到日历。
+
+- 保存与翻页音效可和其他 App 的音乐同时播放，并遵循 iPhone 静音模式。
+
+- 首次使用显示简短日历说明，点「知道了」后不再显示；已有记录的用户跳过。演示模式使用独立标记。
+
 - 支持简体中文、英语、日语和韩语，首次按系统语言选择对应选项，其他语言默认英语；也可以在「我的 → 语言」手动选择，立即生效并保存。文字集中维护在 `Localizable.xcstrings`，桌面名称在 `InfoPlist.xcstrings`；月份和星期按当地格式显示。较长表情名支持换行，分类栏空间不足时横向滚动。用户记录不自动翻译，保存编号与备份 JSON 结构保持兼容。
 
 - 月历用固定大小的日期格显示当天选的图案；只有选中的日期显示所选图形，查看其他日期时今天的数字显示主题色。12 个月选择界面也只用所选图形标记正在查看的月份。可左右滑动月历切换月份；点年份打开月份选择界面，在年份处左右滑动切换年份，也可用箭头切换并返回今天。
@@ -91,7 +101,7 @@ Calendar days are stored as the local year, month, and day when the entry is cre
 - 「我的」可将每日记录和月便签导出为「今日份.zip」。压缩包包含 `manifest.json`（备份格式版本和导出时间）、`data.json`（记录数据）及 `记录.txt`（按日期排列、可直接阅读的文字）；目前只支持导出，文件中的文字可直接读取，导入功能可在以后基于格式版本实现。
 - 「我的」可开启 iCloud 同步。启用后需完全退出并重新打开 App；CloudKit 会在用户登录 iCloud 且同步可用时自动同步本地每日记录和月便签。关闭开关只停止后续同步，不会删除云端已有副本。开发者需在 Apple Developer 账号中为 `com.qingqing.MoodCalendar` 配置 `iCloud.com.qingqing.MoodCalendar` CloudKit 容器。
 - Debug 构建提供“预览已登录、未开启”和“预览已开启”入口，只用于查看界面，不会开启 CloudKit 同步或更改实际同步设置。
-- 首次进入日历时，App 会请求通知权限，并为尚未记录的日期安排每日提醒。「我的」中可关闭或重新开启提醒；关闭会撤销尚未发送的提醒。系统通知被拒绝时，「我的」会提供打开 iPhone 设置的入口。Debug 演示模式也可测试提醒开关和通知。
+- 首次打开时，App 先请求通知权限，用户选择后再显示首次使用说明，并为尚未记录的日期安排每日提醒。「我的」中可关闭或重新开启提醒；关闭会撤销尚未发送的提醒。系统通知被拒绝时，「我的」会提供打开 iPhone 设置的入口。Debug 演示模式也可测试提醒开关和通知。
 - 「我的」提供一次性永久解锁：免费状态可使用樱粉和黑色主题、圆形与星星选中图形、「心情」「日常」和「陪伴」三组表情；日历标题及其余表情组、主题色和选中图形需购买解锁。购买通过 StoreKit 2 校验，并支持恢复购买。App Store Connect 需创建非消耗型商品 `com.qingqing.MoodCalendar.permanentUnlock` 并设为人民币 ¥12；未配置商品前，购买按钮不可用。
 
 ## 运行

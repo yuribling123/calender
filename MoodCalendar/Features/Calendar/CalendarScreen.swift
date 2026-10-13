@@ -10,6 +10,7 @@ struct CalendarScreen: View {
     @Environment(\.scenePhase) private var scenePhase
     @AppStorage("calendarTitle") private var storedCalendarTitle = ""
     @AppStorage("dailyReminderEnabled") private var isDailyReminderEnabled = true
+    @AppStorage("showMonthArrows") private var showMonthArrows = true
     @Query private var entries: [MoodEntry]
     @GestureState private var isHorizontalMonthSwipe = false
     @State private var displayedMonth = MonthLayout(containing: Date()).monthStart
@@ -23,6 +24,7 @@ struct CalendarScreen: View {
     @State private var editorInitialGroup: ChoiceGroup = .mood
     @State private var editingDayKey: String?
     @State private var editingChoiceRawValue: Int?
+    @State private var pendingSaveFeedback = false
     @State private var pendingRevealDayKey: String?
     @State private var animatedDayKey: String?
     @State private var saveError: String?
@@ -54,7 +56,7 @@ struct CalendarScreen: View {
                         monthChooser
                     } else {
                         monthHeader
-                            .padding(.bottom, 30)
+                            .padding(.bottom, 22)
                             .contentShape(Rectangle())
                             .simultaneousGesture(monthSwipeGesture)
                         MonthGrid(
@@ -102,14 +104,16 @@ struct CalendarScreen: View {
             .task {
                 await DailyFragmentReminder.refresh(
                     recordedDayKeys: recordedDayKeys,
-                    isEnabled: isDailyReminderEnabled
+                    isEnabled: isDailyReminderEnabled,
+                    mayRequestAuthorization: false
                 )
             }
             .onChange(of: recordedDayKeys.sorted()) { _, _ in
                 Task {
                     await DailyFragmentReminder.refresh(
                         recordedDayKeys: recordedDayKeys,
-                        isEnabled: isDailyReminderEnabled
+                        isEnabled: isDailyReminderEnabled,
+                    mayRequestAuthorization: false
                     )
                 }
             }
@@ -136,7 +140,8 @@ struct CalendarScreen: View {
                 Task {
                     await DailyFragmentReminder.refresh(
                         recordedDayKeys: recordedDayKeys,
-                        isEnabled: isDailyReminderEnabled
+                        isEnabled: isDailyReminderEnabled,
+                    mayRequestAuthorization: false
                     )
                 }
             }
@@ -251,36 +256,38 @@ struct CalendarScreen: View {
 
     private var monthChooser: some View {
         VStack(alignment: .trailing, spacing: 0) {
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: 3), spacing: 32) {
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: 3), spacing: 16) {
                 ForEach(1...12, id: \.self) { month in
                     Button {
                         chooseMonth(month)
                     } label: {
-                        Text(monthTitle(month, abbreviated: true))
-                            .font(.system(size: 18, weight: isDisplayedMonth(month) ? .semibold : .medium))
-                            .foregroundStyle(isDisplayedMonth(month) ? theme.palette.onSelection : Color.primary)
-                            .frame(minWidth: 68, minHeight: 44)
-                            .frame(maxWidth: .infinity, minHeight: 64)
-                            .background {
-                                if isDisplayedMonth(month) {
-                                    SelectionShapeIcon(
-                                        shape: selectionShape,
-                                        color: theme.palette.selectionFill,
-                                        size: 66
-                                    )
-                                        .accessibilityHidden(true)
+                        VStack(spacing: 4) {
+                            Text(monthTitle(month, abbreviated: true))
+                                .font(.body.weight(isDisplayedMonth(month) ? .semibold : .medium))
+                                .foregroundStyle(isDisplayedMonth(month) ? theme.palette.onSelection : Color.primary)
+                                .frame(minWidth: 68, minHeight: 56)
+                                .frame(maxWidth: .infinity)
+                                .background {
+                                    if isDisplayedMonth(month) {
+                                        SelectionShapeIcon(shape: selectionShape,
+                                                           color: theme.palette.selectionFill, size: 50)
+                                            .accessibilityHidden(true)
+                                    }
                                 }
-                            }
-                            .overlay(alignment: .bottom) {
+                            Group {
                                 if let choice = representativeChoice(in: month) {
                                     Image(choice.imageName)
                                         .resizable()
                                         .scaledToFit()
                                         .frame(width: 58, height: 38)
-                                        .offset(y: 31)
-                                        .accessibilityHidden(true)
+                                        .scaleEffect(choice.group == .mood ? 1 : choice.group == .company ? 1.45 : 1.35)
+                                } else {
+                                    Color.clear
                                 }
                             }
+                            .frame(height: 44)
+                            .accessibilityHidden(true)
+                        }
                             .contentShape(Rectangle())
                     }
                     .accessibilityLabel(Text(verbatim: localized("%@年%@月", String(describing: chooserYear), String(describing: month))))
@@ -288,13 +295,23 @@ struct CalendarScreen: View {
                     .accessibilityAddTraits(isDisplayedMonth(month) ? .isSelected : [])
                 }
             }
-            Button(localized("返回")) { isChoosingMonth = false }
+            HStack {
+                Button(localized("今年")) {
+                    let currentYear = calendar.component(.year, from: Date())
+                    guard chooserYear != currentYear else { return }
+                    chooserYear = currentYear
+                    PageTurnFeedback.play()
+                }
+                .frame(minHeight: 44)
+                Spacer()
+                Button(localized("返回")) { isChoosingMonth = false }
+                    .frame(minHeight: 44)
+                    .accessibilityLabel(localized("返回日历"))
+            }
                 .font(.subheadline.weight(.medium))
                 .foregroundStyle(theme.palette.strongAccent)
-                .frame(minHeight: 44)
                 .padding(.top, 28)
-                .padding(.trailing, 10)
-                .accessibilityLabel(localized("返回日历"))
+                .padding(.horizontal, 10)
         }
         .buttonStyle(.plain)
         .padding(.top, 22)
@@ -389,6 +406,9 @@ struct CalendarScreen: View {
                         .frame(width: 44, height: 44)
                 }
                 .accessibilityLabel(localized("上个月"))
+                .opacity(showMonthArrows ? 1 : 0)
+                .allowsHitTesting(showMonthArrows)
+                .accessibilityHidden(!showMonthArrows)
 
                 Spacer()
 
@@ -398,6 +418,9 @@ struct CalendarScreen: View {
                         .frame(width: 44, height: 44)
                 }
                 .accessibilityLabel(localized("下个月"))
+                .opacity(showMonthArrows ? 1 : 0)
+                .allowsHitTesting(showMonthArrows)
+                .accessibilityHidden(!showMonthArrows)
             }
             .padding(.horizontal, 10)
             .overlay {
@@ -505,7 +528,8 @@ struct CalendarScreen: View {
         isEditorPresented = true
     }
 
-    private func handleEditorSaved(_ choice: DailyChoice) {
+    private func handleEditorSaved(_ choice: DailyChoice, hasChanges: Bool) {
+        pendingSaveFeedback = hasChanges
         guard let key = editingDayKey,
               choice.rawValue != editingChoiceRawValue else { return }
         pendingRevealDayKey = key
@@ -514,11 +538,14 @@ struct CalendarScreen: View {
     private func handleEditorDismissed() {
         editingDayKey = nil
         editingChoiceRawValue = nil
+        if pendingSaveFeedback {
+            SaveFeedback.play()
+            pendingSaveFeedback = false
+        }
         guard let key = pendingRevealDayKey else { return }
 
         // Keep the saved artwork hidden until the sheet has finished closing.
         animatedDayKey = key
-        SaveFeedback.play()
         DispatchQueue.main.async {
             pendingRevealDayKey = nil
         }
@@ -528,6 +555,7 @@ struct CalendarScreen: View {
             }
         }
     }
+
 }
 
 #Preview {

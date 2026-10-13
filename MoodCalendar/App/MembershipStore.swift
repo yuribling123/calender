@@ -103,8 +103,11 @@ final class MembershipStore: ObservableObject {
     }
 
     private func apply(_ result: VerificationResult<Transaction>) async {
-        guard case .verified(let transaction) = result,
-              transaction.productID == Self.productID else { return }
+        guard case .verified(let transaction) = result else {
+            message = localized("暂时无法验证购买，请尝试恢复购买。")
+            return
+        }
+        guard transaction.productID == Self.productID else { return }
         await transaction.finish()
         // A transaction update can also report a refund or revocation. Re-read
         // the current entitlement instead of assuming every update grants access.

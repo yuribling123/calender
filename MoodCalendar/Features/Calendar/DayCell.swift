@@ -90,7 +90,7 @@ struct DayCell: View {
                     .frame(height: 8)
                     .accessibilityHidden(true)
                 }
-                .padding(.top, 6) // ← 图标 + 横线整体往下
+                .padding(.top, 2)
             }
             .padding(.top, 8)
             .frame(

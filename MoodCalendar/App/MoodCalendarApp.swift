@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import UIKit
 
 @main
 struct MoodCalendarApp: App {
@@ -11,9 +12,19 @@ struct MoodCalendarApp: App {
     @State private var selectedTab = 0
     @AppStorage("appLanguage") private var storedLanguage = AppLanguage.selection
     @State private var requestedCalendarMonth: Date?
+    @State private var isGuidePresented = false
+
+    private var guideKey: String { DemoData.isEnabled ? "demoHasSeenGuide" : "hasSeenGuide" }
 
     init() {
         AppLanguage.prepareSelection()
+        let tabBar = UITabBar.appearance()
+        let appearance = tabBar.standardAppearance.copy() as! UITabBarAppearance
+        appearance.selectionIndicatorTintColor = UIColor.black.withAlphaComponent(0.035)
+        tabBar.standardAppearance = appearance
+        let scrollAppearance = (tabBar.scrollEdgeAppearance ?? appearance).copy() as! UITabBarAppearance
+        scrollAppearance.selectionIndicatorTintColor = appearance.selectionIndicatorTintColor
+        tabBar.scrollEdgeAppearance = scrollAppearance
     }
 
     private let container: ModelContainer = {
@@ -83,6 +94,32 @@ struct MoodCalendarApp: App {
                 .environment(\.appTheme, AppTheme(rawValue: storedTheme) ?? .pink)
                 .environment(\.selectionShape, SelectionShape(rawValue: storedSelectionShape) ?? .circle)
                 .tint((AppTheme(rawValue: storedTheme) ?? .pink).palette.strongAccent)
+                .sheet(isPresented: $isGuidePresented) {
+                    ScrollView {
+                    VStack(alignment: .leading, spacing: 24) {
+                        Text(localized("这样翻翻日历"))
+                            .font(.title2.weight(.semibold))
+                        Label(localized("用手指在日历上左右滑动，切换月份"), systemImage: "arrow.left.arrow.right")
+                        Label(localized("点顶部年份，可切换年份"), systemImage: "calendar")
+                        Label(localized("点日历中今天的日期，记录今日份"), systemImage: "square.and.pencil")
+                        Button {
+                            UserDefaults.standard.set(true, forKey: guideKey)
+                            isGuidePresented = false
+                        } label: {
+                            Text(localized("知道了"))
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 12)
+                        }
+                        .buttonStyle(.borderedProminent)
+                    }
+                    .padding(28)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    .background((AppTheme(rawValue: storedTheme) ?? .pink).palette.background)
+                    .tint((AppTheme(rawValue: storedTheme) ?? .pink).palette.strongAccent)
+                    .presentationDetents([.medium, .large])
+                    .interactiveDismissDisabled()
+                }
                 .alert(localized("未能开启 iCloud 同步"), isPresented: $isICloudFailurePending) {
                     Button(localized("确定"), role: .cancel) { isICloudFailurePending = false }
                 } message: {
@@ -90,6 +127,22 @@ struct MoodCalendarApp: App {
                 }
                 .task {
                     try? await MainActor.run { try prepareStore() }
+                    let entries = (try? container.mainContext.fetch(FetchDescriptor<MoodEntry>())) ?? []
+                    await DailyFragmentReminder.refresh(
+                        recordedDayKeys: Set(entries.compactMap { $0.choice == nil ? nil : $0.dayKey }),
+                        isEnabled: UserDefaults.standard.object(forKey: "dailyReminderEnabled") as? Bool ?? true
+                    )
+                    try? await MainActor.run {
+                        guard !UserDefaults.standard.bool(forKey: guideKey) else { return }
+                        let context = container.mainContext
+                        let hasRecords = try context.fetchCount(FetchDescriptor<MoodEntry>()) > 0
+                            || context.fetchCount(FetchDescriptor<MonthlyNote>()) > 0
+                        if hasRecords && !DemoData.isEnabled {
+                            UserDefaults.standard.set(true, forKey: guideKey)
+                        } else {
+                            isGuidePresented = true
+                        }
+                    }
                 }
         }
         .modelContainer(container)

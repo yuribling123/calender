@@ -18,7 +18,7 @@ struct EntryEditorScreen: View {
     let day: Date
     let entry: MoodEntry?
     let initialGroup: ChoiceGroup
-    let onSaved: (DailyChoice) -> Void
+    let onSaved: (DailyChoice, Bool) -> Void
 
     @State private var selectedChoice: DailyChoice?
     @State private var selectedGroup: ChoiceGroup = .mood
@@ -164,18 +164,11 @@ struct EntryEditorScreen: View {
                                 .scaleEffect(selectedGroup == .mood ? 1 : choice == .cake ? 1 : choice == .gather ? 1.48 : choice == .relax || choice == .study ? 1.38 : selectedGroup == .company ? 1.32 : 1.22)
                                 .accessibilityHidden(true)
 
-                            if !isAvailable {
-                                Image(systemName: "lock.fill")
-                                    .font(.system(size: 9, weight: .semibold))
-                                    .foregroundStyle(.secondary)
-                                    .padding(4)
-                                    .background(Color.white.opacity(0.9), in: Circle())
-                                    .offset(x: 4, y: -4)
-                            }
+
                         }
                         Text(choice.title)
                             .font(.caption.weight(.medium))
-                            .foregroundStyle(isAvailable ? .primary : .secondary)
+                            .foregroundStyle(.primary)
                             .lineLimit(2)
                             .minimumScaleFactor(0.9)
                             .multilineTextAlignment(.center)
@@ -290,12 +283,14 @@ struct EntryEditorScreen: View {
 
     private func save() {
         guard let selectedChoice else { return }
+        let savedNote = (showsNote ? note : "").trimmingCharacters(in: .whitespacesAndNewlines)
+        let hasChanges = selectedChoice != entry?.choice || savedNote != (entry?.note ?? "")
         do {
             try EntryStore(context: modelContext).save(
                 day: DayKey(day), choice: selectedChoice, note: showsNote ? note : "",
                 isMember: hasPremiumAccess
             )
-            onSaved(selectedChoice)
+            onSaved(selectedChoice, hasChanges)
             dismiss()
         } catch {
             errorMessage = error.localizedDescription

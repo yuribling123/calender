@@ -12,16 +12,12 @@ struct SelectedDateDetail: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Rectangle()
-                .fill(theme.palette.accent.opacity(0.2))
-                .frame(height: 1)
-
             HStack {
                 Text(relation == .today
                      ? localized("今天")
-                     : "\(date.formatted(.dateTime.month().day())) · \(date.formatted(.dateTime.weekday(.wide)))")
+                     : "\(date.formatted(.dateTime.locale(AppLanguage.locale).month().day())) · \(date.formatted(.dateTime.locale(AppLanguage.locale).weekday(.wide)))")
                     .font(.subheadline.weight(.medium))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(Color.black.opacity(0.72))
                 Spacer()
             }
             .padding(.bottom, -8)
@@ -84,6 +80,11 @@ struct SelectedDateDetail: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(16)
+        .background {
+            RoundedRectangle(cornerRadius: 18)
+                .fill(theme.palette.accent.opacity(0.06))
+        }
     }
 
     private func choiceArtwork(_ choice: DailyChoice) -> some View {
@@ -101,23 +102,34 @@ struct SelectedDateDetail: View {
     }
 
     private func recordedChoice(_ choice: DailyChoice) -> some View {
-        VStack(alignment: .leading, spacing: 1) {
+        VStack(alignment: .leading, spacing: 4) {
             HStack(alignment: .center, spacing: 2) {
                 choiceArtwork(choice)
                     .accessibilityHidden(true)
-                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                ViewThatFits(in: .horizontal) {
+                    HStack(alignment: .firstTextBaseline, spacing: 14) {
                     Text(choice.title)
                         .font(.subheadline.weight(.medium))
                     Text(choice.caption)
-                        .font(.footnote)
+                        .font(.caption)
                         .foregroundStyle(.secondary)
+                    }
+                    .fixedSize(horizontal: true, vertical: false)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(choice.title)
+                            .font(.subheadline.weight(.medium))
+                        Text(choice.caption)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
                 }
                 .accessibilityElement(children: .combine)
                 .accessibilityLabel("\(choice.group.title), \(choice.title), \(choice.caption)")
             }
             if let note = entry?.note, !note.isEmpty {
                 Text(note)
-                    .font(.subheadline)
+                    .font(.body)
+                    .lineSpacing(4)
                     .foregroundStyle(.primary)
             }
         }

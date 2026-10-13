@@ -74,7 +74,7 @@ struct MonthlyGoalScreen: View {
 
     private func yearHeader(for date: Date) -> some View {
         Text(String(calendar.component(.year, from: date)))
-            .font(.system(size: 16, weight: .regular))
+            .font(.subheadline)
             .foregroundStyle(Color.gray)
             .padding(.top, 2)
             .padding(.bottom, 6)
@@ -87,7 +87,7 @@ struct MonthlyGoalScreen: View {
                 .fill(Color.secondary.opacity(0.08))
                 .frame(height: 1)
             Text(localized("往月记录"))
-                .font(.system(size: 12, weight: .medium))
+                .font(.footnote.weight(.medium))
                 .foregroundStyle(.secondary)
                 .fixedSize()
             Rectangle()
@@ -106,7 +106,7 @@ struct MonthlyGoalScreen: View {
                 .font(.system(size: 17, weight: .medium))
                 .foregroundStyle(.primary.opacity(0.76))
             Text(localized("试试来写吧"))
-                .font(.system(size: 14, weight: .regular))
+                .font(.footnote)
                 .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity, minHeight: 156, alignment: .center)
@@ -174,7 +174,7 @@ struct MonthlyGoalScreen: View {
                 Text(localized("本月"))
                     .foregroundStyle(theme.palette.strongAccent)
             }
-            .font(.system(size: 11, weight: .medium))
+            .font(.caption)
 
             currentMonthEditor
                 .padding(.top, noteVerticalSpacing)
@@ -186,7 +186,7 @@ struct MonthlyGoalScreen: View {
         VStack(alignment: .leading, spacing: 10) {
             if isEditingCurrentNote {
                 TextEditor(text: $draftNoteText)
-                    .font(.system(size: 18, weight: .regular))
+                    .font(.body)
                     .foregroundStyle(.primary)
                     .focused($isCurrentNoteFocused)
                     .scrollContentBackground(.hidden)
@@ -222,7 +222,7 @@ struct MonthlyGoalScreen: View {
             } else {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(currentNoteText)
-                        .font(.system(size: 18, weight: .regular))
+                        .font(.body)
                         .foregroundStyle(.primary)
                         .lineSpacing(8)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -240,7 +240,7 @@ struct MonthlyGoalScreen: View {
                 //     Spacer()
                 //     Button { beginCurrentNoteEditing() } label: {
                 //         Label("编辑", systemImage: "pencil")
-                //             .font(.system(size: 12, weight: .medium))
+                //             .font(.footnote.weight(.medium))
                 //             .foregroundStyle(theme.palette.strongAccent.opacity(0.82))
                 //     }
                 //     .accessibilityLabel("编辑本月主题")
@@ -258,11 +258,15 @@ struct MonthlyGoalScreen: View {
     }
 
     private func saveCurrentNote() {
+        let text = String(draftNoteText.prefix(noteCharacterLimit))
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        let hasChanges = text != currentNoteText
         do {
             try MonthlyNoteStore(context: modelContext).save(
                 monthKey: monthKey(for: startOfCurrentMonth),
-                text: String(draftNoteText.prefix(noteCharacterLimit))
+                text: text
             )
+            if hasChanges { SaveFeedback.play() }
             isCurrentNoteFocused = false
             isEditingCurrentNote = false
         } catch {
@@ -274,8 +278,8 @@ struct MonthlyGoalScreen: View {
         VStack(alignment: .leading, spacing: 22) {
             if let note = data.note {
                 Text(note)
-                    .font(.system(size: 15, weight: .regular))
-                    .foregroundStyle(theme.palette.strongAccent)
+                    .font(.body)
+                    .foregroundStyle(Color.black.opacity(0.76))
                     .lineSpacing(4)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
@@ -290,10 +294,10 @@ struct MonthlyGoalScreen: View {
         Button { onOpenMonth(date) } label: {
             VStack(alignment: .leading, spacing: 1) {
                 Text(String(format: "%02d", calendar.component(.month, from: date)))
-                    .font(.system(size: 25, weight: .semibold))
+                    .font(.title2.weight(.semibold))
                     .foregroundStyle(.primary)
                 Text(monthAbbreviation(for: date))
-                    .font(.system(size: 11, weight: .semibold))
+                    .font(.caption.weight(.semibold))
                     .tracking(1.1)
                     .foregroundStyle(.secondary)
             }
@@ -314,11 +318,11 @@ struct MonthlyGoalScreen: View {
     private func summaryRow(title: String, value: String) -> some View {
         VStack(alignment: .leading, spacing: 5) {
             Text(title)
-                .font(.system(size: 15, weight: .medium))
+                .font(.footnote.weight(.medium))
                 .foregroundStyle(.secondary)
 
             Text(value)
-                .font(.system(size: 15, weight: .regular))
+                .font(.body)
                 .foregroundStyle(.primary)
                 .lineLimit(3)
         }

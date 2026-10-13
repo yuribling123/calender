@@ -120,6 +120,7 @@ struct PersonalizationScreen: View {
     #endif
     @AppStorage("calendarTitle") private var storedCalendarTitle = ""
     @AppStorage("dailyReminderEnabled") private var isDailyReminderEnabled = true
+    @AppStorage("showMonthArrows") private var showMonthArrows = true
     @Environment(\.modelContext) private var modelContext
     @Environment(\.openURL) private var openURL
     @Environment(\.scenePhase) private var scenePhase
@@ -183,6 +184,8 @@ struct PersonalizationScreen: View {
                     personalizationSection
 
                     membershipSection
+
+                    calendarNavigationSection
 
                     reminderSection
 
@@ -468,6 +471,23 @@ struct PersonalizationScreen: View {
         if case .failure(let error) = result {
             exportError = error.localizedDescription
         }
+    }
+
+    private var calendarNavigationSection: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text(localized("日历导航"))
+                .font(.title3.weight(.semibold))
+            VStack(alignment: .leading, spacing: 8) {
+                Toggle(localized("显示翻月箭头"), isOn: $showMonthArrows)
+                    .tint(theme.palette.strongAccent)
+                Text(localized("关闭后，仍可用手指左右滑动切换月份。"))
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+            .padding(20)
+            .background(.white, in: RoundedRectangle(cornerRadius: 24))
+        }
+        .padding(.top, 28)
     }
 
     private var languageSection: some View {

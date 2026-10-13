@@ -1,10 +1,24 @@
 import AVFoundation
 
+private enum FeedbackAudioSession {
+    static func prepare() -> Bool {
+        do {
+            // Ambient mixes with other apps and respects the Silent switch.
+            try AVAudioSession.sharedInstance().setCategory(.ambient, mode: .default)
+            return true
+        } catch {
+            // Skip the effect rather than interrupt music with the default category.
+            return false
+        }
+    }
+}
+
 enum SaveFeedback {
     private static var activePlayer: AVAudioPlayer?
 
     static func play() {
-        guard let url = Bundle.main.url(forResource: "save-chime", withExtension: "wav"),
+        guard FeedbackAudioSession.prepare(),
+              let url = Bundle.main.url(forResource: "save-chime", withExtension: "wav"),
               let player = try? AVAudioPlayer(contentsOf: url) else {
             return
         }
@@ -64,11 +78,12 @@ enum PageTurnFeedback {
     }()
 
     static func play() {
-        guard Date().timeIntervalSince(lastPlayedAt) >= 0.12,
+        guard Date().timeIntervalSince(lastPlayedAt) >= 0.22,
+              FeedbackAudioSession.prepare(),
               let player = try? AVAudioPlayer(data: soundData) else { return }
         lastPlayedAt = Date()
         activePlayer?.stop()
-        player.volume = 0.24
+        player.volume = 0.18
         player.prepareToPlay()
         player.play()
         activePlayer = player
