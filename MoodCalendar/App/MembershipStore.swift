@@ -4,7 +4,7 @@ import StoreKit
 
 @MainActor
 final class MembershipStore: ObservableObject {
-    static let productID = "com.qingqing.MoodCalendar.permanentUnlock"
+    static let productID = "com.qingqing.MoodCalendar.premium.lifetime"
 
     @Published private(set) var isUnlocked = false
     @Published private(set) var product: Product?
@@ -12,7 +12,13 @@ final class MembershipStore: ObservableObject {
     @Published private(set) var productLoadFailed = false
     @Published private(set) var message: String?
 
-    var hasMembershipAccess: Bool { isUnlocked || DemoData.isEnabled }
+    var hasMembershipAccess: Bool {
+        #if DEBUG
+        isUnlocked || DemoData.isEnabled
+        #else
+        isUnlocked
+        #endif
+    }
 
     private var updatesTask: Task<Void, Never>?
 
@@ -34,7 +40,10 @@ final class MembershipStore: ObservableObject {
     }
 
     func loadProduct() async {
-        guard !DemoData.isEnabled, !isLoading else { return }
+        #if DEBUG
+        guard !DemoData.isEnabled else { return }
+        #endif
+        guard !isLoading else { return }
         isLoading = true
         productLoadFailed = false
         message = nil
@@ -43,7 +52,9 @@ final class MembershipStore: ObservableObject {
             product = try await Product.products(for: [Self.productID]).first
             if product == nil {
                 productLoadFailed = true
+                #if !DEBUG
                 message = localized("暂时无法加载购买项目，请稍后重试。")
+                #endif
             }
         } catch {
             productLoadFailed = true
@@ -90,7 +101,9 @@ final class MembershipStore: ObservableObject {
     }
 
     private func refreshEntitlements() async {
+        #if DEBUG
         guard !DemoData.isEnabled else { return }
+        #endif
         var hasUnlock = false
         for await result in Transaction.currentEntitlements {
             guard case .verified(let transaction) = result,
@@ -115,7 +128,10 @@ final class MembershipStore: ObservableObject {
     }
 
     private func enforceFreeCustomizationLimits() {
-        guard !isUnlocked, !DemoData.isEnabled else { return }
+        guard !isUnlocked else { return }
+        #if DEBUG
+        guard !DemoData.isEnabled else { return }
+        #endif
         let defaults = UserDefaults.standard
         let freeThemes: Set<String> = [AppTheme.pink.rawValue, AppTheme.black.rawValue]
         if !freeThemes.contains(defaults.string(forKey: "appTheme") ?? "") {

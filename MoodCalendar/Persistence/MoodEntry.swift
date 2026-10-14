@@ -8,6 +8,7 @@ final class MoodEntry {
     // Keep the original field for SwiftData compatibility; it stores DailyChoice IDs 1–20.
     var moodValue: Int = DailyChoice.veryGood.rawValue
     var note: String = ""
+    @Attribute(.externalStorage) var photoData: Data? = nil
     var updatedAt: Date = Date(timeIntervalSince1970: 0)
 
     init(dayKey: String, choice: DailyChoice, note: String) {

@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import PhotosUI
 
 private struct NoteCardFramePreferenceKey: PreferenceKey {
     static var defaultValue: CGRect = .zero
@@ -22,6 +23,10 @@ struct EntryEditorScreen: View {
 
     @State private var selectedChoice: DailyChoice?
     @State private var selectedGroup: ChoiceGroup = .mood
+    @State private var photoItem: PhotosPickerItem?
+    @State private var photoData: Data?
+    @State private var isLoadingPhoto = false
+    @State private var photoLoadTask: Task<Void, Never>?
     @State private var note = ""
     @State private var showsNote = false
     @State private var errorMessage: String?
@@ -46,6 +51,8 @@ struct EntryEditorScreen: View {
                     choicePicker
 
                     noteCard
+
+                    photoAttachment
                 }
                 .padding(24)
             }
@@ -71,7 +78,7 @@ struct EntryEditorScreen: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button(localized("保存")) { save() }
-                        .disabled(selectedChoice == nil)
+                        .disabled(selectedChoice == nil || isLoadingPhoto)
                 }
             }
             .alert(localized("保存失败"), isPresented: Binding(
@@ -86,13 +93,71 @@ struct EntryEditorScreen: View {
                 MembershipScreen()
                     .environmentObject(membership)
             }
+            .onChange(of: photoItem) { _, item in
+                photoLoadTask?.cancel()
+                guard let item else { return }
+                isLoadingPhoto = true
+                photoLoadTask = Task {
+                    defer { if !Task.isCancelled { isLoadingPhoto = false } }
+                    do {
+                        guard let data = try await item.loadTransferable(type: Data.self),
+                              let image = UIImage(data: data) else { throw PhotoLoadError.invalidImage }
+                        try Task.checkCancellation()
+                        let size = image.size
+                        let scale = min(1, 1600 / max(size.width, size.height))
+                        let format = UIGraphicsImageRendererFormat()
+                        format.scale = 1
+                        let rendered = UIGraphicsImageRenderer(size: CGSize(width: size.width * scale, height: size.height * scale), format: format).image { _ in
+                            image.draw(in: CGRect(origin: .zero, size: CGSize(width: size.width * scale, height: size.height * scale)))
+                        }
+                        guard let jpeg = rendered.jpegData(compressionQuality: 0.82) else { throw PhotoLoadError.invalidImage }
+                        photoData = jpeg
+                    } catch is CancellationError {
+                    } catch { errorMessage = localized("照片未能加载，请重新选择。") }
+                }
+            }
+            .onDisappear { photoLoadTask?.cancel() }
             .onAppear {
                 selectedChoice = entry?.choice
                 selectedGroup = entry?.choice?.group ?? initialGroup
+                photoData = entry?.photoData
                 note = entry?.note ?? ""
                 showsNote = !(entry?.note.isEmpty ?? true)
             }
         }
+    }
+
+    private var photoAttachment: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 20) {
+                PhotosPicker(selection: $photoItem, matching: .images) {
+                    Label(localized(photoData == nil ? "留张照片" : "更换照片"), systemImage: "photo.badge.plus")
+                        .font(.subheadline)
+                        .foregroundStyle(theme.palette.strongAccent)
+                        .frame(minHeight: 44)
+                }
+                if isLoadingPhoto { ProgressView() }
+                if photoData != nil {
+                    Button(localized("删除照片"), role: .destructive) {
+                        photoLoadTask?.cancel()
+                        isLoadingPhoto = false
+                        photoItem = nil
+                        photoData = nil
+                    }
+                    .font(.footnote)
+                    .frame(minHeight: 44)
+                }
+            }
+            if let photoData, let image = UIImage(data: photoData) {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(maxWidth: 140, maxHeight: 110, alignment: .leading)
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .accessibilityLabel(localized("照片"))
+            }
+        }
+        .buttonStyle(.plain)
     }
 
     private var groupPicker: some View {
@@ -284,11 +349,11 @@ struct EntryEditorScreen: View {
     private func save() {
         guard let selectedChoice else { return }
         let savedNote = (showsNote ? note : "").trimmingCharacters(in: .whitespacesAndNewlines)
-        let hasChanges = selectedChoice != entry?.choice || savedNote != (entry?.note ?? "")
+        let hasChanges = selectedChoice != entry?.choice || savedNote != (entry?.note ?? "") || photoData != entry?.photoData
         do {
             try EntryStore(context: modelContext).save(
                 day: DayKey(day), choice: selectedChoice, note: showsNote ? note : "",
-                isMember: hasPremiumAccess
+                isMember: hasPremiumAccess, photoData: photoData, updatesPhoto: true
             )
             onSaved(selectedChoice, hasChanges)
             dismiss()
@@ -313,3 +378,5 @@ private struct GroupHighlightBrush: Shape {
         return path
     }
 }
+
+private enum PhotoLoadError: Error { case invalidImage }

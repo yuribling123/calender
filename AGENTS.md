@@ -19,8 +19,9 @@
 
 ## Verification
 
-- After code changes, run the relevant Xcode build on an available iPhone simulator and check the affected interaction when Xcode is available. Do not claim simulator verification from a syntax check alone.
-- After every code or asset modification, rebuild and rerun the latest app in Xcode on the available iPhone simulator before reporting completion.
+- Keep verification proportional to the change. For simple visual or content edits (such as font size, weight, color, spacing, labels, or removing a decorative element), edit the relevant files, review the small diff, and report completion directly. Do not automatically build, install, launch a simulator, or add tests for these changes.
+- Build and check the affected interaction for changes to functionality, gestures, data, navigation, complex layout, dependencies, or resource registration, and whenever the user explicitly requests verification. Batch related edits into one build and simulator run rather than repeating this for each small adjustment.
+- Do not claim a build or simulator check was performed unless it actually completed. For simple edits, a concise description and clickable links to the modified files are sufficient.
 - For date or persistence changes, check month boundaries, leap years, one-entry-per-day updates, and reopening saved records. Add focused tests when they verify a real risk.
 - If the local environment lacks full Xcode, perform available static checks and clearly report that compilation and simulator behavior remain unverified.
 - Keep `README.md` accurate when setup, behavior, or project structure changes.

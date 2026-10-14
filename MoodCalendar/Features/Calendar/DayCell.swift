@@ -65,17 +65,25 @@ struct DayCell: View {
                                     width: min(50, geometry.size.width),
                                     height: 26
                                 )
-                                .scaleEffect(
-                                    [DailyChoice.poutyRabbit, .absentRabbit, .glassesRabbit, .tearfulRabbit].contains(choice) ? 1.26 : choice == .cake ? 1.05 : choice.group == .daily ? 1.2:choice.group == .mood ? 1 : choice == .gather ? 1.6 : choice.group == .company ? 1.5 : 1.4
-                                )
+                                .scaleEffect(artworkScale(for: choice))
                                 .scaleEffect(revealScale)
                                 .opacity(isRevealPending ? 0 : revealOpacity)
                                 .accessibilityHidden(true)
                         } else {
                             Color.clear
+                                .overlay(alignment: .bottom) {
+                                    if isToday {
+                                        EmptyTodayUnderline()
+                                            .stroke(style: StrokeStyle(lineWidth: 1.2, lineCap: .round))
+                                            .foregroundStyle(theme.palette.strongAccent.opacity(0.45))
+                                            .frame(width: 30, height: 4)
+                                            .accessibilityHidden(true)
+                                    }
+                                }
                         }
                     }
                     .frame(height: 26)
+
 
                     // 有 Note 时显示两条横线
                     VStack(alignment: .leading, spacing: 2) {
@@ -115,8 +123,30 @@ struct DayCell: View {
         }
     }
 
+    private func artworkScale(for choice: DailyChoice) -> CGFloat {
+        if [DailyChoice.poutyRabbit, .absentRabbit, .glassesRabbit, .tearfulRabbit].contains(choice) { return 1.26 }
+        if choice == .cake { return 1.05 }
+        if choice.group == .daily { return 1.2 }
+        if choice.group == .mood { return 1 }
+        if choice == .gather { return 1.6 }
+        return choice.group == .company ? 1.5 : 1.4
+    }
+
     private func prepareReveal() {
         revealScale = 0.55
         revealOpacity = 0
+    }
+}
+
+private struct EmptyTodayUnderline: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        path.move(to: CGPoint(x: 0, y: rect.height * 0.62))
+        path.addCurve(
+            to: CGPoint(x: rect.width, y: rect.height * 0.4),
+            control1: CGPoint(x: rect.width * 0.3, y: rect.height * 0.12),
+            control2: CGPoint(x: rect.width * 0.68, y: rect.height * 0.88)
+        )
+        return path
     }
 }

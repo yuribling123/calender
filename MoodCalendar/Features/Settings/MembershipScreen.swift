@@ -53,6 +53,7 @@ struct MembershipScreen: View {
                                     .multilineTextAlignment(.center)
                                     .fixedSize(horizontal: false, vertical: true)
                             }
+                            #if !DEBUG
                             if membership.productLoadFailed && !membership.hasMembershipAccess {
                                 Button(localized("重试")) {
                                     Task { await membership.loadProduct() }
@@ -61,6 +62,7 @@ struct MembershipScreen: View {
                                 .foregroundStyle(theme.palette.strongAccent)
                                 .disabled(membership.isLoading)
                             }
+                            #endif
                         }
 
                         Button {

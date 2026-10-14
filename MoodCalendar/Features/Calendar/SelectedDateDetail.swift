@@ -3,6 +3,8 @@ import SwiftUI
 struct SelectedDateDetail: View {
     @Environment(\.appTheme) private var theme
 
+    @State private var isPhotoPresented = false
+
     let date: Date
     let entry: MoodEntry?
     let onRecordMood: (Mood) -> Void
@@ -12,14 +14,45 @@ struct SelectedDateDetail: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            HStack {
+            HStack(spacing: 14) {
                 Text(relation == .today
                      ? localized("今天")
                      : "\(date.formatted(.dateTime.locale(AppLanguage.locale).month().day())) · \(date.formatted(.dateTime.locale(AppLanguage.locale).weekday(.wide)))")
                     .font(.subheadline.weight(.medium))
                     .foregroundStyle(Color.black.opacity(0.72))
-                Spacer()
+                if entry?.photoData != nil {
+                    Button { isPhotoPresented = true } label: {
+                        ViewThatFits(in: .horizontal) {
+                            HStack(spacing: 5) {
+                                PhotoStackOutline()
+                                    .stroke(style: StrokeStyle(lineWidth: 1.1, lineCap: .round, lineJoin: .round))
+                                    .foregroundStyle(theme.palette.strongAccent.opacity(0.75))
+                                    .frame(width: 16, height: 19)
+                                    .accessibilityHidden(true)
+                                Text(localized("这天有个画面"))
+                                    .foregroundStyle(theme.palette.strongAccent.opacity(0.75))
+                            }
+                            .fixedSize()
+                            PhotoStackOutline()
+                                .stroke(style: StrokeStyle(lineWidth: 1.1, lineCap: .round, lineJoin: .round))
+                                .foregroundStyle(theme.palette.strongAccent.opacity(0.75))
+                                .frame(width: 16, height: 19)
+                                .accessibilityHidden(true)
+                        }
+                        .font(.caption2)
+                        .frame(minWidth: 44, minHeight: 44)
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.vertical, -11)
+                    .accessibilityLabel(localized("这天有个画面"))
+                }
+                Spacer(minLength: 8)
+                if relation == .today, entry?.choice != nil {
+                    Color.clear.frame(width: 44, height: 22)
+                }
             }
+            .frame(minHeight: 22)
             .padding(.bottom, -8)
             .overlay(alignment: .trailing) {
                 if relation == .today, entry?.choice != nil {
@@ -79,6 +112,11 @@ struct SelectedDateDetail: View {
                 statusMessage(localized("这一天还没到来"))
             }
         }
+        .fullScreenCover(isPresented: $isPhotoPresented) {
+            if let data = entry?.photoData, let image = UIImage(data: data) {
+                DailyPhotoPreview(image: image)
+            }
+        }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
         .background {
@@ -128,10 +166,11 @@ struct SelectedDateDetail: View {
             }
             if let note = entry?.note, !note.isEmpty {
                 Text(note)
-                    .font(.body)
+                    .font(.subheadline)
                     .lineSpacing(4)
                     .foregroundStyle(.primary)
             }
+
         }
     }
 
@@ -140,5 +179,103 @@ struct SelectedDateDetail: View {
             .font(.subheadline)
             .foregroundStyle(.secondary)
             .frame(maxWidth: .infinity, minHeight: 52, alignment: .leading)
+    }
+}
+
+private struct DailyPhotoPreview: View {
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.appTheme) private var theme
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    let image: UIImage
+    @State private var isVisible = false
+    @State private var zoom: CGFloat = 1
+    @State private var isClosing = false
+    @GestureState private var pinch: CGFloat = 1
+
+    var body: some View {
+        ZStack {
+            theme.palette.background.ignoresSafeArea()
+            Image(uiImage: image)
+                .resizable()
+                .scaledToFit()
+                .padding(24)
+                .scaleEffect(zoom * pinch * (isVisible || reduceMotion ? 1 : 0.86))
+                .blur(radius: isVisible || reduceMotion ? 0 : 10)
+                .opacity(isVisible ? 1 : 0)
+                .gesture(
+                    MagnifyGesture()
+                        .updating($pinch) { value, state, _ in
+                            state = min(4 / zoom, max(0.45 / zoom, value.magnification))
+                        }
+                        .onEnded { value in
+                            if zoom <= 1.05 && value.magnification < 0.68 {
+                                closePhoto()
+                            } else {
+                                withAnimation(.spring(response: 0.3, dampingFraction: 0.85)) {
+                                    zoom = min(4, max(1, zoom * value.magnification))
+                                }
+                            }
+                        }
+                )
+                .accessibilityAction(named: localized("关闭")) { closePhoto() }
+        }
+        .clipped()
+        .overlay(alignment: .topTrailing) {
+            Button { closePhoto() } label: {
+                Image(systemName: "xmark")
+                    .font(.body.weight(.medium))
+                    .foregroundStyle(.secondary)
+                    .frame(width: 44, height: 44)
+                    .background(theme.palette.background, in: Circle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(localized("关闭"))
+            .padding(12)
+        }
+        .onAppear {
+            guard !isVisible else { return }
+            PhotoOpenFeedback.play()
+            withAnimation(reduceMotion ? .easeOut(duration: 0.15) : .spring(response: 0.55, dampingFraction: 0.82)) {
+                isVisible = true
+            }
+        }
+    }
+
+    private func closePhoto() {
+        guard !isClosing else { return }
+        isClosing = true
+        withAnimation(.easeIn(duration: 0.2)) { isVisible = false }
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(200))
+            dismiss()
+        }
+    }
+}
+
+// Only the exposed edges of the rear photo are drawn, so the outlines never overlap.
+private struct PhotoStackOutline: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let x = rect.width / 18
+        let y = rect.height / 22
+        func point(_ px: CGFloat, _ py: CGFloat) -> CGPoint {
+            CGPoint(x: rect.minX + px * x, y: rect.minY + py * y)
+        }
+        path.move(to: point(3.8, 16.5))
+        path.addLine(to: point(0.9, 4.1))
+        path.addQuadCurve(to: point(1.8, 2.9), control: point(0.6, 3.2))
+        path.addLine(to: point(11.1, 0.7))
+        path.addQuadCurve(to: point(12.4, 1.5), control: point(12.1, 0.5))
+        path.addLine(to: point(13, 3.6))
+        path.move(to: point(3.8, 10.5))
+        path.addLine(to: point(2.5, 5.1))
+        path.addLine(to: point(3.8, 4.8))
+        path.addRoundedRect(in: CGRect(x: rect.minX + 3.8 * x, y: rect.minY + 3.6 * y,
+                                      width: 13.3 * x, height: 17.6 * y),
+                            cornerSize: CGSize(width: 1.2 * x, height: 1.2 * y))
+        path.addRoundedRect(in: CGRect(x: rect.minX + 5.3 * x, y: rect.minY + 5.3 * y,
+                                      width: 10.3 * x, height: 11.9 * y),
+                            cornerSize: CGSize(width: 0.2 * x, height: 0.2 * y))
+        return path
     }
 }

@@ -171,16 +171,24 @@ struct PersonalizationScreen: View {
 
     #endif
 
+    @ScaledMetric(relativeTo: .title3) private var settingsHeadingSize: CGFloat = 20
+
+    private var settingsHeadingFont: Font {
+        .system(size: settingsHeadingSize, weight: .medium)
+    }
+
+    private var settingsItemFont: Font {
+        .system(size: settingsHeadingSize * 0.8, weight: .regular)
+    }
+
+    private var settingsDetailFont: Font {
+        .system(size: settingsHeadingSize * 0.7, weight: .regular)
+    }
+
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
-                    Text(localized("我的"))
-                        .font(.system(size: 32, weight: .semibold))
-                        .foregroundStyle(.black)
-                        .padding(.top, 4)
-                        .padding(.bottom, 20)
-
                     personalizationSection
 
                     membershipSection
@@ -202,6 +210,7 @@ struct PersonalizationScreen: View {
                 .padding(24)
             }
             .scrollDismissesKeyboard(.interactively)
+            .font(settingsItemFont)
             .background(theme.palette.background)
             .onPreferenceChange(CalendarTitleCardFramePreferenceKey.self) {
                 calendarTitleCardFrame = $0
@@ -258,7 +267,7 @@ struct PersonalizationScreen: View {
     private var personalizationSection: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text(localized("个性化"))
-                .font(.title3.weight(.semibold))
+                .font(settingsHeadingFont)
                 .padding(.top, 12)
 
             VStack(alignment: .leading, spacing: 8) {
@@ -272,9 +281,9 @@ struct PersonalizationScreen: View {
                                     .foregroundStyle(.secondary)
                             }
                         }
-                            .font(.body.weight(.medium))
+                            .font(settingsItemFont)
                         TextField(localized("今日份"), text: $storedCalendarTitle)
-                            .font(.subheadline)
+                            .font(settingsDetailFont)
                             .foregroundStyle(.secondary)
                             .focused($isCalendarTitleFocused)
                             .disabled(!hasPremiumAccess)
@@ -325,10 +334,10 @@ struct PersonalizationScreen: View {
                         .frame(width: 33, height: 30)
                     VStack(alignment: .leading, spacing: 4) {
                         Text(localized("主题色"))
-                            .font(.body.weight(.medium))
+                            .font(settingsItemFont)
                             .foregroundStyle(.primary)
                         Text(theme.title)
-                            .font(.subheadline)
+                            .font(settingsDetailFont)
                             .foregroundStyle(.secondary)
                     }
                     Spacer()
@@ -358,10 +367,10 @@ struct PersonalizationScreen: View {
                         .frame(width: 33, height: 30)
                     VStack(alignment: .leading, spacing: 4) {
                         Text(localized("选中图形"))
-                            .font(.body.weight(.medium))
+                            .font(settingsItemFont)
                             .foregroundStyle(.primary)
                         Text(selectionShape.title)
-                            .font(.subheadline)
+                            .font(settingsDetailFont)
                             .foregroundStyle(.secondary)
                     }
                     Spacer()
@@ -385,7 +394,7 @@ struct PersonalizationScreen: View {
     private var membershipSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text(localized("会员"))
-                .font(.title3.weight(.semibold))
+                .font(settingsHeadingFont)
 
             Button {
                 isMembershipPresented = true
@@ -397,10 +406,10 @@ struct PersonalizationScreen: View {
                         .frame(width: 30)
                     VStack(alignment: .leading, spacing: 4) {
                         Text(membership.hasMembershipAccess ? localized("已永久解锁") : localized("解锁全部表情和自定义"))
-                            .font(.body.weight(.medium))
+                            .font(settingsItemFont)
                             .foregroundStyle(.primary)
                         Text(membership.hasMembershipAccess ? localized("全部权益已开启") : membership.product.map { localized("一次购买，永久使用 · %@", $0.displayPrice) } ?? localized("一次购买，永久使用"))
-                            .font(.subheadline)
+                            .font(settingsDetailFont)
                             .foregroundStyle(.secondary)
                     }
                     Spacer()
@@ -420,7 +429,7 @@ struct PersonalizationScreen: View {
     private var dataExportSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text(localized("数据管理"))
-                .font(.title3.weight(.semibold))
+                .font(settingsHeadingFont)
 
             Button(action: prepareDataBackup) {
                 HStack(spacing: 14) {
@@ -431,10 +440,10 @@ struct PersonalizationScreen: View {
                         .accessibilityHidden(true)
                     VStack(alignment: .leading, spacing: 4) {
                         Text(localized("导出数据"))
-                            .font(.body.weight(.medium))
+                            .font(settingsItemFont)
                             .foregroundStyle(.primary)
                         Text(localized("保存每日记录和月便签"))
-                            .font(.subheadline)
+                            .font(settingsDetailFont)
                             .foregroundStyle(.secondary)
                     }
                     Spacer(minLength: 8)
@@ -476,7 +485,7 @@ struct PersonalizationScreen: View {
     private var calendarNavigationSection: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text(localized("日历导航"))
-                .font(.title3.weight(.semibold))
+                .font(settingsHeadingFont)
             VStack(alignment: .leading, spacing: 8) {
                 Toggle(localized("显示翻月箭头"), isOn: $showMonthArrows)
                     .tint(theme.palette.strongAccent)
@@ -493,7 +502,7 @@ struct PersonalizationScreen: View {
     private var languageSection: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text(localized("语言"))
-                .font(.system(size: 22, weight: .semibold))
+                .font(settingsHeadingFont)
                 .foregroundStyle(.black)
             HStack {
                 Text(localized("App 语言"))
@@ -515,7 +524,7 @@ struct PersonalizationScreen: View {
     private var feedbackSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text(localized("反馈"))
-                .font(.title3.weight(.semibold))
+                .font(settingsHeadingFont)
 
             Button {
                 openURL(feedbackEmailURL)
@@ -528,10 +537,10 @@ struct PersonalizationScreen: View {
                         .accessibilityHidden(true)
                     VStack(alignment: .leading, spacing: 4) {
                         Text(localized("联系"))
-                            .font(.body.weight(.medium))
+                            .font(settingsItemFont)
                             .foregroundStyle(.primary)
                         Text(verbatim: "yui480145@gmail.com")
-                            .font(.subheadline)
+                            .font(settingsDetailFont)
                             .foregroundStyle(.secondary)
                     }
                     Spacer(minLength: 8)
@@ -558,12 +567,12 @@ struct PersonalizationScreen: View {
     private var reminderSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text(localized("提醒"))
-                .font(.title3.weight(.semibold))
+                .font(settingsHeadingFont)
 
             HStack(spacing: 16) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(localized("每日提醒"))
-                        .font(.body.weight(.medium))
+                        .font(settingsItemFont)
                         .foregroundStyle(.primary)
                     if reminderPermissionDenied {
                         Text(localized("系统通知已关闭，请在设置中允许通知"))
@@ -627,15 +636,15 @@ struct PersonalizationScreen: View {
     private var syncSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text(localized("数据同步"))
-                .font(.title3.weight(.semibold))
+                .font(settingsHeadingFont)
 
             HStack(spacing: 16) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(localized("iCloud 同步"))
-                        .font(.body.weight(.medium))
+                        .font(settingsItemFont)
                         .foregroundStyle(.primary)
                     Text(iCloudStatusText)
-                        .font(.subheadline)
+                        .font(settingsDetailFont)
                         .foregroundStyle(.secondary)
                 }
                 Spacer(minLength: 8)
@@ -711,7 +720,7 @@ struct PersonalizationScreen: View {
                     Task { @MainActor in await enableICloudSyncAfterValidation() }
                 } else {
                     isICloudSyncEnabled = false
-                    iCloudMessage = localized("已关闭；完全退出并重新打开 App 后停止同步")
+                    iCloudMessage = localized("已关闭")
                 }
             }
         )
@@ -809,12 +818,12 @@ struct PersonalizationScreen: View {
         VStack(spacing: 16) {
             ZStack {
                 Text(localized("主题色"))
-                    .font(.headline.weight(.semibold))
+                    .font(settingsHeadingFont)
 
                 HStack {
                     Spacer()
                     Button(localized("完成")) { isThemePickerPresented = false }
-                        .font(.headline.weight(.semibold))
+                        .font(settingsItemFont)
                         .foregroundStyle(theme.palette.strongAccent)
                         .frame(minWidth: 44, minHeight: 44, alignment: .trailing)
                         .contentShape(Rectangle())
@@ -839,6 +848,7 @@ struct PersonalizationScreen: View {
                                     .frame(width: 28, height: 28)
                                     .accessibilityHidden(true)
                                 Text(option.title)
+                                    .font(settingsItemFont)
                                     .foregroundStyle(.primary)
                                 Spacer()
                                 if option != .pink && option != .black && !hasPremiumAccess {
@@ -877,12 +887,12 @@ struct PersonalizationScreen: View {
         VStack(spacing: 16) {
             ZStack {
                 Text(localized("选中图形"))
-                    .font(.headline.weight(.semibold))
+                    .font(settingsHeadingFont)
 
                 HStack {
                     Spacer()
                     Button(localized("完成")) { isShapePickerPresented = false }
-                        .font(.headline.weight(.semibold))
+                        .font(settingsItemFont)
                         .foregroundStyle(theme.palette.strongAccent)
                         .frame(minWidth: 44, minHeight: 44, alignment: .trailing)
                         .contentShape(Rectangle())
@@ -909,6 +919,7 @@ struct PersonalizationScreen: View {
                                 .frame(width: 32, height: 32)
                                 .accessibilityHidden(true)
                             Text(option.title)
+                                .font(settingsItemFont)
                                 .foregroundStyle(.primary)
                             Spacer()
                             if option != .circle && option != .star && !hasPremiumAccess {

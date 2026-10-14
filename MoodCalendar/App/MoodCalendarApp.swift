@@ -61,14 +61,19 @@ struct MoodCalendarApp: App {
     }()
 
     private static func modelConfiguration(schema: Schema, useCloudKit: Bool) -> ModelConfiguration {
+        #if DEBUG
+        let useInMemoryStore = DemoData.isEnabled
+        #else
+        let useInMemoryStore = false
+        #endif
         #if ICLOUD_SYNC_ENABLED
         return ModelConfiguration(
             schema: schema,
-            isStoredInMemoryOnly: DemoData.isEnabled,
+            isStoredInMemoryOnly: useInMemoryStore,
             cloudKitDatabase: useCloudKit ? .private("iCloud.com.qingqing.MoodCalendar") : .none
         )
         #else
-        return ModelConfiguration(schema: schema, isStoredInMemoryOnly: DemoData.isEnabled, cloudKitDatabase: .none)
+        return ModelConfiguration(schema: schema, isStoredInMemoryOnly: useInMemoryStore, cloudKitDatabase: .none)
         #endif
     }
 

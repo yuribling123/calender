@@ -181,7 +181,7 @@ struct CalendarScreen: View {
         VStack(alignment: .leading, spacing: 2) {
             HStack(alignment: .firstTextBaseline, spacing: 12) {
                 Text(storedCalendarTitle.isEmpty ? localized("今日份") : storedCalendarTitle)
-                    .font(.system(size: 32, weight: .semibold))
+                    .font(.system(size: 23, weight: .medium))
                     .lineLimit(1)
                     .minimumScaleFactor(0.7)
                     .foregroundStyle(.black)
@@ -193,9 +193,9 @@ struct CalendarScreen: View {
                     isChoosingMonth.toggle()
                 } label: {
                     HStack(spacing: 5) {
-                        yearLabel(calendar.component(.year, from: displayedMonth), size: 16)
+                        yearLabel(calendar.component(.year, from: displayedMonth), size: 13)
                     }
-                    .font(.system(size: 16, weight: .regular))
+                    .font(.system(size: 13, weight: .regular))
                     .foregroundStyle(Color.gray)
                     .frame(minHeight: 44, alignment: .leading)
                 }
@@ -236,13 +236,6 @@ struct CalendarScreen: View {
             .buttonStyle(.plain)
             .contentShape(Rectangle())
             .highPriorityGesture(yearSwipeGesture)
-            #if DEBUG
-            if DemoData.isEnabled {
-                Text(localized("演示数据"))
-                    .font(.caption.weight(.medium))
-                    .foregroundStyle(.secondary)
-            }
-            #endif
         }
         .padding(.top, 4)
     }
@@ -397,6 +390,20 @@ struct CalendarScreen: View {
         isChoosingMonth = false
     }
 
+    private var monthHandwritingFont: Font {
+        let candidates: [String]
+        switch AppLanguage.selection {
+        case "zh-Hans": candidates = ["MaShanZheng-Regular"]
+        case "ja": candidates = ["Yomogi-Regular"]
+        case "ko": candidates = ["NanumPen-Regular"]
+        default: candidates = ["ChalkboardSE-Regular", "Noteworthy-Light"]
+        }
+        if let name = candidates.first(where: { UIFont(name: $0, size: 23) != nil }) {
+            return .custom(name, size: 23, relativeTo: .title3)
+        }
+        return .system(size: 23, weight: .regular, design: .rounded)
+    }
+
     private var monthHeader: some View {
         VStack(spacing: 4) {
             HStack {
@@ -426,8 +433,10 @@ struct CalendarScreen: View {
             .overlay {
                 HStack(alignment: .firstTextBaseline, spacing: 10) {
                     Text(monthTitle(calendar.component(.month, from: displayedMonth)))
-                        .font(.system(size: 23, weight: .semibold))
+                        // .font(monthHandwritingFont)
+                        .font(.system(size: 23, weight: .medium))
                         .foregroundStyle(.black)
+
                 }
                 .fixedSize()
                 .accessibilityElement(children: .ignore)
@@ -562,3 +571,4 @@ struct CalendarScreen: View {
     CalendarScreen(requestedMonth: .constant(nil))
         .modelContainer(for: MoodEntry.self, inMemory: true)
 }
+

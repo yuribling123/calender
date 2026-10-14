@@ -89,3 +89,19 @@ enum PageTurnFeedback {
         activePlayer = player
     }
 }
+
+/// A soft photo flip played once when the full-screen photo opens.
+enum PhotoOpenFeedback {
+    private static var activePlayer: AVAudioPlayer?
+
+    static func play() {
+        guard FeedbackAudioSession.prepare(),
+              let url = Bundle.main.url(forResource: "photo-flip", withExtension: "wav"),
+              let player = try? AVAudioPlayer(contentsOf: url) else { return }
+        activePlayer?.stop()
+        player.volume = 0.25
+        player.prepareToPlay()
+        player.play()
+        activePlayer = player
+    }
+}

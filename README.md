@@ -38,7 +38,7 @@ Current-month note and previous-month history:
 - Settings can enable iCloud sync. After changing the setting, fully quit and reopen the app. CloudKit syncs local entries and notes when the user is signed in to iCloud and sync is available. Turning sync off stops future syncing but does not delete existing cloud copies. The developer must configure the `iCloud.com.qingqing.MoodCalendar` container for `com.qingqing.MoodCalendar` in the Apple Developer account.
 - Debug builds include previews for “signed in, sync off” and “sync on” states. These previews only change what the screen shows; they do not enable CloudKit or alter the real sync setting.
 - The app requests notification permission on launch before showing the first-use guide and schedules a daily reminder while today has no entry. You can turn reminders off or on in Settings. Turning them off cancels pending reminders. If system notifications are denied, Settings offers a shortcut to iPhone Settings. The Debug demo also supports testing reminder controls.
-- A one-time permanent unlock is available through StoreKit 2, with purchase validation and Restore Purchases. Free access includes the Cherry Blossom and Black themes, circle and star markers, and the Mood, Daily Life, and Company sticker groups. The calendar title and other themes, markers, and groups require the unlock. App Store Connect must have the non-consumable product `com.qingqing.MoodCalendar.permanentUnlock` priced at CNY ¥12; without it, purchase is unavailable.
+- A one-time permanent unlock is available through StoreKit 2, with purchase validation and Restore Purchases. Free access includes the Cherry Blossom and Black themes, circle and star markers, and the Mood, Daily Life, and Company sticker groups. The calendar title and other themes, markers, and groups require the unlock. App Store Connect must have the non-consumable product `com.qingqing.MoodCalendar.premium.lifetime` with pricing configured in App Store Connect; without it, purchase is unavailable.
 
 ## Run
 
@@ -102,7 +102,7 @@ Calendar days are stored as the local year, month, and day when the entry is cre
 - 「我的」可开启 iCloud 同步。启用后需完全退出并重新打开 App；CloudKit 会在用户登录 iCloud 且同步可用时自动同步本地每日记录和月便签。关闭开关只停止后续同步，不会删除云端已有副本。开发者需在 Apple Developer 账号中为 `com.qingqing.MoodCalendar` 配置 `iCloud.com.qingqing.MoodCalendar` CloudKit 容器。
 - Debug 构建提供“预览已登录、未开启”和“预览已开启”入口，只用于查看界面，不会开启 CloudKit 同步或更改实际同步设置。
 - 首次打开时，App 先请求通知权限，用户选择后再显示首次使用说明，并为尚未记录的日期安排每日提醒。「我的」中可关闭或重新开启提醒；关闭会撤销尚未发送的提醒。系统通知被拒绝时，「我的」会提供打开 iPhone 设置的入口。Debug 演示模式也可测试提醒开关和通知。
-- 「我的」提供一次性永久解锁：免费状态可使用樱粉和黑色主题、圆形与星星选中图形、「心情」「日常」和「陪伴」三组表情；日历标题及其余表情组、主题色和选中图形需购买解锁。购买通过 StoreKit 2 校验，并支持恢复购买。App Store Connect 需创建非消耗型商品 `com.qingqing.MoodCalendar.permanentUnlock` 并设为人民币 ¥12；未配置商品前，购买按钮不可用。
+- 「我的」提供一次性永久解锁：免费状态可使用樱粉和黑色主题、圆形与星星选中图形、「心情」「日常」和「陪伴」三组表情；日历标题及其余表情组、主题色和选中图形需购买解锁。购买通过 StoreKit 2 校验，并支持恢复购买。App Store Connect 需创建非消耗型商品 `com.qingqing.MoodCalendar.premium.lifetime` 并在后台配置价格；未配置商品前，购买按钮不可用。
 
 ## 运行
 
@@ -137,12 +137,34 @@ Calendar days are stored as the local year, month, and day when the entry is cre
 
 If the purchase product fails to load, Retry reconnects to the App Store. If enabling iCloud or initializing its store fails, the app disables sync and explains that records remain on-device.
 
-Debug 真机测试构建关闭真实 iCloud 同步，不包含 iCloud 签名权限，使用本地存储。Release（包括 Archive）保留 `ICLOUD_SYNC_ENABLED` 与正式 iCloud entitlements。
+Debug 真机测试构建启用 `ICLOUD_SYNC_ENABLED`，使用开发环境 CloudKit；用户在「我的」开启同步并重启 App 后开始同步。`-demoData` 演示模式仍使用隔离的内存存储，不连接 iCloud。Release（包括 Archive）使用正式 iCloud entitlements。
 
-Debug device builds use local storage without iCloud capabilities. Release/Archive keeps CloudKit enabled and retains production iCloud entitlements.
+Debug device builds enable `ICLOUD_SYNC_ENABLED` and use the CloudKit development environment; sync starts after the user enables it in Settings and restarts the app. The `-demoData` demo remains isolated in memory and does not connect to iCloud. Release/Archive uses the production iCloud entitlements.
 
 日历横向滑动期间临时暂停页面纵向滚动，手势结束或取消后自动恢复；纵向为主的滑动不切换月份。
 
 Horizontal calendar swipes temporarily pause vertical scrolling; scrolling resumes when the gesture ends or is cancelled. Primarily vertical drags do not change months.
 
 月份选择页将年份与翻年箭头放在同一行，箭头跟随主题色；有每日记录的月份显示该月最常用的表情，次数相同则选最近记录的表情。
+
+### Daily photo / 每日照片
+
+Optionally attach one photo when editing today. The date detail shows a small photo link; tap it to open a warm, full-screen preview. Photos are resized to at most 1600 pixels and stored with the entry. ZIP exports include JPEG files in `photos/` and their paths in `data.json` (format version 2). Existing records remain compatible through an optional photo field.
+
+今天的记录可选附一张照片，保存后在日期详情中点击「这天有个画面」查看。照片最长边缩至 1600 像素，随记录保存；ZIP 导出包含照片文件。历史日期仅可查看。
+
+### Month heading fonts / 月份标题字体
+
+Chinese, Japanese and Korean month headings bundle Ma Shan Zheng, Yomogi and Nanum Pen Script from Google Fonts. Their SIL Open Font Licenses are included in `MoodCalendar/Resources/Fonts`. English uses the system handwriting font.
+
+中日韩月份标题使用随 app 打包的手写字体，避免设备缺少字体时回退；许可文件随字体提供。
+
+### Release safeguards / 正式版保护
+
+- `MoodCalendar` and `MoodCalendar Demo` both archive with the Release configuration. Use the normal `MoodCalendar` scheme for distribution.
+- Release defines `APP_STORE_RELEASE` and `ICLOUD_SYNC_ENABLED`, never `DEBUG`. A compile-time guard rejects a Release build accidentally enabling both `APP_STORE_RELEASE` and `DEBUG`.
+- `-demoData`, example seeding, in-memory demo persistence and demo premium access are development-only. The seed function is excluded from Release. Release ignores the demo launch argument and obtains premium access only from verified StoreKit entitlements.
+- The production SwiftData schema, default disk-store location and existing-record migration remain unchanged. Fresh local installs have no sample daily entries or monthly notes; existing records and previously synced user data are preserved.
+- Verification on 2026-10-14: Release simulator and unsigned iPhone-device builds passed, and the Debug Demo build passed. A fresh isolated Release simulator launched with `-demoData` had zero daily entries and zero monthly notes. A normal UI save persisted after relaunch with the same argument, and premium stickers opened the paywall. No archive or upload was performed; distribution signing, live purchases/restoration and production iCloud still require their normal pre-release checks.
+
+正式版会忽略演示启动参数，不会写入演示数据或绕过购买。未改动正式数据库模型和存储位置，也未清空任何用户记录。全新本地安装从空日历开始；已有记录和用户此前同步的数据继续保留。演示素材、种子代码和开发工具均保留。

@@ -27,7 +27,7 @@ enum DataBackupExporter {
         let manifest = Manifest(
             appIdentifier: "com.qingqing.MoodCalendar",
             appName: localized("今日份"),
-            formatVersion: 1,
+            formatVersion: 2,
             exportedAt: dateFormatter.string(from: .now)
         )
         let payload = BackupPayload(
@@ -36,6 +36,7 @@ enum DataBackupExporter {
                     dayKey: $0.dayKey,
                     choiceID: $0.moodValue,
                     note: $0.note,
+                    photoPath: $0.photoData == nil ? nil : "photos/\($0.dayKey).jpg",
                     updatedAt: dateFormatter.string(from: $0.updatedAt)
                 )
             },
@@ -52,11 +53,16 @@ enum DataBackupExporter {
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
         let manifestData = try encoder.encode(manifest)
         let payloadData = try encoder.encode(payload)
-        return try ZipArchive.make(files: [
+        var files: [(name: String, contents: Data)] = [
             (name: "manifest.json", contents: manifestData),
             (name: "data.json", contents: payloadData),
             (name: localized("记录.txt"), contents: Data(readableText(entries: entries, monthlyNotes: monthlyNotes).utf8))
-        ])
+        ]
+        files += entries.compactMap { entry in
+            guard let data = entry.photoData else { return nil }
+            return (name: "photos/\(entry.dayKey).jpg", contents: data)
+        }
+        return try ZipArchive.make(files: files)
     }
     static func readableText(entries: [MoodEntry], monthlyNotes: [MonthlyNote]) -> String {
         var lines = [localized("今日份 · 记录导出"), "", localized("每日记录"), ""]
@@ -93,6 +99,7 @@ private struct BackupEntry: Encodable {
     let dayKey: String
     let choiceID: Int
     let note: String
+    let photoPath: String?
     let updatedAt: String
 }
 

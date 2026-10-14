@@ -5,9 +5,13 @@ import SwiftData
 struct EntryStore {
     let context: ModelContext
 
-    func save(day: DayKey, choice: DailyChoice, note: String, isMember: Bool = false) throws {
+    func save(day: DayKey, choice: DailyChoice, note: String, isMember: Bool = false, photoData: Data? = nil, updatesPhoto: Bool = false) throws {
         guard day == DayKey(Date()) else { throw EntryStoreError.onlyTodayIsEditable }
-        guard choice.group == .mood || choice.group == .activity || choice.group == .company || isMember || DemoData.isEnabled else {
+        var canUseChoice = choice.group == .mood || choice.group == .activity || choice.group == .company || isMember
+        #if DEBUG
+        canUseChoice = canUseChoice || DemoData.isEnabled
+        #endif
+        guard canUseChoice else {
             throw EntryStoreError.membershipRequired
         }
         let key = day.storageValue
@@ -16,11 +20,14 @@ struct EntryStore {
         if let existing = matchingEntries.max(by: { $0.updatedAt < $1.updatedAt }) {
             existing.moodValue = choice.rawValue
             existing.note = note.trimmingCharacters(in: .whitespacesAndNewlines)
+            if updatesPhoto { existing.photoData = photoData }
             existing.updatedAt = .now
             matchingEntries.filter { $0.id != existing.id }.forEach(context.delete)
         } else {
-            context.insert(MoodEntry(dayKey: key, choice: choice,
-                                     note: note.trimmingCharacters(in: .whitespacesAndNewlines)))
+            let created = MoodEntry(dayKey: key, choice: choice,
+                                    note: note.trimmingCharacters(in: .whitespacesAndNewlines))
+            created.photoData = photoData
+            context.insert(created)
         }
         try context.save()
     }

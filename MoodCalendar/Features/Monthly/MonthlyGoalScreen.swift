@@ -29,7 +29,7 @@ struct MonthlyGoalScreen: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
                     Text(localized("月便签"))
-                        .font(.system(size: 32, weight: .semibold))
+                        .font(.system(size: 23, weight: .medium))
                         .foregroundStyle(.black)
                         .padding(.top, 4)
                         .padding(.bottom, 20)
@@ -103,7 +103,7 @@ struct MonthlyGoalScreen: View {
     private var historyEmptyState: some View {
         VStack(spacing: 8) {
             Text(localized("还没有留下记录"))
-                .font(.system(size: 17, weight: .medium))
+                .font(.subheadline.weight(.medium))
                 .foregroundStyle(.primary.opacity(0.76))
             Text(localized("试试来写吧"))
                 .font(.footnote)
@@ -186,7 +186,7 @@ struct MonthlyGoalScreen: View {
         VStack(alignment: .leading, spacing: 10) {
             if isEditingCurrentNote {
                 TextEditor(text: $draftNoteText)
-                    .font(.body)
+                    .font(.subheadline)
                     .foregroundStyle(.primary)
                     .focused($isCurrentNoteFocused)
                     .scrollContentBackground(.hidden)
@@ -214,7 +214,7 @@ struct MonthlyGoalScreen: View {
                     Text("→")
                         .foregroundStyle(theme.palette.strongAccent)
                 }
-                .font(.system(size: 17, weight: .regular))
+                .font(.subheadline)
                 .contentShape(Rectangle())
                 .onTapGesture { beginCurrentNoteEditing() }
                 .accessibilityAddTraits(.isButton)
@@ -222,9 +222,9 @@ struct MonthlyGoalScreen: View {
             } else {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(currentNoteText)
-                        .font(.body)
+                        .font(.subheadline)
                         .foregroundStyle(.primary)
-                        .lineSpacing(8)
+                        .lineSpacing(6)
                         .frame(maxWidth: .infinity, alignment: .leading)
 
                     NoteWaveMark()
@@ -278,7 +278,7 @@ struct MonthlyGoalScreen: View {
         VStack(alignment: .leading, spacing: 22) {
             if let note = data.note {
                 Text(note)
-                    .font(.body)
+                    .font(.subheadline)
                     .foregroundStyle(Color.black.opacity(0.76))
                     .lineSpacing(4)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -295,11 +295,11 @@ struct MonthlyGoalScreen: View {
             VStack(alignment: .leading, spacing: 1) {
                 Text(String(format: "%02d", calendar.component(.month, from: date)))
                     .font(.title2.weight(.semibold))
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(theme.palette.strongAccent)
                 Text(monthAbbreviation(for: date))
                     .font(.caption.weight(.semibold))
                     .tracking(1.1)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(theme.palette.strongAccent.opacity(0.65))
             }
         }
         .buttonStyle(.plain)
@@ -322,7 +322,7 @@ struct MonthlyGoalScreen: View {
                 .foregroundStyle(.secondary)
 
             Text(value)
-                .font(.body)
+                .font(.subheadline)
                 .foregroundStyle(.primary)
                 .lineLimit(3)
         }
