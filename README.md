@@ -34,7 +34,7 @@ Current-month note and previous-month history:
 - Monthly Note lets you edit a note for the current month, up to 100 characters, and browse every month with a saved entry or note. Historical month headings open the corresponding calendar. Summaries use sticker names: fewer than three records show “那个月记下了”, otherwise “出现最多的是”; ties go to the item recorded last.
 - Past dates show the saved mood and note, or an appropriate empty-state message. Future dates show that the day has not arrived yet.
 - Daily entries and monthly notes are stored on-device with SwiftData. iCloud sync can be enabled in Settings and uses the user's private CloudKit database when available.
-- Export daily entries and monthly notes to `今日份.zip`. The archive contains `manifest.json` (format version and export time), `data.json`, and a readable `记录.txt`. Export is supported; import may be added later.
+- Export and restore daily entries and monthly notes with `今日份.zip`. The archive contains `manifest.json` (format version and export time), `data.json`, photos, and a readable `记录.txt`. Import previews additions, keeps existing same-day/month records, and never restores membership entitlement.
 - Settings can enable iCloud sync. After changing the setting, fully quit and reopen the app. CloudKit syncs local entries and notes when the user is signed in to iCloud and sync is available. Turning sync off stops future syncing but does not delete existing cloud copies. The developer must configure the `iCloud.com.qingqing.MoodCalendar` container for `com.qingqing.MoodCalendar` in the Apple Developer account.
 - Debug builds include previews for “signed in, sync off” and “sync on” states. These previews only change what the screen shows; they do not enable CloudKit or alter the real sync setting.
 - The app requests notification permission on launch before showing the first-use guide and schedules a daily reminder while today has no entry. You can turn reminders off or on in Settings. Turning them off cancels pending reminders. If system notifications are denied, Settings offers a shortcut to iPhone Settings. The Debug demo also supports testing reminder controls.
@@ -62,6 +62,7 @@ The bundle ID is `com.qingqing.MoodCalendar`; the CloudKit container is `iCloud.
 - `Domain`: mood levels, daily choices, calendar days, and month layout.
 - `Persistence`: SwiftData models, migration, and write operations for entries and monthly notes.
 - `Persistence/DataBackup.swift`: ZIP backup generation with a manifest and JSON data.
+- `support/index.html` and `.github/workflows/deploy-support-pages.yml`: bilingual support page and GitHub Pages deployment workflow.
 - `App/DemoData.swift`: sample records for the Debug demo scheme only.
 - `App/MembershipStore.swift`: StoreKit 2 purchase validation and entitlement restoration.
 - `PrivacyInfo.xcprivacy`: declares that the app does not track or collect data and explains its use of UserDefaults for app settings.
@@ -98,7 +99,7 @@ Calendar days are stored as the local year, month, and day when the entry is cre
 - 「月便签」显示本月可编辑的一句话，并列出所有有记录或便签的历史月份，不受最近 12 个月限制；点击历史月份标题可打开对应日历；小结少于三条记录时显示「那个月记下了」，其余显示「出现最多的是」，使用表情名称。六组项目参与同一计算，次数相同时取最后出现的项目。
 - 点选过去的日期可在日历下方查看心情和文字；没有文字或没有记录时显示对应提示。点选未来日期会显示“这一天还没到来”。
 - 每日记录和月便签使用 SwiftData 保存在设备本地；用户可在「我的」开启 iCloud 同步，在登录 iCloud 且容器可用时同步到私有 CloudKit 数据库。
-- 「我的」可将每日记录和月便签导出为「今日份.zip」。压缩包包含 `manifest.json`（备份格式版本和导出时间）、`data.json`（记录数据）及 `记录.txt`（按日期排列、可直接阅读的文字）；目前只支持导出，文件中的文字可直接读取，导入功能可在以后基于格式版本实现。
+- 「我的」可导出或导入「今日份.zip」，恢复每日记录、月便签和照片。导入前会预览新增数量；同日或同月已有内容会保留，不恢复会员资格。
 - 「我的」可开启 iCloud 同步。启用后需完全退出并重新打开 App；CloudKit 会在用户登录 iCloud 且同步可用时自动同步本地每日记录和月便签。关闭开关只停止后续同步，不会删除云端已有副本。开发者需在 Apple Developer 账号中为 `com.qingqing.MoodCalendar` 配置 `iCloud.com.qingqing.MoodCalendar` CloudKit 容器。
 - Debug 构建提供“预览已登录、未开启”和“预览已开启”入口，只用于查看界面，不会开启 CloudKit 同步或更改实际同步设置。
 - 首次打开时，App 先请求通知权限，用户选择后再显示首次使用说明，并为尚未记录的日期安排每日提醒。「我的」中可关闭或重新开启提醒；关闭会撤销尚未发送的提醒。系统通知被拒绝时，「我的」会提供打开 iPhone 设置的入口。Debug 演示模式也可测试提醒开关和通知。
@@ -126,6 +127,7 @@ Calendar days are stored as the local year, month, and day when the entry is cre
 - `Domain`：心情等级、每日选项、日历日和月份排列。
 - `Persistence`：每日记录与月便签的 SwiftData 模型、迁移和写入操作。
 - `Persistence/DataBackup.swift`：生成带格式清单和 JSON 数据的 ZIP 备份文件。
+- `support/index.html` 与 `.github/workflows/deploy-support-pages.yml`：中英双语支持页及 GitHub Pages 部署工作流。
 - `App/DemoData.swift`：仅在 Debug 演示方案中生成过去的示例记录。
 - `App/MembershipStore.swift`：使用 StoreKit 2 校验永久解锁购买和恢复权益。
 - `PrivacyInfo.xcprivacy`：声明不追踪或收集数据，并说明仅使用 UserDefaults 保存本 App 的设置。

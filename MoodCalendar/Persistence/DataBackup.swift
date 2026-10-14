@@ -83,19 +83,19 @@ enum DataBackupExporter {
     }
 }
 
-private struct Manifest: Encodable {
+private struct Manifest: Codable {
     let appIdentifier: String
     let appName: String
     let formatVersion: Int
     let exportedAt: String
 }
 
-private struct BackupPayload: Encodable {
+private struct BackupPayload: Codable {
     let entries: [BackupEntry]
     let monthlyNotes: [BackupMonthlyNote]
 }
 
-private struct BackupEntry: Encodable {
+private struct BackupEntry: Codable {
     let dayKey: String
     let choiceID: Int
     let note: String
@@ -103,10 +103,235 @@ private struct BackupEntry: Encodable {
     let updatedAt: String
 }
 
-private struct BackupMonthlyNote: Encodable {
+private struct BackupMonthlyNote: Codable {
     let monthKey: String
     let text: String
     let updatedAt: String
+}
+
+struct DataBackupImportPlan: Sendable {
+    struct Entry: Sendable {
+        let dayKey: String
+        let choiceID: Int
+        let note: String
+        let updatedAt: Date
+        let photoData: Data?
+    }
+
+    struct MonthlyNote: Sendable {
+        let monthKey: String
+        let text: String
+        let updatedAt: Date
+    }
+
+    let entriesToImport: [Entry]
+    let monthlyNotesToImport: [MonthlyNote]
+    let existingEntryCount: Int
+    let existingMonthlyNoteCount: Int
+
+    var photoCount: Int { entriesToImport.filter { $0.photoData != nil }.count }
+}
+
+enum DataBackupImporter {
+    private static let appIdentifier = "com.qingqing.MoodCalendar"
+    private static let maximumArchiveSize = 100 * 1024 * 1024
+    private static let maximumExpandedSize = 100 * 1024 * 1024
+    private static let maximumFileCount = 65_535
+
+    static func makePlan(
+        from archiveData: Data,
+        existingDayKeys: Set<String>,
+        existingMonthKeys: Set<String>
+    ) throws -> DataBackupImportPlan {
+        guard archiveData.count <= maximumArchiveSize else { throw ImportError.archiveTooLarge }
+        let files: [String: Data]
+        do {
+            files = try ZipArchive.readFiles(
+                from: archiveData,
+                maximumExpandedSize: maximumExpandedSize,
+                maximumFileCount: maximumFileCount
+            )
+        } catch {
+            throw ImportError.invalidBackup
+        }
+        guard let manifestData = files["manifest.json"],
+              let payloadData = files["data.json"] else {
+            throw ImportError.invalidBackup
+        }
+
+        let decoder = JSONDecoder()
+        let manifest: Manifest
+        do {
+            manifest = try decoder.decode(Manifest.self, from: manifestData)
+        } catch {
+            throw ImportError.invalidBackup
+        }
+        guard manifest.appIdentifier == appIdentifier else { throw ImportError.wrongApp }
+        guard (1...2).contains(manifest.formatVersion) else { throw ImportError.unsupportedVersion }
+        let payload: BackupPayload
+        do {
+            payload = try decoder.decode(BackupPayload.self, from: payloadData)
+        } catch {
+            throw ImportError.invalidBackup
+        }
+        guard payload.entries.count <= maximumFileCount,
+              payload.monthlyNotes.count <= maximumFileCount else { throw ImportError.invalidBackup }
+
+        var seenDayKeys = Set<String>()
+        let entries = try payload.entries.map { item -> DataBackupImportPlan.Entry in
+            guard isValidDayKey(item.dayKey),
+                  (1...30).contains(item.choiceID),
+                  item.note.utf8.count <= 1_000_000,
+                  seenDayKeys.insert(item.dayKey).inserted,
+                  let updatedAt = parseDate(item.updatedAt) else {
+                throw ImportError.invalidBackup
+            }
+
+            let photoData: Data?
+            if let photoPath = item.photoPath {
+                guard photoPath == "photos/\(item.dayKey).jpg",
+                      let imageData = files[photoPath],
+                      imageData.count <= 25 * 1024 * 1024,
+                      imageData.starts(with: [0xff, 0xd8]),
+                      imageData.suffix(2).elementsEqual([0xff, 0xd9]) else {
+                    throw ImportError.invalidPhoto
+                }
+                photoData = imageData
+            } else {
+                photoData = nil
+            }
+
+            return DataBackupImportPlan.Entry(
+                dayKey: item.dayKey,
+                choiceID: item.choiceID,
+                note: item.note,
+                updatedAt: updatedAt,
+                photoData: photoData
+            )
+        }
+
+        var seenMonthKeys = Set<String>()
+        let notes = try payload.monthlyNotes.map { item -> DataBackupImportPlan.MonthlyNote in
+            guard isValidMonthKey(item.monthKey),
+                  !item.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+                  item.text.count <= 100,
+                  seenMonthKeys.insert(item.monthKey).inserted,
+                  let updatedAt = parseDate(item.updatedAt) else {
+                throw ImportError.invalidBackup
+            }
+            return DataBackupImportPlan.MonthlyNote(
+                monthKey: item.monthKey,
+                text: item.text,
+                updatedAt: updatedAt
+            )
+        }
+
+        let referencedPhotos = Set(payload.entries.compactMap(\.photoPath))
+        guard files.keys.allSatisfy({
+            $0 == "manifest.json" || $0 == "data.json" || $0.hasSuffix(".txt") && !$0.contains("/") || referencedPhotos.contains($0)
+        }), referencedPhotos.allSatisfy({ files[$0] != nil }) else {
+            throw ImportError.invalidBackup
+        }
+
+        let newEntries = entries.filter { !existingDayKeys.contains($0.dayKey) }
+        let newNotes = notes.filter { !existingMonthKeys.contains($0.monthKey) }
+        return DataBackupImportPlan(
+            entriesToImport: newEntries,
+            monthlyNotesToImport: newNotes,
+            existingEntryCount: entries.count - newEntries.count,
+            existingMonthlyNoteCount: notes.count - newNotes.count
+        )
+    }
+
+    @MainActor
+    static func restore(_ plan: DataBackupImportPlan, into context: ModelContext) throws -> (entries: Int, monthlyNotes: Int) {
+        let existingDayKeys = Set(try context.fetch(FetchDescriptor<MoodEntry>()).map(\.dayKey))
+        let existingMonthKeys = Set(try context.fetch(FetchDescriptor<MonthlyNote>()).map(\.monthKey))
+        let entries = plan.entriesToImport.filter { !existingDayKeys.contains($0.dayKey) }
+        let notes = plan.monthlyNotesToImport.filter { !existingMonthKeys.contains($0.monthKey) }
+        let preparedEntries = try entries.map { item -> (DataBackupImportPlan.Entry, DailyChoice) in
+            guard let choice = DailyChoice(rawValue: item.choiceID) else { throw ImportError.invalidBackup }
+            return (item, choice)
+        }
+
+        for (item, choice) in preparedEntries {
+            let entry = MoodEntry(dayKey: item.dayKey, choice: choice, note: item.note)
+            entry.updatedAt = item.updatedAt
+            entry.photoData = item.photoData
+            context.insert(entry)
+        }
+        for item in notes {
+            let note = MonthlyNote(monthKey: item.monthKey, text: item.text)
+            note.updatedAt = item.updatedAt
+            context.insert(note)
+        }
+
+        do {
+            try context.save()
+        } catch {
+            context.rollback()
+            throw error
+        }
+        return (entries.count, notes.count)
+    }
+
+    private static func isValidDayKey(_ value: String) -> Bool {
+        let bytes = Array(value.utf8)
+        guard bytes.count == 10,
+              bytes[4] == 45, bytes[7] == 45,
+              bytes[0..<4].allSatisfy(isASCIIDigit),
+              bytes[5..<7].allSatisfy(isASCIIDigit),
+              bytes[8..<10].allSatisfy(isASCIIDigit),
+              let year = Int(value.prefix(4)),
+              let month = Int(value.dropFirst(5).prefix(2)),
+              let day = Int(value.suffix(2)), (1...9999).contains(year) else { return false }
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        var components = DateComponents()
+        components.year = year
+        components.month = month
+        components.day = day
+        guard let date = calendar.date(from: components) else { return false }
+        let result = calendar.dateComponents([.year, .month, .day], from: date)
+        return result.year == year && result.month == month && result.day == day
+    }
+
+    private static func isValidMonthKey(_ value: String) -> Bool {
+        let bytes = Array(value.utf8)
+        guard bytes.count == 7, bytes[4] == 45,
+              bytes[0..<4].allSatisfy(isASCIIDigit),
+              bytes[5..<7].allSatisfy(isASCIIDigit),
+              let year = Int(value.prefix(4)),
+              let month = Int(value.suffix(2)), (1...9999).contains(year), (1...12).contains(month) else { return false }
+        return true
+    }
+
+    private static func isASCIIDigit(_ byte: UInt8) -> Bool {
+        (48...57).contains(byte)
+    }
+
+    private static func parseDate(_ value: String) -> Date? {
+        let formatter = ISO8601DateFormatter()
+        return formatter.date(from: value)
+    }
+
+    private enum ImportError: LocalizedError {
+        case archiveTooLarge
+        case invalidBackup
+        case invalidPhoto
+        case wrongApp
+        case unsupportedVersion
+
+        var errorDescription: String? {
+            switch self {
+            case .archiveTooLarge: "备份文件太大，无法导入。"
+            case .invalidBackup: "备份文件内容不完整或格式有误。"
+            case .invalidPhoto: "备份中的照片缺失或无法读取。"
+            case .wrongApp: "这不是「今日份」导出的备份文件。"
+            case .unsupportedVersion: "备份格式版本暂不支持。"
+            }
+        }
+    }
 }
 
 private enum ZipArchive {
@@ -192,8 +417,116 @@ private enum ZipArchive {
         return archive
     }
 
+    static func readFiles(
+        from archive: Data,
+        maximumExpandedSize: Int,
+        maximumFileCount: Int
+    ) throws -> [String: Data] {
+        guard archive.count >= 22 else { throw ImportError.invalidArchive }
+        let earliestEndRecord = max(0, archive.count - 65_557)
+        var endRecordOffset: Int?
+        for offset in stride(from: archive.count - 22, through: earliestEndRecord, by: -1) {
+            guard archive.uint32(at: offset) == 0x06054b50,
+                  let commentLength = archive.uint16(at: offset + 20),
+                  offset + 22 + Int(commentLength) == archive.count else { continue }
+            endRecordOffset = offset
+            break
+        }
+        guard let endRecordOffset,
+              archive.uint16(at: endRecordOffset + 4) == 0,
+              archive.uint16(at: endRecordOffset + 6) == 0,
+              let entriesOnDisk = archive.uint16(at: endRecordOffset + 8),
+              let entryCount = archive.uint16(at: endRecordOffset + 10),
+              entriesOnDisk == entryCount,
+              Int(entryCount) <= maximumFileCount,
+              let directorySizeValue = archive.uint32(at: endRecordOffset + 12),
+              let directoryOffsetValue = archive.uint32(at: endRecordOffset + 16),
+              directorySizeValue != UInt32.max,
+              directoryOffsetValue != UInt32.max else {
+            throw ImportError.invalidArchive
+        }
+
+        let directoryOffset = Int(directoryOffsetValue)
+        let directoryEnd = directoryOffset + Int(directorySizeValue)
+        guard directoryOffset >= 0, directoryEnd <= endRecordOffset else { throw ImportError.invalidArchive }
+
+        var cursor = directoryOffset
+        var expandedSize = 0
+        var files: [String: Data] = [:]
+        for _ in 0..<entryCount {
+            guard archive.uint32(at: cursor) == 0x02014b50,
+                  let flags = archive.uint16(at: cursor + 8),
+                  let compressionMethod = archive.uint16(at: cursor + 10),
+                  let checksum = archive.uint32(at: cursor + 16),
+                  let compressedSizeValue = archive.uint32(at: cursor + 20),
+                  let expandedSizeValue = archive.uint32(at: cursor + 24),
+                  let nameLength = archive.uint16(at: cursor + 28),
+                  let extraLength = archive.uint16(at: cursor + 30),
+                  let commentLength = archive.uint16(at: cursor + 32),
+                  let startDisk = archive.uint16(at: cursor + 34),
+                  let localOffsetValue = archive.uint32(at: cursor + 42),
+                  startDisk == 0,
+                  flags & 0x0001 == 0,
+                  flags & 0x0040 == 0,
+                  flags & ~UInt16(0x0808) == 0,
+                  compressionMethod == 0,
+                  compressedSizeValue == expandedSizeValue,
+                  compressedSizeValue != UInt32.max,
+                  expandedSizeValue != UInt32.max,
+                  localOffsetValue != UInt32.max else {
+                throw ImportError.invalidArchive
+            }
+
+            let recordLength = 46 + Int(nameLength) + Int(extraLength) + Int(commentLength)
+            guard cursor + recordLength <= directoryEnd,
+                  let filenameData = archive.data(in: (cursor + 46)..<(cursor + 46 + Int(nameLength))),
+                  let filename = String(data: filenameData, encoding: .utf8),
+                  !filename.isEmpty else {
+                throw ImportError.invalidArchive
+            }
+            cursor += recordLength
+
+            if filename.hasSuffix("/") {
+                guard expandedSizeValue == 0 else { throw ImportError.invalidArchive }
+                continue
+            }
+            guard files[filename] == nil else { throw ImportError.invalidArchive }
+            let fileSize = Int(expandedSizeValue)
+            guard fileSize <= maximumExpandedSize - expandedSize else { throw ImportError.invalidArchive }
+            expandedSize += fileSize
+
+            let localOffset = Int(localOffsetValue)
+            guard archive.uint32(at: localOffset) == 0x04034b50,
+                  let localFlags = archive.uint16(at: localOffset + 6),
+                  let localMethod = archive.uint16(at: localOffset + 8),
+                  let localNameLength = archive.uint16(at: localOffset + 26),
+                  let localExtraLength = archive.uint16(at: localOffset + 28),
+                  localFlags == flags,
+                  localMethod == compressionMethod,
+                  Int(localNameLength) == Int(nameLength) else {
+                throw ImportError.invalidArchive
+            }
+            let localNameStart = localOffset + 30
+            let dataOffset = localNameStart + Int(localNameLength) + Int(localExtraLength)
+            guard let localNameData = archive.data(in: localNameStart..<(localNameStart + Int(localNameLength))),
+                  localNameData == filenameData,
+                  let contents = archive.data(in: dataOffset..<(dataOffset + fileSize)),
+                  dataOffset + fileSize <= directoryOffset,
+                  CRC32.checksum(contents) == checksum else {
+                throw ImportError.invalidArchive
+            }
+            files[filename] = contents
+        }
+        guard cursor == directoryEnd else { throw ImportError.invalidArchive }
+        return files
+    }
+
     private enum ArchiveError: Error {
         case fileTooLarge
+    }
+
+    private enum ImportError: Error {
+        case invalidArchive
     }
 }
 
@@ -211,6 +544,28 @@ private enum CRC32 {
 }
 
 private extension Data {
+    func uint16(at offset: Int) -> UInt16? {
+        guard offset >= 0, offset <= count - 2 else { return nil }
+        let index = startIndex + offset
+        return UInt16(self[index]) | (UInt16(self[index + 1]) << 8)
+    }
+
+    func uint32(at offset: Int) -> UInt32? {
+        guard offset >= 0, offset <= count - 4 else { return nil }
+        let index = startIndex + offset
+        return UInt32(self[index])
+            | (UInt32(self[index + 1]) << 8)
+            | (UInt32(self[index + 2]) << 16)
+            | (UInt32(self[index + 3]) << 24)
+    }
+
+    func data(in range: Range<Int>) -> Data? {
+        guard range.lowerBound >= 0, range.upperBound >= range.lowerBound, range.upperBound <= count else { return nil }
+        let lower = startIndex + range.lowerBound
+        let upper = startIndex + range.upperBound
+        return subdata(in: lower..<upper)
+    }
+
     mutating func appendLE(_ value: UInt16) {
         append(UInt8(value & 0xff))
         append(UInt8((value >> 8) & 0xff))

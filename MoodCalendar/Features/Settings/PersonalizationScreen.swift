@@ -132,7 +132,10 @@ struct PersonalizationScreen: View {
     @State private var isMembershipPresented = false
     @State private var backupDocument: DataBackupDocument?
     @State private var isShowingBackupExporter = false
-    @State private var exportError: String?
+    @State private var isShowingBackupImporter = false
+    @State private var isImportingBackup = false
+    @State private var importPlan: DataBackupImportPlan?
+    @State private var backupMessage: String?
     @State private var reminderPermissionDenied = false
     @State private var isReminderSettingsAlertPresented = false
     #if ICLOUD_SYNC_ENABLED
@@ -158,13 +161,13 @@ struct PersonalizationScreen: View {
             return localized("正在检查 iCloud 账号和访问权限…")
         }
         if isPreviewingICloudEnabled {
-            return localized("预览：完全退出并重新打开 App 后开始同步")
+            return localized("预览：退出并重新打开 App 后开始同步")
         }
         if isPreviewingICloudAccountAvailable {
             return localized("预览：可以开启 iCloud 同步")
         }
         if isICloudSyncEnabled {
-            return localized("完全退出并重新打开 App 后开始同步")
+            return localized("退出并重新打开 App 后开始同步")
         }
         return iCloudMessage
     }
@@ -229,13 +232,37 @@ struct PersonalizationScreen: View {
                 defaultFilename: localized("今日份"),
                 onCompletion: handleBackupExport
             )
-            .alert(localized("导出失败"), isPresented: Binding(
-                get: { exportError != nil },
-                set: { if !$0 { exportError = nil } }
-            )) {
-                Button(localized("确定"), role: .cancel) { exportError = nil }
+            .fileImporter(
+                isPresented: $isShowingBackupImporter,
+                allowedContentTypes: [.zip],
+                allowsMultipleSelection: false,
+                onCompletion: handleBackupImportSelection
+            )
+            .confirmationDialog(localized("确认导入备份"), isPresented: Binding(
+                get: { importPlan != nil },
+                set: { if !$0 { importPlan = nil } }
+            ), titleVisibility: .visible) {
+                Button(localized("导入并合并")) { restoreBackup() }
+                Button(localized("取消"), role: .cancel) { importPlan = nil }
             } message: {
-                Text(exportError ?? localized("请稍后再试。"))
+                if let importPlan {
+                    Text(localized(
+                        "将补入 %d 条每日记录（含 %d 张照片）和 %d 条月便签。另有 %d 条每日记录和 %d 条月便签已存在，会保留。备份不会恢复会员资格。",
+                        importPlan.entriesToImport.count,
+                        importPlan.photoCount,
+                        importPlan.monthlyNotesToImport.count,
+                        importPlan.existingEntryCount,
+                        importPlan.existingMonthlyNoteCount
+                    ))
+                }
+            }
+            .alert(localized("数据备份"), isPresented: Binding(
+                get: { backupMessage != nil },
+                set: { if !$0 { backupMessage = nil } }
+            )) {
+                Button(localized("确定"), role: .cancel) { backupMessage = nil }
+            } message: {
+                Text(backupMessage ?? "")
             }
             #if ICLOUD_SYNC_ENABLED
             .task { await validateSavedICloudSetting() }
@@ -459,6 +486,41 @@ struct PersonalizationScreen: View {
             .buttonStyle(.plain)
             .accessibilityLabel(localized("导出数据"))
             .accessibilityHint(localized("将每日记录和月便签保存为今日份 ZIP 文件"))
+
+            Button { isShowingBackupImporter = true } label: {
+                HStack(spacing: 14) {
+                    Image(systemName: "square.and.arrow.down")
+                        .font(.system(size: 22))
+                        .foregroundStyle(theme.palette.accent)
+                        .frame(width: 30)
+                        .accessibilityHidden(true)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(localized("导入备份"))
+                            .font(settingsItemFont)
+                            .foregroundStyle(.primary)
+                        Text(localized("从 ZIP 备份恢复记录、便签和照片"))
+                            .font(settingsDetailFont)
+                            .foregroundStyle(.secondary)
+                    }
+                    Spacer(minLength: 8)
+                    if isImportingBackup {
+                        ProgressView()
+                            .tint(theme.palette.accent)
+                    } else {
+                        Image(systemName: "chevron.right")
+                            .font(.subheadline.weight(.medium))
+                            .foregroundStyle(.secondary)
+                            .accessibilityHidden(true)
+                    }
+                }
+                .padding(18)
+                .background(Color.white.opacity(0.72), in: RoundedRectangle(cornerRadius: 20))
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .disabled(isImportingBackup)
+            .accessibilityLabel(localized("导入备份"))
+            .accessibilityHint(localized("选择今日份 ZIP 备份并预览将恢复的内容"))
         }
         .padding(.top, 32)
     }
@@ -472,13 +534,69 @@ struct PersonalizationScreen: View {
             )
             isShowingBackupExporter = true
         } catch {
-            exportError = error.localizedDescription
+            backupMessage = localized("导出失败：%@", error.localizedDescription)
         }
     }
 
     private func handleBackupExport(_ result: Result<URL, Error>) {
         if case .failure(let error) = result {
-            exportError = error.localizedDescription
+            backupMessage = localized("导出失败：%@", error.localizedDescription)
+        }
+    }
+
+    private func handleBackupImportSelection(_ result: Result<[URL], Error>) {
+        guard case .success(let urls) = result else {
+            if case .failure(let error) = result, (error as? CocoaError)?.code != .userCancelled {
+                backupMessage = localized("无法读取备份文件：%@", error.localizedDescription)
+            }
+            return
+        }
+        guard let url = urls.first else {
+            backupMessage = localized("请选择一个 ZIP 备份文件。")
+            return
+        }
+
+        let hasScopedAccess = url.startAccessingSecurityScopedResource()
+        isImportingBackup = true
+        Task { @MainActor in
+            defer {
+                isImportingBackup = false
+                if hasScopedAccess { url.stopAccessingSecurityScopedResource() }
+            }
+            do {
+                let archiveData = try await Task.detached(priority: .userInitiated) {
+                    try Data(contentsOf: url, options: .mappedIfSafe)
+                }.value
+                let existingEntries = try modelContext.fetch(FetchDescriptor<MoodEntry>())
+                let existingNotes = try modelContext.fetch(FetchDescriptor<MonthlyNote>())
+                let existingDayKeys = Set(existingEntries.map(\.dayKey))
+                let existingMonthKeys = Set(existingNotes.map(\.monthKey))
+                let plan = try await Task.detached(priority: .userInitiated) {
+                    try DataBackupImporter.makePlan(
+                        from: archiveData,
+                        existingDayKeys: existingDayKeys,
+                        existingMonthKeys: existingMonthKeys
+                    )
+                }.value
+                guard !plan.entriesToImport.isEmpty || !plan.monthlyNotesToImport.isEmpty else {
+                    backupMessage = localized("备份中的记录都已存在，没有需要补入的内容。")
+                    return
+                }
+                importPlan = plan
+            } catch {
+                backupMessage = error.localizedDescription
+            }
+        }
+    }
+
+    private func restoreBackup() {
+        guard let importPlan else { return }
+        self.importPlan = nil
+        do {
+            let result = try DataBackupImporter.restore(importPlan, into: modelContext)
+            backupMessage = localized("导入完成：新增 %d 条每日记录和 %d 条月便签。", result.entries, result.monthlyNotes)
+        } catch {
+            backupMessage = localized("导入失败：%@", error.localizedDescription)
         }
     }
 
@@ -776,7 +894,7 @@ struct PersonalizationScreen: View {
                 _ = try await cloudContainer.userRecordID()
                 isICloudAccountAvailable = true
                 isICloudSyncEnabled = true
-                iCloudMessage = localized("iCloud 已连接；完全退出并重新打开 App 后开始自动同步。")
+                iCloudMessage = localized("退出并重新打开 App 后开始自动同步")
             case .noAccount:
                 isICloudAccountAvailable = false
                 failToEnableICloud(localized("请先在系统设置中登录 iCloud"))
