@@ -16,7 +16,51 @@ enum DemoData {
         #endif
     }
 
+    static func displayText(_ text: String) -> String {
+        #if DEBUG
+        guard isEnabled else { return text }
+        for key in sampleTextKeys {
+            let matchesCurrentSample = AppLanguage.options.contains { language in
+                guard let path = Bundle.main.path(forResource: language, ofType: "lproj"),
+                      let bundle = Bundle(path: path) else { return false }
+                return bundle.localizedString(forKey: key, value: nil, table: nil) == text
+            }
+            if matchesCurrentSample { return localized(key) }
+        }
+        #endif
+        return text
+    }
+
     #if DEBUG
+    private static let sampleTextKeys = [
+        "慢一点 也没关系",
+        "我发现人只要一出门，就很容易花钱。买杯喝的、顺手吃点东西，最后拎着一堆东西回家并思考自己刚刚经历了什么",
+        "很久以前的一个月，也值得好好记住。",
+        "这个月，见了想见的人，也有认真听完的一首歌。\n把日子慢慢过好，平常的小事也值得记下来。",
+        "天气很好，心里亮了一点。",
+        "动一动，状态回来啦。",
+        "吃到了喜欢的甜点。",
+        "咖啡店给我的杯子上画了一个歪歪的小爱心。虽然可能人人都有，但我决定当作只画给我的",
+        "路上遇见一场很好看的晚霞。",
+        "事情有点多，先允许自己慢下来。",
+        "动一动之后，状态真的回来了。",
+        "终于把一直没弄懂的地方想明白了。",
+        "暂时放空一下。",
+        "晚上戴上耳机听歌，熟悉的旋律一首接一首，把白天没来得及整理的情绪慢慢安放好。窗外渐渐安静下来，我也终于觉得今天可以结束了。",
+        "抱着毛绒绒发了会儿呆，软软的触感让忙乱的心也安静下来。",
+        "今天忽然很想一个人。看到熟悉的东西时，脑海里就浮现出和他一起度过的片段。虽然没能见面，还是希望他一切都好，也期待下次再见。",
+        "路过一家小店时，看到柜台里摆着一块看起来就很好吃的蛋糕。犹豫了一下还是买了下来，坐在窗边慢慢吃完。奶油不太甜，阳光刚好落在桌角，普通的一天也因为这点小小的满足变得可爱了。",
+        "平平常常，也有一点值得记住。",
+        "和家人一起吃了顿饭。",
+        "和朋友聊了好多。",
+        "听到了一段喜欢的吉他旋律。",
+        "翻到 2022 年，看看月便签里还能不能找到这个月。",
+        "给这个月留下一条演示记录。",
+        "今天的演示心情。",
+        "晚饭后喝了杯喜欢的饮料，今天就到这里吧。",
+        "路边的晚风很舒服，绕了一小段路才回家。"
+    ]
+
     @MainActor
     static func seed(into context: ModelContext) throws {
         let year = Calendar.current.component(.year, from: Date())
@@ -61,9 +105,9 @@ enum DemoData {
             (9, 1, .good, "咖啡店给我的杯子上画了一个歪歪的小爱心。虽然可能人人都有，但我决定当作只画给我的"),
             (9, 4, .veryGood, "路上遇见一场很好看的晚霞。"),
             (9, 7, .bad, "事情有点多，先允许自己慢下来。"),
-            (9, 10, .clover, ""),
+            (9, 10, .cocktail, "晚饭后喝了杯喜欢的饮料，今天就到这里吧。"),
             (9, 19, .exercise, "动一动之后，状态真的回来了。"),
-            (9, 22, .work, ""),
+            (9, 22, .wings, "路边的晚风很舒服，绕了一小段路才回家。"),
             (9, 25, .study, "终于把一直没弄懂的地方想明白了。"),
             (9, 29, .absentRabbit, "暂时放空一下。"),
             (9, 30, .music, "晚上戴上耳机听歌，熟悉的旋律一首接一首，把白天没来得及整理的情绪慢慢安放好。窗外渐渐安静下来，我也终于觉得今天可以结束了。"),

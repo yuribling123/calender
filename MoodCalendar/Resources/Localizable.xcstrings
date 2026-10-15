@@ -835,6 +835,93 @@
         }
       }
     },
+    "路上遇见一场很好看的晚霞。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I came across a beautiful sunset on the way home."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "帰り道に、とてもきれいな夕焼けに出会った。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "돌아가는 길에 정말 예쁜 노을을 만났다."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "路上遇见一场很好看的晚霞。"
+          }
+        }
+      }
+    },
+    "晚饭后喝了杯喜欢的饮料，今天就到这里吧。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I had a drink I like after dinner. That was enough for today."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "夕食のあと、好きな飲み物を一杯。今日はこれで十分。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "저녁 먹고 좋아하는 음료를 한 잔 마셨다. 오늘은 이걸로 충분해."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "晚饭后喝了杯喜欢的饮料，今天就到这里吧。"
+          }
+        }
+      }
+    },
+    "路边的晚风很舒服，绕了一小段路才回家。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The evening breeze felt nice, so I took the longer way home."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "夜風が気持ちよくて、少し遠回りして帰った。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "저녁 바람이 좋아서 조금 돌아서 집에 갔다."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "路边的晚风很舒服，绕了一小段路才回家。"
+          }
+        }
+      }
+    },
     "事情有点多，先允许自己慢下来。" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1247,7 +1334,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Day by Day"
+            "value" : "Little Today"
           }
         },
         "ja" : {
@@ -1276,7 +1363,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Day by Day · Export"
+            "value" : "Little Today · Export"
           }
         },
         "ja" : {
@@ -3570,7 +3657,7 @@
         }
       }
     },
-    "想起一个人" : {
+    "想一个人" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
@@ -3594,7 +3681,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "想起一个人"
+            "value" : "想一个人"
           }
         }
       }
@@ -5461,7 +5548,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Unlock Day by Day for good"
+            "value" : "Unlock Little Today for good"
           }
         },
         "ja" : {
@@ -6737,7 +6824,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Make Day by Day yours"
+            "value" : "Make Little Today yours"
           }
         },
         "ja" : {
@@ -7085,7 +7172,7 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Allow Day by Day notifications in iPhone Settings, then return to enable your daily reminder."
+            "value" : "Allow Little Today notifications in iPhone Settings, then return to enable your daily reminder."
           }
         },
         "ja" : {

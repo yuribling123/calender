@@ -226,7 +226,7 @@ struct EntryEditorScreen: View {
                                 .resizable()
                                 .scaledToFit()
                                 .frame(height: 32)
-                                .scaleEffect(selectedGroup == .mood ? 1 : choice == .cake ? 1 : choice == .gather ? 1.48 : choice == .relax || choice == .study ? 1.38 : selectedGroup == .company ? 1.32 : 1.22)
+                                .scaleEffect(selectedGroup == .mood ? 1 : choice == .cake ? 1 : choice == .study ? 1.38 : selectedGroup == .company ? 1.32 : 1.22)
                                 .accessibilityHidden(true)
 
 
@@ -265,7 +265,7 @@ struct EntryEditorScreen: View {
                 if let choice = selectedChoice, choice.group == selectedGroup {
                     Text(choice.caption)
                         .font(.footnote)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(theme.palette.strongAccent)
                         .fixedSize()
                 }
             }
@@ -274,7 +274,7 @@ struct EntryEditorScreen: View {
                 if let choice = selectedChoice, choice.group == selectedGroup {
                     Text(choice.caption)
                         .font(.footnote)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(theme.palette.strongAccent)
                 }
             }
         }

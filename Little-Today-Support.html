@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Help and contact information for Little Today: Mood Diary.">
+  <meta name="theme-color" content="#fbf8f5">
+  <title>Support · Little Today: Mood Diary</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #332c2b;
+      --muted: #756b68;
+      --paper: #fbf8f5;
+      --card: #fffefd;
+      --rose: #bd6480;
+      --rose-soft: #f7e9ed;
+      --line: #eee5e1;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(ellipse at 80% 0%, #f7e9ed 0, transparent 33rem), var(--paper);
+      color: var(--ink);
+      font: 16px/1.65 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    main { width: min(760px, calc(100% - 32px)); margin: 0 auto; padding: 64px 0 48px; }
+    header { margin-bottom: 30px; }
+    .eyebrow { color: var(--rose); font-size: .78rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+    h1 { margin: 10px 0 8px; font-size: clamp(2rem, 7vw, 3rem); line-height: 1.12; letter-spacing: -.04em; }
+    .lead { max-width: 560px; margin: 0; color: var(--muted); font-size: 1.08rem; }
+    .contact { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin: 26px 0 38px; padding: 20px 22px; border: 1px solid #f0dce2; border-radius: 20px; background: var(--rose-soft); }
+    .contact p { margin: 0; }
+    .contact a { color: #8f3f5c; font-weight: 700; overflow-wrap: anywhere; }
+    section { margin: 30px 0 42px; }
+    h2 { margin: 0 0 14px; font-size: 1.35rem; letter-spacing: -.02em; }
+    .faq { display: grid; gap: 12px; }
+    article { padding: 18px 20px; border: 1px solid var(--line); border-radius: 16px; background: var(--card); }
+    h3 { margin: 0 0 5px; font-size: 1rem; }
+    article p { margin: 0; color: var(--muted); }
+    .language { margin-top: 52px; padding-top: 34px; border-top: 1px solid var(--line); }
+    footer { padding-top: 24px; border-top: 1px solid var(--line); color: var(--muted); font-size: .9rem; }
+    footer p { margin: 5px 0; }
+    a:focus-visible { outline: 3px solid #bd6480; outline-offset: 3px; border-radius: 4px; }
+    @media (max-width: 520px) { main { padding-top: 42px; } .contact { align-items: flex-start; flex-direction: column; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div class="eyebrow">App Support</div>
+      <h1>Little Today: Mood Diary</h1>
+      <p class="lead">A small place to keep a sticker, a sentence, or a photo from today.</p>
+    </header>
+
+    <div class="contact" id="contact">
+      <p>Need a hand or want to share feedback?</p>
+      <a href="mailto:yui480145@gmail.com">yui480145@gmail.com</a>
+    </div>
+
+    <section aria-labelledby="help-title">
+      <h2 id="help-title">Help</h2>
+      <div class="faq">
+        <article>
+          <h3>How do I save a day?</h3>
+          <p>Choose a sticker for today. You can also add a note or attach a photo. Earlier dates are available to view; only today can be edited in the calendar.</p>
+        </article>
+        <article>
+          <h3>How do I move my records to another device?</h3>
+          <p>In Settings, export a ZIP backup and save it somewhere you can reach from the other device. On that device, choose Import Backup and select the ZIP. Review the preview before importing. Existing entries and monthly notes are kept; the import adds missing dates and months.</p>
+        </article>
+        <article>
+          <h3>How do I sync with iCloud?</h3>
+          <p>Turn on iCloud Sync in Settings while signed in to iCloud. After changing the switch, fully quit and reopen the app. Sync availability also depends on your iCloud account and Apple’s services.</p>
+        </article>
+        <article>
+          <h3>How do I restore my one-time purchase?</h3>
+          <p>Open the membership screen in the app and tap Restore Purchases. Make sure you are using the Apple Account that made the purchase.</p>
+        </article>
+        <article>
+          <h3>Where are my records stored?</h3>
+          <p>Records are stored on your device. If you enable iCloud Sync, SwiftData uses your private iCloud database to sync records across your devices. ZIP backups are saved wherever you choose in the Files interface.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="language" lang="zh-Hans" aria-labelledby="help-title-zh">
+      <div class="eyebrow">中文支持</div>
+      <h2 id="help-title-zh">使用帮助</h2>
+      <div class="faq">
+        <article>
+          <h3>怎样记录一天？</h3>
+          <p>为今天选一张贴纸，也可以写文字或添加照片。过去的日期可以查看；日历里只有今天可以编辑。</p>
+        </article>
+        <article>
+          <h3>怎样把记录迁移到另一台设备？</h3>
+          <p>在「我的」中导出 ZIP 备份，并保存到另一台设备可访问的位置。然后在另一台设备选择「导入备份」，选中 ZIP 并查看预览。已有的同日记录和同月便签会保留，只补入缺少的内容。</p>
+        </article>
+        <article>
+          <h3>怎样使用 iCloud 同步？</h3>
+          <p>登录 iCloud 后，在「我的」中开启 iCloud 同步。切换开关后，请完全退出并重新打开 App。同步还取决于 iCloud 账号状态和 Apple 服务是否可用。</p>
+        </article>
+        <article>
+          <h3>怎样恢复一次性购买？</h3>
+          <p>打开会员页面并点「恢复购买」。请确认设备登录的是完成购买时使用的 Apple 账号。</p>
+        </article>
+        <article>
+          <h3>我的记录保存在哪里？</h3>
+          <p>记录保存在设备本地。开启 iCloud 同步后，记录会通过你的 iCloud 私有数据库在设备间同步。ZIP 备份保存在你通过「文件」选择的位置。</p>
+        </article>
+      </div>
+    </section>
+
+    <footer>
+      <p>Little Today: Mood Diary</p>
+      <p>For app support, email <a href="mailto:yui480145@gmail.com">yui480145@gmail.com</a>.</p>
+    </footer>
+  </main>
+</body>
+</html>

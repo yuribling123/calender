@@ -67,6 +67,7 @@ struct DayCell: View {
                                 )
                                 .scaleEffect(artworkScale(for: choice))
                                 .scaleEffect(revealScale)
+                                .offset(artworkOffset(for: choice))
                                 .opacity(isRevealPending ? 0 : revealOpacity)
                                 .accessibilityHidden(true)
                         } else {
@@ -125,11 +126,25 @@ struct DayCell: View {
 
     private func artworkScale(for choice: DailyChoice) -> CGFloat {
         if [DailyChoice.poutyRabbit, .absentRabbit, .glassesRabbit, .tearfulRabbit].contains(choice) { return 1.26 }
-        if choice == .cake { return 1.05 }
+        if choice == .starRabbit { return 1.3 }
+        if choice == .cake { return 1.15 }
+        if choice == .wings { return 1.5 }
         if choice.group == .daily { return 1.2 }
         if choice.group == .mood { return 1 }
-        if choice == .gather { return 1.6 }
         return choice.group == .company ? 1.5 : 1.4
+    }
+
+    // Calendar-only optical adjustments, measured in points after scaling.
+    // Align visible subjects rather than the transparent image canvas.
+    private func artworkOffset(for choice: DailyChoice) -> CGSize {
+        switch choice {
+        case .coffee, .lighter, .quill:
+            CGSize(width: 0, height: -2)
+        case .thinkingOfSomeone:
+            CGSize(width: -1, height: -1)
+        default:
+            .zero
+        }
     }
 
     private func prepareReveal() {

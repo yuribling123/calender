@@ -102,7 +102,7 @@ enum DailyChoice: Int, CaseIterable, Identifiable {
         case .gather: localized("聚一聚")
         case .study: localized("学习")
         case .family: localized("和家人")
-        case .thinkingOfSomeone: localized("想起一个人")
+        case .thinkingOfSomeone: localized("想一个人")
         case .fluffy: localized("毛绒绒")
         case .alone: localized("独处")
         case .friends: localized("和朋友")

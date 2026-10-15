@@ -221,7 +221,7 @@ struct MonthlyGoalScreen: View {
                 .accessibilityLabel(localized("写一句话，留给这个月"))
             } else {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text(currentNoteText)
+                    Text(DemoData.displayText(currentNoteText))
                         .font(.subheadline)
                         .foregroundStyle(.primary)
                         .lineSpacing(6)
@@ -250,7 +250,7 @@ struct MonthlyGoalScreen: View {
     }
 
     private func beginCurrentNoteEditing() {
-        draftNoteText = currentNoteText
+        draftNoteText = DemoData.displayText(currentNoteText)
         isEditingCurrentNote = true
         DispatchQueue.main.async {
             isCurrentNoteFocused = true
@@ -277,14 +277,14 @@ struct MonthlyGoalScreen: View {
     private func pastMonthContent(_ data: MonthData) -> some View {
         VStack(alignment: .leading, spacing: 22) {
             if let note = data.note {
-                Text(note)
+                Text(DemoData.displayText(note))
                     .font(.subheadline)
                     .foregroundStyle(Color.black.opacity(0.76))
                     .lineSpacing(4)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
             if let choice = data.choice {
-                summaryRow(title: data.recordCount < 3 ? localized("那个月记下了") : localized("出现最多的是"), value: choice.title)
+                summaryRow(title: data.recordCount < 3 ? localized("那个月记下了") : localized("出现最多的是"), choice: choice)
             }
         }
         .padding(.top, 16)
@@ -315,16 +315,26 @@ struct MonthlyGoalScreen: View {
         return formatter.string(from: date).uppercased()
     }
 
-    private func summaryRow(title: String, value: String) -> some View {
+    private func summaryRow(title: String, choice: DailyChoice) -> some View {
         VStack(alignment: .leading, spacing: 5) {
             Text(title)
                 .font(.footnote.weight(.medium))
                 .foregroundStyle(.secondary)
 
-            Text(value)
-                .font(.subheadline)
-                .foregroundStyle(.primary)
-                .lineLimit(3)
+            HStack(alignment: .center, spacing: 8) {
+                Text(choice.title)
+                    .font(.subheadline)
+                    .foregroundStyle(.primary)
+                    .lineLimit(3)
+
+                Image(choice.imageName)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 64, height: 32)
+                    // Account for the artwork's transparent margins in the row spacing.
+                    .frame(width: choice.group == .mood ? 60 : 32, height: 32)
+                    .accessibilityHidden(true)
+            }
         }
     }
 

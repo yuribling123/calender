@@ -165,7 +165,7 @@ struct SelectedDateDetail: View {
                 .accessibilityLabel("\(choice.group.title), \(choice.title), \(choice.caption)")
             }
             if let note = entry?.note, !note.isEmpty {
-                Text(note)
+                Text(DemoData.displayText(note))
                     .font(.subheadline)
                     .lineSpacing(4)
                     .foregroundStyle(.primary)
