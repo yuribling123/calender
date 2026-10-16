@@ -36,6 +36,9 @@ enum DataBackupExporter {
                     dayKey: $0.dayKey,
                     choiceID: $0.moodValue,
                     note: $0.note,
+                    cardPaperID: $0.cardPaperID,
+                    songTitle: $0.songTitle,
+                    songArtist: $0.songArtist,
                     photoPath: $0.photoData == nil ? nil : "photos/\($0.dayKey).jpg",
                     updatedAt: dateFormatter.string(from: $0.updatedAt)
                 )
@@ -69,6 +72,10 @@ enum DataBackupExporter {
         for entry in entries.sorted(by: { $0.dayKey < $1.dayKey }) {
             lines.append("\(entry.dayKey) · \(entry.choice?.title ?? localized("Unknown sticker (%@)", String(entry.moodValue)))")
             if !entry.note.isEmpty { lines.append(entry.note) }
+            if let title = entry.songTitle, !title.isEmpty {
+                let artist = entry.songArtist.flatMap { $0.isEmpty ? nil : $0 }
+                lines.append("♫ \(title)" + (artist.map { " · \($0)" } ?? ""))
+            }
             lines.append("")
         }
         if entries.isEmpty { lines.append(localized("暂无每日记录\n")) }
@@ -99,6 +106,9 @@ private struct BackupEntry: Codable {
     let dayKey: String
     let choiceID: Int
     let note: String
+    let cardPaperID: String?
+    let songTitle: String?
+    let songArtist: String?
     let photoPath: String?
     let updatedAt: String
 }
@@ -114,6 +124,9 @@ struct DataBackupImportPlan: Sendable {
         let dayKey: String
         let choiceID: Int
         let note: String
+        let cardPaperID: String?
+        let songTitle: String?
+        let songArtist: String?
         let updatedAt: Date
         let photoData: Data?
     }
@@ -182,6 +195,9 @@ enum DataBackupImporter {
             guard isValidDayKey(item.dayKey),
                   (1...30).contains(item.choiceID),
                   item.note.utf8.count <= 1_000_000,
+                  (item.cardPaperID?.utf8.count ?? 0) <= 100,
+                  (item.songTitle?.utf8.count ?? 0) <= 1_000_000,
+                  (item.songArtist?.utf8.count ?? 0) <= 1_000_000,
                   seenDayKeys.insert(item.dayKey).inserted,
                   let updatedAt = parseDate(item.updatedAt) else {
                 throw ImportError.invalidBackup
@@ -201,10 +217,14 @@ enum DataBackupImporter {
                 photoData = nil
             }
 
+            let songTitle = nonEmpty(item.songTitle)
             return DataBackupImportPlan.Entry(
                 dayKey: item.dayKey,
                 choiceID: item.choiceID,
                 note: item.note,
+                cardPaperID: item.cardPaperID.flatMap { CardPaper(rawValue: $0)?.rawValue },
+                songTitle: songTitle,
+                songArtist: songTitle == nil ? nil : nonEmpty(item.songArtist),
                 updatedAt: updatedAt,
                 photoData: photoData
             )
@@ -258,6 +278,9 @@ enum DataBackupImporter {
             let entry = MoodEntry(dayKey: item.dayKey, choice: choice, note: item.note)
             entry.updatedAt = item.updatedAt
             entry.photoData = item.photoData
+            entry.cardPaperID = item.cardPaperID
+            entry.songTitle = item.songTitle
+            entry.songArtist = item.songArtist
             context.insert(entry)
         }
         for item in notes {
@@ -273,6 +296,12 @@ enum DataBackupImporter {
             throw error
         }
         return (entries.count, notes.count)
+    }
+
+    private static func nonEmpty(_ value: String?) -> String? {
+        guard let trimmed = value?.trimmingCharacters(in: .whitespacesAndNewlines),
+              !trimmed.isEmpty else { return nil }
+        return trimmed
     }
 
     private static func isValidDayKey(_ value: String) -> Bool {

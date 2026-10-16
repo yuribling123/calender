@@ -22,6 +22,10 @@ struct DayKey: Hashable, Comparable, Codable {
         return .today
     }
 
+    func isEditable(allowPastDates: Bool, today: DayKey = DayKey(Date())) -> Bool {
+        self == today || (allowPastDates && self < today)
+    }
+
     static func < (lhs: Self, rhs: Self) -> Bool {
         (lhs.year, lhs.month, lhs.day) < (rhs.year, rhs.month, rhs.day)
     }

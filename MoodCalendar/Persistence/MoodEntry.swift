@@ -9,6 +9,9 @@ final class MoodEntry {
     var moodValue: Int = DailyChoice.veryGood.rawValue
     var note: String = ""
     @Attribute(.externalStorage) var photoData: Data? = nil
+    var cardPaperID: String? = nil
+    var songTitle: String? = nil
+    var songArtist: String? = nil
     var updatedAt: Date = Date(timeIntervalSince1970: 0)
 
     init(dayKey: String, choice: DailyChoice, note: String) {

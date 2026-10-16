@@ -3,7 +3,7 @@
 ## Product rules
 
 - This is a native iPhone mood calendar built with SwiftUI and SwiftData. The deployment target is iOS 17 or later.
-- A calendar day has at most one mood entry. Only today can be created or edited. Past days are read-only, including dates without entries; future days are selectable for a read-only not-yet-arrived state. Enforce the edit rule in persistence as well as the UI.
+- A calendar day has at most one mood entry. Today can always be created or edited. The allowPastDateEditing preference defaults to on and allows creating or editing past entries via the add/edit action; when off, past days are read-only, including dates without entries. Future days are always read-only. Enforce the edit rule in persistence as well as the UI.
 - The five moods, in order, are 极好 `#F28DB2`, 好 `#F3A58F`, 一般 `#E8C982`, 不好 `#91A9C5`, and 很差 `#A99AB9`. Keep their saved numeric values stable.
 - The mood images are in `MoodCalendar/Resources/Assets.xcassets`. `moodBad` represents 不好 and comes from the user's `差.jpg`. Keep the supplied artwork intact unless the user asks to change it.
 - Notes are optional. The editor reveals the text field after the user taps 写文字. Past entries with no note show a placeholder. Entries are stored locally; do not introduce accounts, network storage, or synchronization without a product request.

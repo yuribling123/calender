@@ -120,6 +120,7 @@ struct PersonalizationScreen: View {
     #endif
     @AppStorage("calendarTitle") private var storedCalendarTitle = ""
     @AppStorage("dailyReminderEnabled") private var isDailyReminderEnabled = true
+    @AppStorage("allowPastDateEditing") private var allowPastDateEditing = true
     @AppStorage("showMonthArrows") private var showMonthArrows = true
     @Environment(\.modelContext) private var modelContext
     @Environment(\.openURL) private var openURL
@@ -196,19 +197,15 @@ struct PersonalizationScreen: View {
 
                     membershipSection
 
-                    calendarNavigationSection
-
-                    reminderSection
-
                     #if ICLOUD_SYNC_ENABLED
                     syncSection
                     #endif
 
                     dataExportSection
 
-                    feedbackSection
-
                     languageSection
+
+                    feedbackSection
                 }
                 .padding(24)
             }
@@ -414,6 +411,10 @@ struct PersonalizationScreen: View {
             .accessibilityLabel(localized("选中图形，%@", String(describing: selectionShape.title)))
             .accessibilityHint(localized("选择日期和月份的选中图形"))
 
+            calendarPreferences
+
+            reminderControl
+
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -600,21 +601,25 @@ struct PersonalizationScreen: View {
         }
     }
 
-    private var calendarNavigationSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text(localized("日历导航"))
-                .font(settingsHeadingFont)
+    private var calendarPreferences: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            VStack(alignment: .leading, spacing: 8) {
+                Toggle(localized("允许修改往日"), isOn: $allowPastDateEditing)
+                Text(localized("关闭后，往日记录仅可查看。"))
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+            Divider()
             VStack(alignment: .leading, spacing: 8) {
                 Toggle(localized("显示翻月箭头"), isOn: $showMonthArrows)
-                    .tint(theme.palette.strongAccent)
                 Text(localized("关闭后，仍可用手指左右滑动切换月份。"))
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }
-            .padding(20)
-            .background(.white, in: RoundedRectangle(cornerRadius: 24))
         }
-        .padding(.top, 28)
+        .tint(theme.palette.strongAccent)
+        .padding(18)
+        .background(Color.white.opacity(0.72), in: RoundedRectangle(cornerRadius: 20))
     }
 
     private var languageSection: some View {
@@ -682,39 +687,33 @@ struct PersonalizationScreen: View {
         URL(string: "mailto:yui480145@gmail.com?subject=%E4%BB%8A%E6%97%A5%E4%BB%BD%E5%8F%8D%E9%A6%88")!
     }
 
-    private var reminderSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text(localized("提醒"))
-                .font(settingsHeadingFont)
-
-            HStack(spacing: 16) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(localized("每日提醒"))
-                        .font(settingsItemFont)
-                        .foregroundStyle(.primary)
-                    if reminderPermissionDenied {
-                        Text(localized("系统通知已关闭，请在设置中允许通知"))
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-                Spacer(minLength: 8)
+    private var reminderControl: some View {
+        HStack(spacing: 16) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(localized("每日提醒"))
+                    .font(settingsItemFont)
+                    .foregroundStyle(.primary)
                 if reminderPermissionDenied {
-                    Button(localized("去设置")) { isReminderSettingsAlertPresented = true }
-                        .font(.subheadline.weight(.medium))
-                        .foregroundStyle(theme.palette.strongAccent)
-                        .accessibilityLabel(localized("打开系统设置，允许每日提醒通知"))
-                } else {
-                    Toggle(localized("每日提醒"), isOn: dailyReminderToggleBinding)
-                        .labelsHidden()
-                        .tint(theme.palette.strongAccent)
-                        .accessibilityLabel(localized("每日提醒"))
+                    Text(localized("系统通知已关闭，请在设置中允许通知"))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                 }
             }
-            .padding(18)
-            .background(Color.white.opacity(0.72), in: RoundedRectangle(cornerRadius: 20))
+            Spacer(minLength: 8)
+            if reminderPermissionDenied {
+                Button(localized("去设置")) { isReminderSettingsAlertPresented = true }
+                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(theme.palette.strongAccent)
+                    .accessibilityLabel(localized("打开系统设置，允许每日提醒通知"))
+            } else {
+                Toggle(localized("每日提醒"), isOn: dailyReminderToggleBinding)
+                    .labelsHidden()
+                    .tint(theme.palette.strongAccent)
+                    .accessibilityLabel(localized("每日提醒"))
+            }
         }
-        .padding(.top, 32)
+        .padding(18)
+        .background(Color.white.opacity(0.72), in: RoundedRectangle(cornerRadius: 20))
         .alert(localized("需要开启系统通知"), isPresented: $isReminderSettingsAlertPresented) {
             Button(localized("打开设置")) {
                 if let url = URL(string: UIApplication.openSettingsURLString) {

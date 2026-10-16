@@ -3,12 +3,14 @@ import SwiftUI
 struct SelectedDateDetail: View {
     @Environment(\.appTheme) private var theme
 
+    @AppStorage("allowPastDateEditing") private var allowPastDateEditing = true
+
     @State private var isPhotoPresented = false
 
     let date: Date
     let entry: MoodEntry?
     let onRecordMood: (Mood) -> Void
-    let onEditToday: () -> Void
+    let onEdit: () -> Void
 
     private var relation: DayRelation { DayKey(date).relationToToday }
 
@@ -48,22 +50,30 @@ struct SelectedDateDetail: View {
                     .accessibilityLabel(localized("这天有个画面"))
                 }
                 Spacer(minLength: 8)
-                if relation == .today, entry?.choice != nil {
-                    Color.clear.frame(width: 44, height: 22)
+                if relation == .past && allowPastDateEditing || relation == .today && entry?.choice != nil {
+                    Color.clear.frame(width: relation == .past ? 60 : 44, height: 22)
                 }
             }
             .frame(minHeight: 22)
             .padding(.bottom, -8)
             .overlay(alignment: .trailing) {
-                if relation == .today, entry?.choice != nil {
-                    Button(action: onEditToday) {
-                        Image(systemName: "square.and.pencil")
-                            .font(.system(size: 18, weight: .medium))
-                            .frame(width: 44, height: 44)
-                            .contentShape(Rectangle())
+                if relation == .past && allowPastDateEditing || relation == .today && entry?.choice != nil {
+                    Button(action: onEdit) {
+                        Group {
+                            if relation == .past {
+                                Text(localized("补充"))
+                                    .font(.footnote.weight(.medium))
+                                    .foregroundStyle(theme.palette.strongAccent)
+                            } else {
+                                Image(systemName: "square.and.pencil")
+                                    .font(.system(size: 18, weight: .medium))
+                            }
+                        }
+                        .frame(minWidth: 44, minHeight: 44)
+                        .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
-                    .accessibilityLabel(localized("修改记录"))
+                    .accessibilityLabel(relation == .past ? localized("补充") : localized("修改记录"))
                     .transition(.scale(scale: 0.72).combined(with: .opacity))
                 }
             }
@@ -95,7 +105,7 @@ struct SelectedDateDetail: View {
                         }
                     }
 
-                    Button(localized("选其他表情"), action: onEditToday)
+                    Button(localized("选其他表情"), action: onEdit)
                         .font(.footnote.weight(.medium))
                         .foregroundStyle(theme.palette.strongAccent)
                         .padding(.vertical, 8)
@@ -121,7 +131,7 @@ struct SelectedDateDetail: View {
         .padding(16)
         .background {
             RoundedRectangle(cornerRadius: 18)
-                .fill(theme.palette.accent.opacity(0.06))
+                .fill(CardPaper.resolve(entry?.cardPaperID).color(for: theme))
         }
     }
 
@@ -164,6 +174,11 @@ struct SelectedDateDetail: View {
                 .accessibilityElement(children: .combine)
                 .accessibilityLabel("\(choice.group.title), \(choice.title), \(choice.caption)")
             }
+            if let title = entry?.songTitle, !title.isEmpty {
+                DailySongCard(title: title, artist: entry?.songArtist ?? "")
+                    .padding(.top, -6)
+                    .padding(.bottom, entry?.note.isEmpty == false ? 18 : 4)
+            }
             if let note = entry?.note, !note.isEmpty {
                 Text(DemoData.displayText(note))
                     .font(.subheadline)
@@ -179,6 +194,57 @@ struct SelectedDateDetail: View {
             .font(.subheadline)
             .foregroundStyle(.secondary)
             .frame(maxWidth: .infinity, minHeight: 52, alignment: .leading)
+    }
+}
+
+/// A listening memory styled like a player; it has no playback action.
+struct DailySongCard: View {
+    @Environment(\.appTheme) private var theme
+    let title: String
+    let artist: String
+
+    var body: some View {
+        HStack(spacing: 20) {
+            HStack(spacing: 6) {
+                Text("♫")
+                    .accessibilityHidden(true)
+                Text(songDescription)
+                    .foregroundStyle(theme.palette.strongAccent)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+            }
+            .font(.system(size: 13))
+            .foregroundStyle(Color.black.opacity(0.65))
+
+            HStack(spacing: 16) {
+                Image(systemName: "backward.fill")
+                    .frame(width: 11)
+                Image(systemName: "play.fill")
+                    .font(.system(size: 10))
+                    .frame(width: 11)
+                Image(systemName: "forward.fill")
+                    .frame(width: 11)
+            }
+            .font(.system(size: 10 / 1.15))
+            .foregroundStyle(Color.black.opacity(0.58))
+            .fixedSize()
+            .accessibilityHidden(true)
+
+            Spacer(minLength: 0)
+            Text(verbatim: "NOW PLAYING")
+                .font(.system(size: 9, weight: .medium))
+                .tracking(0.8)
+                .foregroundStyle(theme.palette.strongAccent)
+                .fixedSize()
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .accessibilityElement(children: .combine)
+    }
+
+    private var songDescription: String {
+        let song = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        let singer = artist.trimmingCharacters(in: .whitespacesAndNewlines)
+        return singer.isEmpty ? song : "\(song) · \(singer)"
     }
 }
 

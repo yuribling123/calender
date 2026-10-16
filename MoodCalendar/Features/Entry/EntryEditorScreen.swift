@@ -29,6 +29,12 @@ struct EntryEditorScreen: View {
     @State private var photoLoadTask: Task<Void, Never>?
     @State private var note = ""
     @State private var showsNote = false
+    @State private var selectedPaper: CardPaper = .pink
+    @State private var showsSong = false
+    @State private var songTitle = ""
+    @State private var songArtist = ""
+    @State private var isSongEditorPresented = false
+    @State private var isPaperPickerPresented = false
     @State private var errorMessage: String?
     @State private var isMembershipPresented = false
     @State private var noteCardFrame: CGRect = .zero
@@ -52,7 +58,11 @@ struct EntryEditorScreen: View {
 
                     noteCard
 
+                    songAttachment
+
                     photoAttachment
+
+                    paperPicker
                 }
                 .padding(24)
             }
@@ -78,7 +88,7 @@ struct EntryEditorScreen: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button(localized("保存")) { save() }
-                        .disabled(selectedChoice == nil || isLoadingPhoto)
+                        .disabled(selectedChoice == nil || isLoadingPhoto || (showsSong && songTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty))
                 }
             }
             .alert(localized("保存失败"), isPresented: Binding(
@@ -92,6 +102,9 @@ struct EntryEditorScreen: View {
             .sheet(isPresented: $isMembershipPresented) {
                 MembershipScreen()
                     .environmentObject(membership)
+            }
+            .sheet(isPresented: $isPaperPickerPresented) {
+                PaperDialPicker(selectedPaper: $selectedPaper)
             }
             .onChange(of: photoItem) { _, item in
                 photoLoadTask?.cancel()
@@ -123,8 +136,54 @@ struct EntryEditorScreen: View {
                 photoData = entry?.photoData
                 note = entry?.note ?? ""
                 showsNote = !(entry?.note.isEmpty ?? true)
+                let savedPaper = CardPaper.resolve(entry?.cardPaperID)
+                selectedPaper = savedPaper == .original ? CardPaper.matching(theme) : savedPaper
+                songTitle = entry?.songTitle ?? ""
+                songArtist = entry?.songArtist ?? ""
+                showsSong = !songTitle.isEmpty
             }
         }
+        .allowsHitTesting(!isSongEditorPresented)
+        .accessibilityHidden(isSongEditorPresented)
+        .overlay {
+            if isSongEditorPresented {
+                SongEditorOverlay(title: songTitle, artist: songArtist, isToday: DayKey(day).relationToToday == .today, onClose: {
+                    isSongEditorPresented = false
+                }) { title, artist in
+                    songTitle = title
+                    songArtist = artist
+                    showsSong = !title.isEmpty
+                    isSongEditorPresented = false
+                }
+            }
+        }
+    }
+
+    private var songAttachment: some View {
+        Button {
+            isNoteFocused = false
+            isSongEditorPresented = true
+        } label: {
+            HStack(spacing: 8) {
+                Text("♫")
+                if showsSong {
+                    Text(songArtist.isEmpty ? songTitle : "\(songTitle) · \(songArtist)")
+                        .lineLimit(1)
+                        .truncationMode(.tail)
+                    Spacer(minLength: 8)
+                    Image(systemName: "pencil")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                } else {
+                    Text(localized("记首歌"))
+                }
+            }
+            .font(.subheadline)
+            .foregroundStyle(theme.palette.strongAccent)
+            .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 
     private var photoAttachment: some View {
@@ -282,7 +341,7 @@ struct EntryEditorScreen: View {
     }
 
     private var editorTitle: some View {
-        Text(localized("今天想记什么？"))
+        Text(DayKey(day).relationToToday == .today ? localized("今天想记什么？") : localized("这一天想记什么？"))
             .font(.title2.weight(.semibold))
             .foregroundStyle(.primary)
     }
@@ -305,7 +364,7 @@ struct EntryEditorScreen: View {
                     Text(localized("写文字"))
                         .font(.body.weight(.medium))
                         .foregroundStyle(.primary)
-                    Text(localized("文字可选，今天内可以修改。"))
+                    Text(localized("文字可选。"))
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }
@@ -314,7 +373,7 @@ struct EntryEditorScreen: View {
                 .accessibilityLabel(localized("写文字"))
             }
             if showsNote {
-                Text(localized("文字可选，今天内可以修改。"))
+                Text(localized("文字可选。"))
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }
@@ -323,7 +382,7 @@ struct EntryEditorScreen: View {
         .background {
             GeometryReader { proxy in
                 RoundedRectangle(cornerRadius: 22)
-                    .fill(Color.white.opacity(0.72))
+                    .fill(selectedPaper.color(for: theme))
                     .preference(
                         key: NoteCardFramePreferenceKey.self,
                         value: proxy.frame(in: .named("EntryEditor"))
@@ -346,19 +405,306 @@ struct EntryEditorScreen: View {
         }
     }
 
+    private var paperPicker: some View {
+        Button { isPaperPickerPresented = true } label: {
+            HStack(spacing: 10) {
+                Text(localized("色纸"))
+                Spacer()
+                Circle()
+                    .fill(selectedPaper.swatchAccent(for: theme))
+                    .frame(width: 20, height: 20)
+                Text(selectedPaper.title)
+                Image(systemName: "chevron.right")
+                    .font(.caption2)
+            }
+            .font(.footnote)
+            .foregroundStyle(.secondary)
+            .frame(minHeight: 44)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+
     private func save() {
         guard let selectedChoice else { return }
         let savedNote = (showsNote ? note : "").trimmingCharacters(in: .whitespacesAndNewlines)
-        let hasChanges = selectedChoice != entry?.choice || savedNote != (entry?.note ?? "") || photoData != entry?.photoData
+        let savedPaper = CardPaper.resolve(entry?.cardPaperID)
+        let initialPaper = savedPaper == .original ? CardPaper.matching(theme) : savedPaper
+        let savedSong = showsSong ? songTitle.trimmingCharacters(in: .whitespacesAndNewlines) : ""
+        let savedArtist = showsSong ? songArtist.trimmingCharacters(in: .whitespacesAndNewlines) : ""
+        let hasChanges = selectedChoice != entry?.choice || savedNote != (entry?.note ?? "") || photoData != entry?.photoData || selectedPaper != initialPaper || savedSong != (entry?.songTitle ?? "") || savedArtist != (entry?.songArtist ?? "")
         do {
             try EntryStore(context: modelContext).save(
                 day: DayKey(day), choice: selectedChoice, note: showsNote ? note : "",
-                isMember: hasPremiumAccess, photoData: photoData, updatesPhoto: true
+                isMember: hasPremiumAccess, photoData: photoData, updatesPhoto: true,
+                cardPaperID: selectedPaper.rawValue,
+                updatesCardPaper: true,
+                songTitle: savedSong, songArtist: savedArtist, updatesSong: true
             )
             onSaved(selectedChoice, hasChanges)
             dismiss()
         } catch {
             errorMessage = error.localizedDescription
+        }
+    }
+}
+
+private struct SongEditorOverlay: View {
+    @Environment(\.appTheme) private var theme
+    @State private var title: String
+    @State private var artist: String
+    private enum Field: Hashable { case title, artist }
+    @FocusState private var focusedField: Field?
+    private let hasSong: Bool
+    let isToday: Bool
+    let onClose: () -> Void
+    let onSave: (String, String) -> Void
+
+    init(title: String, artist: String, isToday: Bool, onClose: @escaping () -> Void,
+         onSave: @escaping (String, String) -> Void) {
+        _title = State(initialValue: title)
+        _artist = State(initialValue: artist)
+        hasSong = !title.isEmpty
+        self.isToday = isToday
+        self.onClose = onClose
+        self.onSave = onSave
+    }
+
+    private var isTitleEmpty: Bool {
+        title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    var body: some View {
+        ZStack {
+            Color.black.opacity(0.22)
+                .ignoresSafeArea()
+                .onTapGesture { focusedField = nil }
+                .accessibilityHidden(true)
+            ViewThatFits(in: .vertical) {
+                player.padding(24)
+                ScrollView { player.padding(24) }
+            }
+        }
+        .tint(theme.palette.strongAccent)
+        .accessibilityAddTraits(.isModal)
+    }
+
+    private var player: some View {
+        VStack(spacing: 22) {
+            HStack {
+                Capsule()
+                    .fill(theme.palette.strongAccent.opacity(0.18))
+                    .frame(width: 34, height: 7)
+                    .overlay { Capsule().strokeBorder(theme.palette.background, lineWidth: 2) }
+                    .accessibilityHidden(true)
+                Spacer()
+                Button(action: onClose) {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 13, weight: .medium))
+                        .frame(width: 44, height: 44)
+                        .contentShape(Circle())
+                }
+                .accessibilityLabel(localized("取消"))
+            }
+            .padding(.bottom, -12)
+
+            VStack(spacing: 18) {
+                Text(isToday ? localized("今天在听") : localized("这一天在听"))
+                    .font(.caption)
+                    .foregroundStyle(theme.palette.strongAccent)
+                TextField(localized("歌曲名"), text: $title, axis: .vertical)
+                    .font(.title2.weight(.medium))
+                    .foregroundStyle(theme.palette.strongAccent)
+                    .lineLimit(1...3)
+                    .accessibilityLabel(localized("歌曲名"))
+                    .focused($focusedField, equals: .title)
+                TextField(localized("歌手（选填）"), text: $artist)
+                    .font(.subheadline)
+                    .foregroundStyle(theme.palette.strongAccent.opacity(0.7))
+                    .accessibilityLabel(localized("歌手（选填）"))
+                    .focused($focusedField, equals: .artist)
+                    .submitLabel(.done)
+                    .onSubmit { focusedField = nil }
+            }
+            .multilineTextAlignment(.center)
+            .textInputAutocapitalization(.never)
+            .padding(.horizontal, 18)
+            .padding(.vertical, 24)
+            .frame(maxWidth: .infinity)
+            .background(theme.palette.accent.opacity(0.07), in: RoundedRectangle(cornerRadius: 24))
+
+            HStack(spacing: 22) {
+                speaker
+                Button {
+                    onSave(title.trimmingCharacters(in: .whitespacesAndNewlines),
+                           artist.trimmingCharacters(in: .whitespacesAndNewlines))
+                } label: {
+                    Text(localized("确认"))
+                        .font(.body.weight(.medium))
+                        .padding(.horizontal, 30)
+                        .frame(minHeight: 48)
+                        .foregroundStyle(theme.palette.onStrongAccent)
+                        .background(theme.palette.strongAccent, in: Capsule())
+                        .shadow(color: theme.palette.strongAccent.opacity(0.20), radius: 0, y: 3)
+                }
+                .buttonStyle(.plain)
+                .disabled(isTitleEmpty)
+                .opacity(isTitleEmpty ? 0.45 : 1)
+                speaker
+            }
+            if hasSong {
+                Button(localized("移除歌曲")) { onSave("", "") }
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                    .frame(minHeight: 44)
+            }
+        }
+        .foregroundStyle(.primary)
+        .padding(.horizontal, 24)
+        .padding(.bottom, 24)
+        .background {
+            RoundedRectangle(cornerRadius: 36)
+                .fill(theme.palette.background)
+                .shadow(color: .black.opacity(0.12), radius: 24, y: 12)
+        }
+        .frame(maxWidth: 360)
+    }
+
+    private var speaker: some View {
+        HStack(spacing: 4) {
+            ForEach(0..<3) { _ in
+                Capsule().fill(theme.palette.strongAccent.opacity(0.16))
+                    .frame(width: 3, height: 15)
+            }
+        }
+        .accessibilityHidden(true)
+    }
+}
+
+private struct PaperDialPicker: View {
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.appTheme) private var theme
+    @Binding var selectedPaper: CardPaper
+    @State private var rotation = 0.0
+    @State private var lastDragAngle: Double?
+    private let papers = CardPaper.allCases.filter { $0 != .original }
+
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 12) {
+                ZStack {
+                    Circle()
+                        .strokeBorder(Color.black.opacity(0.04), lineWidth: 1)
+                        .frame(width: 210, height: 210)
+                    ZStack {
+                        ForEach(Array(papers.enumerated()), id: \.element.id) { index, paper in
+                            let angle = Double(index) * .pi / 4
+                            Button { select(index) } label: {
+                                Circle()
+                                    .fill(paper.swatchAccent(for: theme))
+                                    .frame(width: 38, height: 38)
+                                    .frame(width: 44, height: 44)
+                                    .contentShape(Circle())
+                            }
+                            .buttonStyle(.plain)
+                            .position(x: 140 + sin(angle) * 105, y: 140 - cos(angle) * 105)
+                        }
+                    }
+                    .rotationEffect(.degrees(rotation))
+                    VStack(spacing: 8) {
+                        Text(selectedPaper.title)
+                            .font(.headline.weight(.medium))
+                        Image(systemName: "arrow.triangle.2.circlepath")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    .allowsHitTesting(false)
+                }
+                .frame(width: 280, height: 280)
+                .contentShape(Circle())
+                .simultaneousGesture(
+                    DragGesture(minimumDistance: 8)
+                        .onChanged { value in
+                            let x = Double(value.location.x - 140)
+                            let y = Double(value.location.y - 140)
+                            guard hypot(x, y) > 35 else { return }
+                            let angle = atan2(y, x) * 180 / .pi
+                            let previous = lastDragAngle ?? atan2(
+                                Double(value.startLocation.y - 140),
+                                Double(value.startLocation.x - 140)
+                            ) * 180 / .pi
+                            var delta = angle - previous
+                            if delta > 180 { delta -= 360 }
+                            if delta < -180 { delta += 360 }
+                            rotation += delta
+                            updateSelection()
+                            lastDragAngle = angle
+                        }
+                        .onEnded { _ in
+                            lastDragAngle = nil
+                            withAnimation(.easeOut(duration: 0.2)) {
+                                rotation = (rotation / 45).rounded() * 45
+                            }
+                            updateSelection()
+                        }
+                )
+                .overlay(alignment: .top) {
+                    Image(systemName: "triangle.fill")
+                        .font(.system(size: 6))
+                        .rotationEffect(.degrees(180))
+                        .foregroundStyle(Color.black.opacity(0.5))
+                        .offset(y: -2)
+                        .allowsHitTesting(false)
+                }
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(localized("色纸"))
+                .accessibilityValue(selectedPaper.title)
+                .accessibilityAdjustableAction { direction in
+                    let index = papers.firstIndex(of: selectedPaper) ?? 0
+                    switch direction {
+                    case .increment: select((index + 1) % papers.count)
+                    case .decrement: select((index + papers.count - 1) % papers.count)
+                    @unknown default: break
+                    }
+                }
+
+                Text(localized("转动或轻点选色"))
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                RoundedRectangle(cornerRadius: 14)
+                    .fill(selectedPaper.color(for: theme))
+                    .frame(height: 52)
+                    .overlay { Text(selectedPaper.title).font(.subheadline) }
+                    .padding(.horizontal, 28)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(theme.palette.background)
+            .navigationTitle(localized("色纸"))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(localized("完成")) { dismiss() }
+                }
+            }
+            .tint(theme.palette.strongAccent)
+        }
+        .presentationDetents([.height(470)])
+        .presentationDragIndicator(.visible)
+        .onAppear { rotation = -Double(papers.firstIndex(of: selectedPaper) ?? 0) * 45 }
+    }
+
+    private func updateSelection() {
+        let index = Int((-rotation / 45).rounded())
+        selectedPaper = papers[(index % papers.count + papers.count) % papers.count]
+    }
+
+    private func select(_ index: Int) {
+        var delta = (-Double(index) * 45 - rotation).truncatingRemainder(dividingBy: 360)
+        if delta > 180 { delta -= 360 }
+        if delta < -180 { delta += 360 }
+        withAnimation(.easeInOut(duration: 0.2)) {
+            rotation += delta
+            selectedPaper = papers[index]
         }
     }
 }

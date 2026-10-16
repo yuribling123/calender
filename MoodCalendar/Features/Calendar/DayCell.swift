@@ -47,7 +47,7 @@ struct DayCell: View {
                             SelectionShapeIcon(
                                 shape: selectionShape,
                                 color: theme.palette.selectionFill,
-                                size: selectionShape == .sakura || selectionShape == .leaf ? 40 : 34
+                                size: selectionShape == .star || selectionShape == .sakura || selectionShape == .leaf ? 40 : 34
                             )
                         }
                     }
@@ -65,7 +65,7 @@ struct DayCell: View {
                                     width: min(50, geometry.size.width),
                                     height: 26
                                 )
-                                .scaleEffect(artworkScale(for: choice))
+                                .scaleEffect(artworkScale(for: choice) * 1.10)
                                 .scaleEffect(revealScale)
                                 .offset(artworkOffset(for: choice))
                                 .opacity(isRevealPending ? 0 : revealOpacity)
@@ -129,6 +129,7 @@ struct DayCell: View {
         if choice == .starRabbit { return 1.3 }
         if choice == .cake { return 1.15 }
         if choice == .wings { return 1.5 }
+        if choice.group == .playful { return 1.32 }
         if choice.group == .daily { return 1.2 }
         if choice.group == .mood { return 1 }
         return choice.group == .company ? 1.5 : 1.4

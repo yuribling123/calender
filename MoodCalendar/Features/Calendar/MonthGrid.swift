@@ -13,7 +13,7 @@ struct MonthGrid: View {
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 2), count: 7)
 
     var body: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 0) {
             LazyVGrid(columns: columns, spacing: 0) {
                 ForEach(0..<7, id: \.self) { index in
                     Text(weekdayNames[index])

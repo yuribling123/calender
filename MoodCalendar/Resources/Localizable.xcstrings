@@ -1,6 +1,209 @@
 {
   "sourceLanguage" : "zh-Hans",
   "strings" : {
+    "允许修改往日": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allow editing past days"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "過去の日付の編集を許可"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "지난 날짜 수정 허용"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "允许修改往日"
+          }
+        }
+      }
+    },
+    "关闭后，往日记录仅可查看。": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "When off, past entries are view-only."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "オフにすると、過去の記録は閲覧のみになります。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "끄면 지난 기록은 보기만 할 수 있어요."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "关闭后，往日记录仅可查看。"
+          }
+        }
+      }
+    },
+    "补充": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add / edit"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "追記"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "추가·수정"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "补充"
+          }
+        }
+      }
+    },
+    "此日期不可修改，请检查「允许修改往日」设置。": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This date cannot be edited. Check the past-day editing setting."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "この日付は編集できません。過去の日付の編集設定をご確認ください。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이 날짜는 수정할 수 없어요. 지난 날짜 수정 설정을 확인해 주세요."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "此日期不可修改，请检查「允许修改往日」设置。"
+          }
+        }
+      }
+    },
+    "这一天想记什么？": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What would you like to remember from this day?"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "この日は何を残しますか？"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이날의 무엇을 기록할까요?"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "这一天想记什么？"
+          }
+        }
+      }
+    },
+    "文字可选。": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Writing is optional."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "文章は任意です。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "글은 선택 사항이에요."
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "文字可选。"
+          }
+        }
+      }
+    },
+    "这一天在听": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Listening that day"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "この日の一曲"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이날 들은 노래"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "这一天在听"
+          }
+        }
+      }
+    },
     "·" : {
 
     },
@@ -197,6 +400,9 @@
     "→" : {
 
     },
+    "♫" : {
+
+    },
     "App 语言" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -251,35 +457,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "iCloud 同步"
-          }
-        }
-      }
-    },
-    "退出并重新打开 App 后开始自动同步。" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "iCloud is connected. Close and reopen the app to start syncing."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "iCloudに接続済みです。アプリを開き直すと自動同期が始まります。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "iCloud에 연결됐어요. 앱을 완전히 종료하고 다시 열면 자동 동기화가 시작돼요."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "退出并重新打开 App 后开始自动同步。"
           }
         }
       }
@@ -835,93 +1012,6 @@
         }
       }
     },
-    "路上遇见一场很好看的晚霞。" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "I came across a beautiful sunset on the way home."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "帰り道に、とてもきれいな夕焼けに出会った。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "돌아가는 길에 정말 예쁜 노을을 만났다."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "路上遇见一场很好看的晚霞。"
-          }
-        }
-      }
-    },
-    "晚饭后喝了杯喜欢的饮料，今天就到这里吧。" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "I had a drink I like after dinner. That was enough for today."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "夕食のあと、好きな飲み物を一杯。今日はこれで十分。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "저녁 먹고 좋아하는 음료를 한 잔 마셨다. 오늘은 이걸로 충분해."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "晚饭后喝了杯喜欢的饮料，今天就到这里吧。"
-          }
-        }
-      }
-    },
-    "路边的晚风很舒服，绕了一小段路才回家。" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "The evening breeze felt nice, so I took the longer way home."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "夜風が気持ちよくて、少し遠回りして帰った。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "저녁 바람이 좋아서 조금 돌아서 집에 갔다."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "路边的晚风很舒服，绕了一小段路才回家。"
-          }
-        }
-      }
-    },
     "事情有点多，先允许自己慢下来。" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -947,6 +1037,35 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "事情有点多，先允许自己慢下来。"
+          }
+        }
+      }
+    },
+    "亚麻" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Linen"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "亜麻"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "리넨"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "亚麻"
           }
         }
       }
@@ -1092,6 +1211,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "今天先好好休息。"
+          }
+        }
+      }
+    },
+    "收好": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "しまう"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "담아두기"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "收好"
+          }
+        }
+      }
+    },
+    "今天在听" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Listening today"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今日の一曲"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "오늘 듣는 노래"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今天在听"
           }
         }
       }
@@ -1440,6 +1617,35 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "今晚碰个杯。"
+          }
+        }
+      }
+    },
+    "从 ZIP 备份恢复记录、便签和照片" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restore entries, notes, and photos from a ZIP backup"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ZIPバックアップから記録、メモ、写真を復元"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ZIP 백업에서 기록, 메모, 사진 복원"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "从 ZIP 备份恢复记录、便签和照片"
           }
         }
       }
@@ -2082,6 +2288,35 @@
         }
       }
     },
+    "原纸" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Natural"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "生成り"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "기본 종이"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "原纸"
+          }
+        }
+      }
+    },
     "去设置" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2662,6 +2897,35 @@
         }
       }
     },
+    "备份中的记录都已存在，没有需要补入的内容。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All records in this backup already exist. Nothing needs to be added."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "バックアップ内の記録はすべて存在しています。追加する内容はありません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "백업의 기록이 모두 이미 있습니다. 추가할 내용이 없습니다."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "备份中的记录都已存在，没有需要补入的内容。"
+          }
+        }
+      }
+    },
     "天气很好，心里亮了一点。" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2687,6 +2951,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "天气很好，心里亮了一点。"
+          }
+        }
+      }
+    },
+    "奶杏" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apricot"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アプリコット"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "살구"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "奶杏"
+          }
+        }
+      }
+    },
+    "奶油" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cream"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "クリーム"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "크림"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "奶油"
           }
         }
       }
@@ -2807,35 +3129,6 @@
         }
       }
     },
-    "退出并重新打开 App 后开始同步" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Close and reopen the app to start syncing."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "アプリを完全に終了し、開き直すと同期が始まります。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "앱을 완전히 종료하고 다시 열면 동기화가 시작돼요."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "退出并重新打开 App 后开始同步"
-          }
-        }
-      }
-    },
     "完成" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2861,6 +3154,122 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "完成"
+          }
+        }
+      }
+    },
+    "导入备份" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Import Backup"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "バックアップを読み込む"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "백업 가져오기"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "导入备份"
+          }
+        }
+      }
+    },
+    "导入失败：%@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Import failed: %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "読み込みに失敗しました：%@"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "가져오기 실패: %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "导入失败：%@"
+          }
+        }
+      }
+    },
+    "导入完成：新增 %d 条每日记录和 %d 条月便签。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Import complete: added %1$d daily entries and %2$d monthly notes."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "読み込み完了：日々の記録%1$d件、月メモ%2$d件を追加しました。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "가져오기 완료: 일일 기록 %1$d개와 월간 메모 %2$d개를 추가했습니다."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "导入完成：新增 %1$d 条每日记录和 %2$d 条月便签。"
+          }
+        }
+      }
+    },
+    "导入并合并" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Import and Merge"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "読み込んで統合"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "가져와 병합"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "导入并合并"
           }
         }
       }
@@ -2897,10 +3306,30 @@
     "导出失败：%@" : {
       "extractionState" : "manual",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Export failed: %@" } },
-        "ja" : { "stringUnit" : { "state" : "translated", "value" : "書き出しに失敗しました：%@" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "내보내기 실패: %@" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "导出失败：%@" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Export failed: %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "書き出しに失敗しました：%@"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "내보내기 실패: %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "导出失败：%@"
+          }
+        }
       }
     },
     "导出数据" : {
@@ -2957,6 +3386,35 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "将每日记录和月便签保存为今日份 ZIP 文件"
+          }
+        }
+      }
+    },
+    "将补入 %d 条每日记录（含 %d 张照片）和 %d 条月便签。另有 %d 条每日记录和 %d 条月便签已存在，会保留。备份不会恢复会员资格。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add %1$d daily entries (including %2$d photos) and %3$d monthly notes. %4$d daily entries and %5$d monthly notes already exist and will be kept. Membership isn’t restored from backups."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "日々の記録%1$d件（写真%2$d枚を含む）と月メモ%3$d件を追加します。既存の日々の記録%4$d件と月メモ%5$d件は保持されます。会員資格は復元されません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "일일 기록 %1$d개(사진 %2$d장 포함)와 월간 메모 %3$d개를 추가합니다. 기존 일일 기록 %4$d개와 월간 메모 %5$d개는 유지됩니다. 멤버십은 복원되지 않습니다."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "将补入 %1$d 条每日记录（含 %2$d 张照片）和 %3$d 条月便签。另有 %4$d 条每日记录和 %5$d 条月便签已存在，会保留。备份不会恢复会员资格。"
           }
         }
       }
@@ -3628,35 +4086,6 @@
         }
       }
     },
-    "想象自己轻轻飞起来。" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Imagining myself floating into the sky."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ふわっと飛び立つ自分を想像した。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "가볍게 날아오르는 나를 상상했다."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "想象自己轻轻飞起来。"
-          }
-        }
-      }
-    },
     "想一个人" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3682,6 +4111,35 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "想一个人"
+          }
+        }
+      }
+    },
+    "想象自己轻轻飞起来。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Imagining myself floating into the sky."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ふわっと飛び立つ自分を想像した。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "가볍게 날아오르는 나를 상상했다."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "想象自己轻轻飞起来。"
           }
         }
       }
@@ -4237,6 +4695,35 @@
         }
       }
     },
+    "数据备份" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Data Backup"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "データバックアップ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "데이터 백업"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "数据备份"
+          }
+        }
+      }
+    },
     "数据管理" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -4407,6 +4894,35 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "无法访问此 App 的 iCloud 容器，请检查开发者签名和网络后重试"
+          }
+        }
+      }
+    },
+    "无法读取备份文件：%@" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn’t read the backup: %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "バックアップを読み込めませんでした：%@"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "백업을 읽을 수 없습니다: %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法读取备份文件：%@"
           }
         }
       }
@@ -4759,6 +5275,35 @@
         }
       }
     },
+    "晚饭后喝了杯喜欢的饮料，今天就到这里吧。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I had a drink I like after dinner. That was enough for today."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "夕食のあと、好きな飲み物を一杯。今日はこれで十分。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "저녁 먹고 좋아하는 음료를 한 잔 마셨다. 오늘은 이걸로 충분해."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "晚饭后喝了杯喜欢的饮料，今天就到这里吧。"
+          }
+        }
+      }
+    },
     "暂无月便签" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -4987,6 +5532,35 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "暖杏"
+          }
+        }
+      }
+    },
+    "暖灰" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Warm gray"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ウォームグレー"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "웜 그레이"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暖灰"
           }
         }
       }
@@ -5252,6 +5826,64 @@
         }
       }
     },
+    "歌手（选填）" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Artist (optional)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アーティスト（任意）"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "가수 (선택)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "歌手（选填）"
+          }
+        }
+      }
+    },
+    "歌曲名" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Song title"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "曲名"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "노래 제목"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "歌曲名"
+          }
+        }
+      }
+    },
     "正在检查 iCloud" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -5455,6 +6087,64 @@
         }
       }
     },
+    "水蓝" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Water blue"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "水色"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "물빛 파랑"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "水蓝"
+          }
+        }
+      }
+    },
+    "水雾" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Water mist"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "水霧"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "물안개"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "水雾"
+          }
+        }
+      }
+    },
     "永久解锁" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -5596,6 +6286,93 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "没哭，只是眼睛下雨了"
+          }
+        }
+      }
+    },
+    "浅黄" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Butter"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "淡いイエロー"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "연노랑"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "浅黄"
+          }
+        }
+      }
+    },
+    "淡杏" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Soft apricot"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "淡杏"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "연살구"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "淡杏"
+          }
+        }
+      }
+    },
+    "淡粉" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Blush"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "淡いピンク"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "연분홍"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "淡粉"
           }
         }
       }
@@ -6238,6 +7015,64 @@
         }
       }
     },
+    "石白" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stone white"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "石白"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "돌빛 흰색"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "石白"
+          }
+        }
+      }
+    },
+    "确认": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Confirm"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "確認"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "확인"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "确认"
+          }
+        }
+      }
+    },
     "确定" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -6263,6 +7098,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "确定"
+          }
+        }
+      }
+    },
+    "确认导入备份" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Review Backup Import"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "バックアップの読み込みを確認"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "백업 가져오기 확인"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "确认导入备份"
+          }
+        }
+      }
+    },
+    "移除歌曲" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove song"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "曲を削除"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "노래 삭제"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "移除歌曲"
           }
         }
       }
@@ -6350,6 +7243,35 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "系统通知已关闭，请在设置中允许通知"
+          }
+        }
+      }
+    },
+    "紫藤" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wisteria"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "藤色"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "등꽃"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "紫藤"
           }
         }
       }
@@ -6669,6 +7591,122 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "自定义日历标题，解锁全部主题色和选中图形"
+          }
+        }
+      }
+    },
+    "色纸" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Paper"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "色紙"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "색지"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "色纸"
+          }
+        }
+      }
+    },
+    "若叶" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Young leaf"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "若葉"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "새잎"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "若叶"
+          }
+        }
+      }
+    },
+    "薄樱" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pale cherry"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "薄桜"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "연벚꽃"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "薄樱"
+          }
+        }
+      }
+    },
+    "藤白" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wisteria white"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "藤白"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "등꽃빛 흰색"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "藤白"
           }
         }
       }
@@ -7079,6 +8117,35 @@
         }
       }
     },
+    "记首歌" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add a song"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "曲を記録"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "노래 기록"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "记首歌"
+          }
+        }
+      }
+    },
     "试试来写吧" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -7224,6 +8291,35 @@
         }
       }
     },
+    "请选择一个 ZIP 备份文件。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose a ZIP backup file."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ZIPバックアップファイルを選択してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ZIP 백업 파일을 선택해 주세요."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "请选择一个 ZIP 备份文件。"
+          }
+        }
+      }
+    },
     "购买未完成，请稍后重试。" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -7311,6 +8407,35 @@
         }
       }
     },
+    "跟随主题" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Match theme"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "テーマに合わせる"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "테마 따르기"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "跟随主题"
+          }
+        }
+      }
+    },
     "跟随系统" : {
       "extractionState" : "stale",
       "localizations" : {
@@ -7340,6 +8465,64 @@
         }
       }
     },
+    "路上遇见一场很好看的晚霞。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I came across a beautiful sunset on the way home."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "帰り道に、とてもきれいな夕焼けに出会った。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "돌아가는 길에 정말 예쁜 노을을 만났다."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "路上遇见一场很好看的晚霞。"
+          }
+        }
+      }
+    },
+    "路边的晚风很舒服，绕了一小段路才回家。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The evening breeze felt nice, so I took the longer way home."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "夜風が気持ちよくて、少し遠回りして帰った。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "저녁 바람이 좋아서 조금 돌아서 집에 갔다."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "路边的晚风很舒服，绕了一小段路才回家。"
+          }
+        }
+      }
+    },
     "路过一家小店时，看到柜台里摆着一块看起来就很好吃的蛋糕。犹豫了一下还是买了下来，坐在窗边慢慢吃完。奶油不太甜，阳光刚好落在桌角，普通的一天也因为这点小小的满足变得可爱了。" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -7365,6 +8548,35 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "路过一家小店时，看到柜台里摆着一块看起来就很好吃的蛋糕。犹豫了一下还是买了下来，坐在窗边慢慢吃完。奶油不太甜，阳光刚好落在桌角，普通的一天也因为这点小小的满足变得可爱了。"
+          }
+        }
+      }
+    },
+    "转动或轻点选色" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Turn or tap to choose"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "回すかタップして選択"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "돌리거나 눌러 선택"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "转动或轻点选色"
           }
         }
       }
@@ -7717,6 +8929,64 @@
         }
       }
     },
+    "退出并重新打开 App 后开始同步" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Close and reopen the app to start syncing."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アプリを完全に終了し、開き直すと同期が始まります。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "앱을 완전히 종료하고 다시 열면 동기화가 시작돼요."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "退出并重新打开 App 后开始同步"
+          }
+        }
+      }
+    },
+    "退出并重新打开 App 后开始自动同步。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud is connected. Close and reopen the app to start syncing."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloudに接続済みです。アプリを開き直すと自動同期が始まります。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "iCloud에 연결됐어요. 앱을 완전히 종료하고 다시 열면 자동 동기화가 시작돼요."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "退出并重新打开 App 后开始自动同步。"
+          }
+        }
+      }
+    },
     "选中图形" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -7800,6 +9070,35 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "选其他表情"
+          }
+        }
+      }
+    },
+    "选择今日份 ZIP 备份并预览将恢复的内容" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose a 今日份 ZIP backup and preview what will be restored"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今日份のZIPバックアップを選び、復元内容を確認"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今日份 ZIP 백업을 선택하고 복원 내용 미리 보기"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "选择今日份 ZIP 备份并预览将恢复的内容"
           }
         }
       }
@@ -8239,6 +9538,35 @@
         }
       }
     },
+    "麦纸" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wheat paper"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "麦紙"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "밀빛 종이"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "麦纸"
+          }
+        }
+      }
+    },
     "黑色" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -8266,114 +9594,6 @@
             "value" : "黑色"
           }
         }
-      }
-    },
-    "导入备份" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Import Backup" } },
-        "ja" : { "stringUnit" : { "state" : "translated", "value" : "バックアップを読み込む" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "백업 가져오기" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "导入备份" } }
-      }
-    },
-    "导入并合并" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Import and Merge" } },
-        "ja" : { "stringUnit" : { "state" : "translated", "value" : "読み込んで統合" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "가져와 병합" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "导入并合并" } }
-      }
-    },
-    "确认导入备份" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Review Backup Import" } },
-        "ja" : { "stringUnit" : { "state" : "translated", "value" : "バックアップの読み込みを確認" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "백업 가져오기 확인" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "确认导入备份" } }
-      }
-    },
-    "数据备份" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Data Backup" } },
-        "ja" : { "stringUnit" : { "state" : "translated", "value" : "データバックアップ" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "데이터 백업" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "数据备份" } }
-      }
-    },
-    "从 ZIP 备份恢复记录、便签和照片" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Restore entries, notes, and photos from a ZIP backup" } },
-        "ja" : { "stringUnit" : { "state" : "translated", "value" : "ZIPバックアップから記録、メモ、写真を復元" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "ZIP 백업에서 기록, 메모, 사진 복원" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "从 ZIP 备份恢复记录、便签和照片" } }
-      }
-    },
-    "选择今日份 ZIP 备份并预览将恢复的内容" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Choose a 今日份 ZIP backup and preview what will be restored" } },
-        "ja" : { "stringUnit" : { "state" : "translated", "value" : "今日份のZIPバックアップを選び、復元内容を確認" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "今日份 ZIP 백업을 선택하고 복원 내용 미리 보기" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "选择今日份 ZIP 备份并预览将恢复的内容" } }
-      }
-    },
-    "将补入 %d 条每日记录（含 %d 张照片）和 %d 条月便签。另有 %d 条每日记录和 %d 条月便签已存在，会保留。备份不会恢复会员资格。" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Add %1$d daily entries (including %2$d photos) and %3$d monthly notes. %4$d daily entries and %5$d monthly notes already exist and will be kept. Membership isn’t restored from backups." } },
-        "ja" : { "stringUnit" : { "state" : "translated", "value" : "日々の記録%1$d件（写真%2$d枚を含む）と月メモ%3$d件を追加します。既存の日々の記録%4$d件と月メモ%5$d件は保持されます。会員資格は復元されません。" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "일일 기록 %1$d개(사진 %2$d장 포함)와 월간 메모 %3$d개를 추가합니다. 기존 일일 기록 %4$d개와 월간 메모 %5$d개는 유지됩니다. 멤버십은 복원되지 않습니다." } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "将补入 %1$d 条每日记录（含 %2$d 张照片）和 %3$d 条月便签。另有 %4$d 条每日记录和 %5$d 条月便签已存在，会保留。备份不会恢复会员资格。" } }
-      }
-    },
-    "导入完成：新增 %d 条每日记录和 %d 条月便签。" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Import complete: added %1$d daily entries and %2$d monthly notes." } },
-        "ja" : { "stringUnit" : { "state" : "translated", "value" : "読み込み完了：日々の記録%1$d件、月メモ%2$d件を追加しました。" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "가져오기 완료: 일일 기록 %1$d개와 월간 메모 %2$d개를 추가했습니다." } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "导入完成：新增 %1$d 条每日记录和 %2$d 条月便签。" } }
-      }
-    },
-    "导入失败：%@" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Import failed: %@" } },
-        "ja" : { "stringUnit" : { "state" : "translated", "value" : "読み込みに失敗しました：%@" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "가져오기 실패: %@" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "导入失败：%@" } }
-      }
-    },
-    "无法读取备份文件：%@" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Couldn’t read the backup: %@" } },
-        "ja" : { "stringUnit" : { "state" : "translated", "value" : "バックアップを読み込めませんでした：%@" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "백업을 읽을 수 없습니다: %@" } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "无法读取备份文件：%@" } }
-      }
-    },
-    "请选择一个 ZIP 备份文件。" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "Choose a ZIP backup file." } },
-        "ja" : { "stringUnit" : { "state" : "translated", "value" : "ZIPバックアップファイルを選択してください。" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "ZIP 백업 파일을 선택해 주세요." } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "请选择一个 ZIP 备份文件。" } }
-      }
-    },
-    "备份中的记录都已存在，没有需要补入的内容。" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "All records in this backup already exist. Nothing needs to be added." } },
-        "ja" : { "stringUnit" : { "state" : "translated", "value" : "バックアップ内の記録はすべて存在しています。追加する内容はありません。" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "백업의 기록이 모두 이미 있습니다. 추가할 내용이 없습니다." } },
-        "zh-Hans" : { "stringUnit" : { "state" : "translated", "value" : "备份中的记录都已存在，没有需要补入的内容。" } }
       }
     },
     "鼠尾草绿" : {

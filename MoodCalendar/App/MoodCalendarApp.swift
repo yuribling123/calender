@@ -91,7 +91,10 @@ struct MoodCalendarApp: App {
                     .tabItem { Label(localized("月便签"), systemImage: "note.text") }
                 PersonalizationScreen()
                     .tag(2)
-                    .tabItem { Label(localized("我的"), systemImage: "person.crop.circle") }
+                    .tabItem {
+                        Label(localized("我的"), systemImage: "person.crop.circle")
+                            .environment(\.symbolVariants, .none)
+                    }
             }
                 .id(storedLanguage)
                 .environment(\.locale, AppLanguage.locale)
@@ -99,31 +102,16 @@ struct MoodCalendarApp: App {
                 .environment(\.appTheme, AppTheme(rawValue: storedTheme) ?? .pink)
                 .environment(\.selectionShape, SelectionShape(rawValue: storedSelectionShape) ?? .circle)
                 .tint((AppTheme(rawValue: storedTheme) ?? .pink).palette.strongAccent)
-                .sheet(isPresented: $isGuidePresented) {
-                    ScrollView {
-                    VStack(alignment: .leading, spacing: 24) {
-                        Text(localized("这样翻翻日历"))
-                            .font(.title2.weight(.semibold))
-                        Label(localized("用手指在日历上左右滑动，切换月份"), systemImage: "arrow.left.arrow.right")
-                        Label(localized("点顶部年份，可切换年份"), systemImage: "calendar")
-                        Label(localized("点日历中今天的日期，记录今日份"), systemImage: "square.and.pencil")
-                        Button {
-                            UserDefaults.standard.set(true, forKey: guideKey)
-                            isGuidePresented = false
-                        } label: {
-                            Text(localized("知道了"))
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 12)
-                        }
-                        .buttonStyle(.borderedProminent)
+                .alert(localized("这样翻翻日历"), isPresented: $isGuidePresented) {
+                    Button(localized("知道了")) {
+                        UserDefaults.standard.set(true, forKey: guideKey)
                     }
-                    .padding(28)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                    .background((AppTheme(rawValue: storedTheme) ?? .pink).palette.background)
-                    .tint((AppTheme(rawValue: storedTheme) ?? .pink).palette.strongAccent)
-                    .presentationDetents([.medium, .large])
-                    .interactiveDismissDisabled()
+                } message: {
+                    Text([
+                        localized("用手指在日历上左右滑动，切换月份"),
+                        localized("点顶部年份，可切换年份"),
+                        localized("点日历中今天的日期，记录今日份")
+                    ].joined(separator: "\n\n"))
                 }
                 .alert(localized("未能开启 iCloud 同步"), isPresented: $isICloudFailurePending) {
                     Button(localized("确定"), role: .cancel) { isICloudFailurePending = false }

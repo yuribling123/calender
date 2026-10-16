@@ -10,6 +10,7 @@ struct CalendarScreen: View {
     @Environment(\.scenePhase) private var scenePhase
     @AppStorage("calendarTitle") private var storedCalendarTitle = ""
     @AppStorage("dailyReminderEnabled") private var isDailyReminderEnabled = true
+    @AppStorage("allowPastDateEditing") private var allowPastDateEditing = true
     @AppStorage("showMonthArrows") private var showMonthArrows = true
     @Query private var entries: [MoodEntry]
     @GestureState private var isHorizontalMonthSwipe = false
@@ -77,6 +78,7 @@ struct CalendarScreen: View {
                                 }
                             }
                         )
+                        .padding(.horizontal, -12)
                         .offset(y: -8)
                         .padding(.bottom, 8)
                         .contentShape(Rectangle())
@@ -85,8 +87,8 @@ struct CalendarScreen: View {
                             date: selectedDay,
                             entry: selectedEntry,
                             onRecordMood: saveMood,
-                            onEditToday: {
-                                if DayKey(selectedDay).relationToToday == .today {
+                            onEdit: {
+                                if DayKey(selectedDay).isEditable(allowPastDates: allowPastDateEditing) {
                                     presentEditor(for: selectedDay, group: selectedEntry?.choice?.group ?? .mood)
                                 }
                             }
@@ -529,6 +531,7 @@ struct CalendarScreen: View {
     }
 
     private func presentEditor(for date: Date, group: ChoiceGroup) {
+        guard DayKey(date).isEditable(allowPastDates: allowPastDateEditing) else { return }
         let key = DayKey(date).storageValue
         editingDayKey = key
         editingChoiceRawValue = entriesByDay[key]?.choice?.rawValue

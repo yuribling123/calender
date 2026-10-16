@@ -7,53 +7,124 @@ enum AppTheme: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .pink: localized("樱粉")
-        case .apricot: localized("暖杏")
-        case .sage: localized("鼠尾草绿")
-        case .blue: localized("雾蓝")
-        case .lavender: localized("淡紫")
-        case .caramel: localized("焦糖棕")
-        case .creamYellow: localized("奶油黄")
-        case .black: localized("黑色")
+        case .pink: localized("薄樱")
+        case .apricot: localized("淡杏")
+        case .sage: localized("若叶")
+        case .blue: localized("水蓝")
+        case .lavender: localized("紫藤")
+        case .caramel: localized("亚麻")
+        case .creamYellow: localized("奶油")
+        case .black: localized("暖灰")
         }
     }
 
     var palette: ThemePalette {
         switch self {
         case .pink:
-            ThemePalette(accent: rgb(242, 141, 178), selectionFill: rgb(245, 184, 207),
-                         softHighlight: rgb(253, 234, 242),
-                         strongAccent: rgb(176, 69, 102), todayButtonFill: rgb(211, 96, 134))
+            ThemePalette(accent: rgb(232, 161, 174), selectionFill: rgb(242, 206, 211),
+                         softHighlight: rgb(250, 237, 239),
+                         strongAccent: rgb(155, 78, 96), todayButtonFill: rgb(174, 91, 110))
         case .apricot:
-            ThemePalette(accent: rgb(241, 165, 126), selectionFill: rgb(245, 199, 172),
-                         softHighlight: rgb(252, 238, 227),
-                         strongAccent: rgb(150, 82, 48), todayButtonFill: rgb(193, 122, 86))
+            ThemePalette(accent: rgb(216, 171, 143), selectionFill: rgb(237, 216, 200),
+                         softHighlight: rgb(248, 241, 233),
+                         strongAccent: rgb(133, 91, 63), todayButtonFill: rgb(147, 104, 77))
         case .sage:
-            ThemePalette(accent: rgb(155, 188, 158), selectionFill: rgb(194, 222, 195),
-                         softHighlight: rgb(234, 243, 232),
-                         strongAccent: rgb(71, 112, 77), todayButtonFill: rgb(111, 147, 114))
+            ThemePalette(accent: rgb(161, 178, 154), selectionFill: rgb(205, 220, 203),
+                         softHighlight: rgb(240, 243, 235),
+                         strongAccent: rgb(82, 105, 76), todayButtonFill: rgb(100, 123, 96))
         case .blue:
-            ThemePalette(accent: rgb(142, 179, 207), selectionFill: rgb(189, 216, 234),
-                         softHighlight: rgb(233, 242, 248),
-                         strongAccent: rgb(63, 105, 139), todayButtonFill: rgb(104, 145, 174))
+            ThemePalette(accent: rgb(158, 181, 191), selectionFill: rgb(202, 218, 225),
+                         softHighlight: rgb(239, 243, 243),
+                         strongAccent: rgb(73, 100, 114), todayButtonFill: rgb(93, 120, 135))
         case .lavender:
-            ThemePalette(accent: rgb(177, 159, 203), selectionFill: rgb(214, 194, 233),
-                         softHighlight: rgb(242, 235, 248),
-                         strongAccent: rgb(101, 77, 134), todayButtonFill: rgb(134, 113, 164))
+            ThemePalette(accent: rgb(184, 170, 198), selectionFill: rgb(221, 210, 229),
+                         softHighlight: rgb(243, 240, 244),
+                         strongAccent: rgb(103, 84, 120), todayButtonFill: rgb(121, 103, 137))
         case .caramel:
-            ThemePalette(accent: rgb(185, 130, 91), selectionFill: rgb(217, 185, 159),
-                         softHighlight: rgb(246, 237, 226),
-                         strongAccent: rgb(112, 72, 43), todayButtonFill: rgb(157, 110, 77))
+            ThemePalette(accent: rgb(178, 157, 134), selectionFill: rgb(223, 211, 195),
+                         softHighlight: rgb(244, 240, 233),
+                         strongAccent: rgb(112, 91, 69), todayButtonFill: rgb(130, 112, 92))
         case .creamYellow:
-            ThemePalette(accent: rgb(232, 197, 106), selectionFill: rgb(240, 216, 137),
-                         softHighlight: rgb(251, 246, 227),
-                         strongAccent: rgb(119, 91, 34), todayButtonFill: rgb(168, 138, 69))
+            ThemePalette(accent: rgb(217, 195, 143), selectionFill: rgb(236, 225, 190),
+                         softHighlight: rgb(247, 244, 231),
+                         strongAccent: rgb(118, 98, 47), todayButtonFill: rgb(137, 118, 63))
         case .black:
-            ThemePalette(accent: rgb(38, 38, 38), selectionFill: rgb(38, 38, 38),
-                         softHighlight: rgb(236, 234, 231), strongAccent: rgb(38, 38, 38),
-                         todayButtonFill: rgb(102, 102, 102),
-                         onSelection: rgb(252, 250, 247))
+            ThemePalette(accent: rgb(165, 162, 154), selectionFill: rgb(38, 38, 38),
+                         softHighlight: rgb(242, 241, 238),
+                         strongAccent: rgb(99, 95, 88), todayButtonFill: rgb(113, 109, 101),
+                         onSelection: .white)
         }
+    }
+}
+
+enum CardPaper: String, CaseIterable, Identifiable {
+    case original, pink, apricot, yellow, green, blue, purple, caramel, black
+
+    var id: String { rawValue }
+
+    static func resolve(_ id: String?) -> CardPaper {
+        id.flatMap(CardPaper.init(rawValue:)) ?? .original
+    }
+
+    static func matching(_ theme: AppTheme) -> CardPaper {
+        switch theme {
+        case .pink: .pink
+        case .black: .black
+        case .apricot: .apricot
+        case .sage: .green
+        case .blue: .blue
+        case .lavender: .purple
+        case .caramel: .caramel
+        case .creamYellow: .yellow
+        }
+    }
+
+    var title: String {
+        let key = switch self {
+        case .original: "跟随主题"
+        case .pink: "薄樱"
+        case .apricot: "淡杏"
+        case .yellow: "奶油"
+        case .green: "若叶"
+        case .blue: "水蓝"
+        case .purple: "紫藤"
+        case .caramel: "亚麻"
+        case .black: "暖灰"
+        }
+        return localized(key)
+    }
+
+    private var matchingTheme: AppTheme {
+        switch self {
+        case .original, .pink: .pink
+        case .apricot: .apricot
+        case .yellow: .creamYellow
+        case .green: .sage
+        case .blue: .blue
+        case .purple: .lavender
+        case .caramel: .caramel
+        case .black: .black
+        }
+    }
+
+    func color(for currentTheme: AppTheme) -> Color {
+        let paper = self == .original ? CardPaper.matching(currentTheme) : self
+        // Fixed paper colors keep the same tone in both the editor and calendar.
+        return switch paper {
+        case .original, .pink: rgb(248, 240, 239)
+        case .apricot: rgb(248, 241, 233)
+        case .yellow: rgb(247, 244, 231)
+        case .green: rgb(240, 243, 235)
+        case .blue: rgb(239, 243, 243)
+        case .purple: rgb(243, 240, 244)
+        case .caramel: rgb(244, 240, 233)
+        case .black: rgb(242, 241, 238)
+        }
+    }
+
+    func swatchAccent(for currentTheme: AppTheme) -> Color {
+        let theme = self == .original ? currentTheme : matchingTheme
+        return theme.palette.accent
     }
 }
 
@@ -67,6 +138,7 @@ struct ThemePalette {
 
     let background = rgb(252, 250, 247)
     let onStrongAccent = rgb(252, 250, 247)
+    var cardBackground: Color { accent.opacity(0.06) }
 }
 
 private func rgb(_ red: Int, _ green: Int, _ blue: Int) -> Color {

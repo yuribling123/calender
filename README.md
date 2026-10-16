@@ -1,6 +1,6 @@
 # Mood Calendar
 
-A native iPhone mood calendar built with SwiftUI and SwiftData. You can create or edit one entry for today. Past and future dates can be viewed, but cannot be edited.
+A native iPhone mood calendar built with SwiftUI and SwiftData. You can create or edit one entry for today. Allow editing past days defaults to on in Personalization; past days offer an Add / edit action. Turning it off makes past days read-only. Future dates are always read-only.
 
 The app has three tabs: Calendar, Monthly Note, and Settings. Settings lets you choose an accent color, a date and month selection marker, and a calendar title of up to six characters. The title is a member feature; when left blank, the calendar shows “今日份”. Free users can use the circle and star markers. Other markers require the one-time unlock. Preferences are stored locally. Accent colors do not change the five fixed mood colors, saved entries, or supplied sticker artwork.
 
@@ -58,7 +58,7 @@ The bundle ID is `com.qingqing.MoodCalendar`; the CloudKit container is `iCloud.
 - `Features/Monthly`: current monthly note and historical summaries.
 - `Features/Settings`: theme color, selection marker, and permanent unlock screens.
 - `Features/Theme`: theme palettes, marker choices, and accent colors.
-- `Features/Entry`: today's entry editor.
+- `Features/Entry`: daily entry editor.
 - `Domain`: mood levels, daily choices, calendar days, and month layout.
 - `Persistence`: SwiftData models, migration, and write operations for entries and monthly notes.
 - `Persistence/DataBackup.swift`: ZIP backup generation with a manifest and JSON data.
@@ -73,7 +73,7 @@ Calendar days are stored as the local year, month, and day when the entry is cre
 
 # 心情日历
 
-一款原生 iPhone 心情日历。今天可以保存或修改一条记录；过去和未来的日期可以点选查看，但不能补记或提前记录。
+一款原生 iPhone 心情日历。每天最多一条记录；个性化中的「允许修改往日」默认开启，往日可点「补充」新增或修改，关闭后只读。未来日期始终只能查看。
 
 底部有「日历」「月便签」和「我的」三个页面。「我的」可从八种主题色（含黑色）中选择界面强调色、在六种日期和月份选中图形之间切换，也可设置最多六个字的日历标题；标题留空时显示「今日份」。日历标题属于会员功能。免费用户可使用圆形和星星，图形列表中星星紧跟在圆形之后；其他图形需永久解锁。这些设置保存在本机，下次打开仍然生效。主题色只改变界面强调元素，不改变五档心情的固定颜色、已保存记录或表情原画。
 
@@ -94,7 +94,7 @@ Calendar days are stored as the local year, month, and day when the entry is cre
 - 五档心情：极好 `#F28DB2`、好 `#F3A58F`、一般 `#E8C982`、不好 `#91A9C5`、很差 `#A99AB9`。
 - 每天从六组共三十项中选择一项：「心情」五项（编号 `1–5`）、「小幸」五项（`6–10`）、「日常」五项（`11–15`）、「陪伴」五项（`16–20`）、「随性」五项（`21–25`：电吉他、翅膀、鸡尾酒、打火机、羽毛笔）和「兔兔」五项（`26–30`：星星兔、眼镜兔、委屈兔、笑晕兔无语兔）。选择页顺序为「心情」「日常」「陪伴」「小幸」「随性」「兔兔」。新图为 1024×512 透明 PNG，尺寸和留白对齐现有表情。免费用户可用「心情」「日常」和「陪伴」；永久解锁后可使用全部六组，原有编号保持不变。
 - 所选日期的心情详情会在等级名称旁显示对应短句：幸福到融化、心里软乎乎、今天就这样、小小不开心或快要碎掉了。
-- 默认选中今天；若 App 跨过当地午夜后仍在前台，或第二天从后台打开，会自动切到新的一天。手机时区变化时也会按新的当地日期重新显示日历并校准午夜定时器。若尚未记录，可从首页详情区直接选心情，或点「选其他表情」进入完整选择页；记录后仅当天可修改所选项目或文字。
+- 默认选中今天；若 App 跨过当地午夜后仍在前台，或第二天从后台打开，会自动切到新的一天。手机时区变化时也会按新的当地日期重新显示日历并校准午夜定时器。若尚未记录，可从首页详情区直接选心情，或点「选其他表情」进入完整选择页；今天始终可修改；往日能否修改由「允许修改往日」开关控制。
 - 编辑页使用与首页一致的暖色背景；六个表情分组以两行三列同时显示，所选项目会高亮，并向 VoiceOver 说明选中状态。日历日期也会朗读选中状态，日期文字随系统字号适度放大。
 - 「月便签」显示本月可编辑的一句话，并列出所有有记录或便签的历史月份，不受最近 12 个月限制；点击历史月份标题可打开对应日历；小结少于三条记录时显示「那个月记下了」，其余显示「出现最多的是」，使用表情名称。六组项目参与同一计算，次数相同时取最后出现的项目。
 - 点选过去的日期可在日历下方查看心情和文字；没有文字或没有记录时显示对应提示。点选未来日期会显示“这一天还没到来”。
@@ -123,7 +123,7 @@ Calendar days are stored as the local year, month, and day when the entry is cre
 - `Features/Monthly`：本月便签与历史月份的小结。
 - `Features/Settings`：主题色、选中图形和永久解锁页面。
 - `Features/Theme`：主题色、选中图形及界面强调色定义。
-- `Features/Entry`：今天的记录编辑页。
+- `Features/Entry`：每日记录编辑页。
 - `Domain`：心情等级、每日选项、日历日和月份排列。
 - `Persistence`：每日记录与月便签的 SwiftData 模型、迁移和写入操作。
 - `Persistence/DataBackup.swift`：生成带格式清单和 JSON 数据的 ZIP 备份文件。
@@ -153,7 +153,7 @@ Horizontal calendar swipes temporarily pause vertical scrolling; scrolling resum
 
 Optionally attach one photo when editing today. The date detail shows a small photo link; tap it to open a warm, full-screen preview. Photos are resized to at most 1600 pixels and stored with the entry. ZIP exports include JPEG files in `photos/` and their paths in `data.json` (format version 2). Existing records remain compatible through an optional photo field.
 
-今天的记录可选附一张照片，保存后在日期详情中点击「这天有个画面」查看。照片最长边缩至 1600 像素，随记录保存；ZIP 导出包含照片文件。历史日期仅可查看。
+今天的记录可选附一张照片，保存后在日期详情中点击「这天有个画面」查看。照片最长边缩至 1600 像素，随记录保存；ZIP 导出包含照片文件。历史日期在「允许修改往日」开启时可补充。
 
 ### Month heading fonts / 月份标题字体
 
@@ -170,3 +170,21 @@ Chinese, Japanese and Korean month headings bundle Ma Shan Zheng, Yomogi and Nan
 - Verification on 2026-10-14: Release simulator and unsigned iPhone-device builds passed, and the Debug Demo build passed. A fresh isolated Release simulator launched with `-demoData` had zero daily entries and zero monthly notes. A normal UI save persisted after relaunch with the same argument, and premium stickers opened the paywall. No archive or upload was performed; distribution signing, live purchases/restoration and production iCloud still require their normal pre-release checks.
 
 正式版会忽略演示启动参数，不会写入演示数据或绕过购买。未改动正式数据库模型和存储位置，也未清空任何用户记录。全新本地安装从空日历开始；已有记录和用户此前同步的数据继续保留。演示素材、种子代码和开发工具均保留。
+
+### Card paper preview / 色纸预览
+
+Today’s editor offers eight coordinated, opaque pastel paper colors with an immediate preview on the note card; theme accents remain unchanged. Records without a paper choice initially select the current theme color in the editor. The choice is saved with the daily record and shown on its calendar detail card. Existing records without a color follow the current theme; past records follow the past-day editing preference. ZIP export/import includes the optional paper color; older backups without it follow the current theme.
+
+当天编辑页可选择八种统一纸感的固定浅底色（不透明色值，主题强调色保持不变），没有单独选过色纸时默认选中当前主题对应色，文字卡片即时预览；保存后，日历详情卡片沿用当天的色纸。旧记录未选色时跟随当前主题，过去记录是否可修改由「允许修改往日」控制。ZIP 导出、导入包含可选色纸字段，旧备份缺少该字段时跟随当前主题。
+
+### Listening memory preview / 今天在听预览
+
+Today’s editor can attach a song title and an optional artist. A static miniature-player card appears below the selected mood/sticker and above the note; it records the song without audio playback or music-service access. Entries without a song stay unchanged; past entries follow the past-day editing preference. ZIP export/import preserves optional song fields; older backups without them show no music module.
+
+当天编辑页可添加歌曲名与选填歌手，在心情下方、正文上方显示迷你播放器式音乐记录；支持移除歌曲，无歌曲不展示，不播放音乐或连接音乐服务。过去记录是否可修改由「允许修改往日」控制，ZIP 导出、导入保留歌曲信息；旧备份缺少歌曲时不显示音乐模块。
+
+The editor shows only the selected paper color; tap to open a rotatable, snapping color dial (also supports tapping and VoiceOver adjustment). Song entry opens a separate sheet with Cancel/Done and optional removal; completed songs occupy one editable line in the editor. The calendar detail keeps its miniature player appearance.
+
+编辑页只展示当前色纸，点开转盘可旋转吸附或轻点选色，并支持 VoiceOver 调整。歌曲在独立弹窗填写，支持取消、完成和移除，填写后编辑页仅显示一行；日历详情仍保留迷你播放器样式。
+
+个性化同时提供「允许修改往日」（默认开启）和「显示翻月箭头」开关；翻月箭头不再单独设栏。修改往日不改变今天的记录状态或提醒判断，保存仍按日期更新已有记录。
