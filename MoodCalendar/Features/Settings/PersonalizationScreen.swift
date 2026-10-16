@@ -126,6 +126,7 @@ struct PersonalizationScreen: View {
     @Environment(\.openURL) private var openURL
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.appTheme) private var theme
+    @Environment(\.colorScheme) private var colorScheme
     @Environment(\.selectionShape) private var selectionShape
     @Query private var entries: [MoodEntry]
     @State private var isThemePickerPresented = false
@@ -211,7 +212,7 @@ struct PersonalizationScreen: View {
             }
             .scrollDismissesKeyboard(.interactively)
             .font(settingsItemFont)
-            .background(theme.palette.background)
+            .background(theme.palette.resolved(for: colorScheme).background)
             .onPreferenceChange(CalendarTitleCardFramePreferenceKey.self) {
                 calendarTitleCardFrame = $0
             }
@@ -334,7 +335,7 @@ struct PersonalizationScreen: View {
                 .background {
                     GeometryReader { proxy in
                         RoundedRectangle(cornerRadius: 20)
-                            .fill(Color.white.opacity(0.72))
+                            .fill(theme.palette.resolved(for: colorScheme).cardBackground)
                             .preference(
                                 key: CalendarTitleCardFramePreferenceKey.self,
                                 value: proxy.frame(in: .global)
@@ -371,7 +372,7 @@ struct PersonalizationScreen: View {
                         .accessibilityHidden(true)
                 }
                 .padding(18)
-                .background(Color.white.opacity(0.72), in: RoundedRectangle(cornerRadius: 20))
+                .background(theme.palette.resolved(for: colorScheme).cardBackground, in: RoundedRectangle(cornerRadius: 20))
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
@@ -404,7 +405,7 @@ struct PersonalizationScreen: View {
                         .accessibilityHidden(true)
                 }
                 .padding(18)
-                .background(Color.white.opacity(0.72), in: RoundedRectangle(cornerRadius: 20))
+                .background(theme.palette.resolved(for: colorScheme).cardBackground, in: RoundedRectangle(cornerRadius: 20))
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
@@ -446,7 +447,7 @@ struct PersonalizationScreen: View {
                         .foregroundStyle(.secondary)
                 }
                 .padding(18)
-                .background(Color.white.opacity(0.72), in: RoundedRectangle(cornerRadius: 20))
+                .background(theme.palette.resolved(for: colorScheme).cardBackground, in: RoundedRectangle(cornerRadius: 20))
             }
             .buttonStyle(.plain)
             .accessibilityLabel(membership.hasMembershipAccess ? localized("会员，已永久解锁") : localized("会员，永久解锁全部表情包和自定义"))
@@ -481,7 +482,7 @@ struct PersonalizationScreen: View {
                         .accessibilityHidden(true)
                 }
                 .padding(18)
-                .background(Color.white.opacity(0.72), in: RoundedRectangle(cornerRadius: 20))
+                .background(theme.palette.resolved(for: colorScheme).cardBackground, in: RoundedRectangle(cornerRadius: 20))
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
@@ -515,7 +516,7 @@ struct PersonalizationScreen: View {
                     }
                 }
                 .padding(18)
-                .background(Color.white.opacity(0.72), in: RoundedRectangle(cornerRadius: 20))
+                .background(theme.palette.resolved(for: colorScheme).cardBackground, in: RoundedRectangle(cornerRadius: 20))
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
@@ -619,17 +620,17 @@ struct PersonalizationScreen: View {
         }
         .tint(theme.palette.strongAccent)
         .padding(18)
-        .background(Color.white.opacity(0.72), in: RoundedRectangle(cornerRadius: 20))
+        .background(theme.palette.resolved(for: colorScheme).cardBackground, in: RoundedRectangle(cornerRadius: 20))
     }
 
     private var languageSection: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text(localized("语言"))
                 .font(settingsHeadingFont)
-                .foregroundStyle(.black)
+                .foregroundStyle(theme.palette.resolved(for: colorScheme).foreground)
             HStack {
                 Text(localized("App 语言"))
-                    .foregroundStyle(.black)
+                    .foregroundStyle(theme.palette.resolved(for: colorScheme).foreground)
                 Spacer()
                 Picker(localized("App 语言"), selection: $storedLanguage) {
                     ForEach(AppLanguage.options, id: \.self) { code in
@@ -639,7 +640,7 @@ struct PersonalizationScreen: View {
                 .pickerStyle(.menu)
             }
             .padding(20)
-            .background(.white, in: RoundedRectangle(cornerRadius: 24))
+            .background(theme.palette.resolved(for: colorScheme).cardBackground, in: RoundedRectangle(cornerRadius: 24))
         }
         .padding(.top, 28)
     }
@@ -673,7 +674,7 @@ struct PersonalizationScreen: View {
                         .accessibilityHidden(true)
                 }
                 .padding(18)
-                .background(Color.white.opacity(0.72), in: RoundedRectangle(cornerRadius: 20))
+                .background(theme.palette.resolved(for: colorScheme).cardBackground, in: RoundedRectangle(cornerRadius: 20))
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
@@ -713,7 +714,7 @@ struct PersonalizationScreen: View {
             }
         }
         .padding(18)
-        .background(Color.white.opacity(0.72), in: RoundedRectangle(cornerRadius: 20))
+        .background(theme.palette.resolved(for: colorScheme).cardBackground, in: RoundedRectangle(cornerRadius: 20))
         .alert(localized("需要开启系统通知"), isPresented: $isReminderSettingsAlertPresented) {
             Button(localized("打开设置")) {
                 if let url = URL(string: UIApplication.openSettingsURLString) {
@@ -779,7 +780,7 @@ struct PersonalizationScreen: View {
                 }
             }
             .padding(18)
-            .background(Color.white.opacity(0.72), in: RoundedRectangle(cornerRadius: 20))
+            .background(theme.palette.resolved(for: colorScheme).cardBackground, in: RoundedRectangle(cornerRadius: 20))
             .opacity(isICloudAccountAvailable || isCheckingICloud || isPreviewingICloudEnabled || isPreviewingICloudAccountAvailable ? 1 : 0.58)
             .overlay(alignment: .topTrailing) {
                 if !isICloudAccountAvailable && !isCheckingICloud && !isPreviewingICloudEnabled && !isPreviewingICloudAccountAvailable {
@@ -787,7 +788,7 @@ struct PersonalizationScreen: View {
                         .font(.system(size: 11, weight: .semibold))
                         .foregroundStyle(.secondary)
                         .padding(7)
-                        .background(theme.palette.background, in: Circle())
+                        .background(theme.palette.resolved(for: colorScheme).cardBackground, in: Circle())
                         .offset(x: -8, y: 8)
                         .accessibilityHidden(true)
                 }
@@ -997,7 +998,7 @@ struct PersonalizationScreen: View {
         .padding(.horizontal, 20)
         .padding(.top, 22)
         .padding(.bottom, 20)
-        .background(theme.palette.background)
+        .background(theme.palette.resolved(for: colorScheme).background)
     }
 
     private var shapePicker: some View {
@@ -1066,6 +1067,6 @@ struct PersonalizationScreen: View {
         .padding(.horizontal, 20)
         .padding(.top, 22)
         .padding(.bottom, 20)
-        .background(theme.palette.background)
+        .background(theme.palette.resolved(for: colorScheme).background)
     }
 }

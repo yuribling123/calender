@@ -16,6 +16,8 @@ Current-month note and previous-month history:
 
 ## Features
 
+- Follows the iPhone’s light/dark appearance, including backgrounds, text, selection markers, and all eight paper colors. See [Dark mode](#dark-mode--深色模式).
+
 - Save and page-turn effects mix with other apps' audio and respect the iPhone Silent switch.
 
 - First-time users see a brief calendar guide. Acknowledging it hides it permanently for this installation; users with saved records skip it. Demo uses a separate acknowledgement flag.
@@ -78,6 +80,8 @@ Calendar days are stored as the local year, month, and day when the entry is cre
 底部有「日历」「月便签」和「我的」三个页面。「我的」可从八种主题色（含黑色）中选择界面强调色、在六种日期和月份选中图形之间切换，也可设置最多六个字的日历标题；标题留空时显示「今日份」。日历标题属于会员功能。免费用户可使用圆形和星星，图形列表中星星紧跟在圆形之后；其他图形需永久解锁。这些设置保存在本机，下次打开仍然生效。主题色只改变界面强调元素，不改变五档心情的固定颜色、已保存记录或表情原画。
 
 ## 第一版功能
+
+- 外观跟随 iPhone 系统的浅色／深色模式，页面、文字、选中标记和八种色纸同步适配。详见[深色模式](#dark-mode--深色模式)。
 
 - 年份选择页左下方的「今年」可回到当前年份，右下方「返回」回到日历。
 
@@ -173,9 +177,9 @@ Chinese, Japanese and Korean month headings bundle Ma Shan Zheng, Yomogi and Nan
 
 ### Card paper preview / 色纸预览
 
-Today’s editor offers eight coordinated, opaque pastel paper colors with an immediate preview on the note card; theme accents remain unchanged. Records without a paper choice initially select the current theme color in the editor. The choice is saved with the daily record and shown on its calendar detail card. Existing records without a color follow the current theme; past records follow the past-day editing preference. ZIP export/import includes the optional paper color; older backups without it follow the current theme.
+Today’s editor offers eight coordinated, opaque paper colors with light and dark variants with an immediate preview on the note card; theme accents remain unchanged. Records without a paper choice initially select the current theme color in the editor. The choice is saved with the daily record and shown on its calendar detail card. Existing records without a color follow the current theme; past records follow the past-day editing preference. ZIP export/import includes the optional paper color; older backups without it follow the current theme.
 
-当天编辑页可选择八种统一纸感的固定浅底色（不透明色值，主题强调色保持不变），没有单独选过色纸时默认选中当前主题对应色，文字卡片即时预览；保存后，日历详情卡片沿用当天的色纸。旧记录未选色时跟随当前主题，过去记录是否可修改由「允许修改往日」控制。ZIP 导出、导入包含可选色纸字段，旧备份缺少该字段时跟随当前主题。
+当天编辑页可选择八种统一纸感的色纸（提供浅色与深色配色，主题强调色保持不变），没有单独选过色纸时默认选中当前主题对应色，文字卡片即时预览；保存后，日历详情卡片沿用当天的色纸。旧记录未选色时跟随当前主题，过去记录是否可修改由「允许修改往日」控制。ZIP 导出、导入包含可选色纸字段，旧备份缺少该字段时跟随当前主题。
 
 ### Listening memory preview / 今天在听预览
 
@@ -188,3 +192,17 @@ The editor shows only the selected paper color; tap to open a rotatable, snappin
 编辑页只展示当前色纸，点开转盘可旋转吸附或轻点选色，并支持 VoiceOver 调整。歌曲在独立弹窗填写，支持取消、完成和移除，填写后编辑页仅显示一行；日历详情仍保留迷你播放器样式。
 
 个性化同时提供「允许修改往日」（默认开启）和「显示翻月箭头」开关；翻月箭头不再单独设栏。修改往日不改变今天的记录状态或提醒判断，保存仍按日期更新已有记录。
+
+星期标题与日期网格共用手机日历的每周起始日；切换 App 语言只翻译星期名称，不改变排列顺序。
+
+歌曲弹窗的确认区采用复古随身听圆盘：MENU、切歌和播放符号仅作装饰，中心「确认」按钮负责保存，按下有下沉动画与轻触反馈；歌曲名为空时不可确认。
+
+### Dark mode / 深色模式
+
+The app follows the iPhone’s system appearance automatically. Switch it in **Settings → Display & Brightness → Light / Dark**; there is no separate in-app appearance switch. Page backgrounds, text, cards, selection markers, and all eight paper colors adapt together. Dark mode uses warm charcoal backgrounds and muted tinted paper colors.
+
+In dark mode, Mood, Daily Life, Company, and Little Joys render as white line artwork. Free Spirit and Rabbits keep their original colors. This applies to the editor, calendar cells, selected-date details, month picker, and monthly notes. Light mode keeps the original artwork colors; source image files remain intact. Changing appearance does not change saved records, mood IDs, or paper selections.
+
+应用自动跟随 iPhone 系统外观，可在 **设置 → 显示与亮度 → 浅色／深色** 中切换；App 内没有单独的外观开关。页面背景、文字、卡片、选中标记及八种色纸同步适配，深色模式采用暖深灰背景和低饱和深色色纸。
+
+深色模式下，「心情」「日常」「陪伴」「小幸」显示白色线条；「随性」「兔兔」保留原色。编辑页、日历格、选中日期详情、月份选择和月便签均采用这一规则。浅色模式保留原始表情颜色，原始素材文件不变。切换外观不改变已保存的记录、心情编号或色纸选择。

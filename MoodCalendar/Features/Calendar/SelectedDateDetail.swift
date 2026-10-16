@@ -2,6 +2,7 @@ import SwiftUI
 
 struct SelectedDateDetail: View {
     @Environment(\.appTheme) private var theme
+    @Environment(\.colorScheme) private var colorScheme
 
     @AppStorage("allowPastDateEditing") private var allowPastDateEditing = true
 
@@ -21,7 +22,7 @@ struct SelectedDateDetail: View {
                      ? localized("今天")
                      : "\(date.formatted(.dateTime.locale(AppLanguage.locale).month().day())) · \(date.formatted(.dateTime.locale(AppLanguage.locale).weekday(.wide)))")
                     .font(.subheadline.weight(.medium))
-                    .foregroundStyle(Color.black.opacity(0.72))
+                    .foregroundStyle(theme.palette.resolved(for: colorScheme).foreground.opacity(0.82))
                 if entry?.photoData != nil {
                     Button { isPhotoPresented = true } label: {
                         ViewThatFits(in: .horizontal) {
@@ -93,8 +94,7 @@ struct SelectedDateDetail: View {
                     HStack(spacing: 8) {
                         ForEach(Mood.allCases) { mood in
                             Button { onRecordMood(mood) } label: {
-                                Image(mood.imageName)
-                                    .resizable()
+                                ChoiceArtwork(mood: mood)
                                     .scaledToFit()
                                     .frame(width: 50, height: 42)
                                     .frame(maxWidth: .infinity)
@@ -125,19 +125,19 @@ struct SelectedDateDetail: View {
         .fullScreenCover(isPresented: $isPhotoPresented) {
             if let data = entry?.photoData, let image = UIImage(data: data) {
                 DailyPhotoPreview(image: image)
+                    .environment(\.appTheme, theme)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
         .background {
             RoundedRectangle(cornerRadius: 18)
-                .fill(CardPaper.resolve(entry?.cardPaperID).color(for: theme))
+                .fill(CardPaper.resolve(entry?.cardPaperID).color(for: theme, scheme: colorScheme))
         }
     }
 
     private func choiceArtwork(_ choice: DailyChoice) -> some View {
-        Image(choice.imageName)
-            .resizable()
+        ChoiceArtwork(choice: choice)
             .scaledToFit()
             .frame(width: 60, height: 52) // 图片渲染尺寸，不要改
             .scaleEffect([DailyChoice.poutyRabbit, .absentRabbit, .glassesRabbit, .tearfulRabbit].contains(choice) ? 1.17 : choice.group == .mood ? 1 : choice == .cake ? 1.15 : 1.3)
@@ -200,6 +200,7 @@ struct SelectedDateDetail: View {
 /// A listening memory styled like a player; it has no playback action.
 struct DailySongCard: View {
     @Environment(\.appTheme) private var theme
+    @Environment(\.colorScheme) private var colorScheme
     let title: String
     let artist: String
 
@@ -214,7 +215,7 @@ struct DailySongCard: View {
                     .truncationMode(.tail)
             }
             .font(.system(size: 13))
-            .foregroundStyle(Color.black.opacity(0.65))
+            .foregroundStyle(theme.palette.resolved(for: colorScheme).foreground.opacity(0.72))
 
             HStack(spacing: 16) {
                 Image(systemName: "backward.fill")
@@ -226,7 +227,7 @@ struct DailySongCard: View {
                     .frame(width: 11)
             }
             .font(.system(size: 10 / 1.15))
-            .foregroundStyle(Color.black.opacity(0.58))
+            .foregroundStyle(theme.palette.resolved(for: colorScheme).foreground.opacity(0.64))
             .fixedSize()
             .accessibilityHidden(true)
 
@@ -251,6 +252,7 @@ struct DailySongCard: View {
 private struct DailyPhotoPreview: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.appTheme) private var theme
+    @Environment(\.colorScheme) private var colorScheme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     let image: UIImage
     @State private var isVisible = false
@@ -260,7 +262,7 @@ private struct DailyPhotoPreview: View {
 
     var body: some View {
         ZStack {
-            theme.palette.background.ignoresSafeArea()
+            theme.palette.resolved(for: colorScheme).background.ignoresSafeArea()
             Image(uiImage: image)
                 .resizable()
                 .scaledToFit()
@@ -292,7 +294,7 @@ private struct DailyPhotoPreview: View {
                     .font(.body.weight(.medium))
                     .foregroundStyle(.secondary)
                     .frame(width: 44, height: 44)
-                    .background(theme.palette.background, in: Circle())
+                    .background(theme.palette.resolved(for: colorScheme).cardBackground, in: Circle())
             }
             .buttonStyle(.plain)
             .accessibilityLabel(localized("关闭"))

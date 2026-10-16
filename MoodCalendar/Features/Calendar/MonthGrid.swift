@@ -50,10 +50,7 @@ struct MonthGrid: View {
     }
 
     private var weekdayNames: [String] {
-        var calendar = Calendar.current
-        calendar.locale = AppLanguage.locale
-        let symbols = calendar.veryShortStandaloneWeekdaySymbols
-        return (0..<7).map { symbols[(calendar.firstWeekday - 1 + $0) % 7] }
+        layout.weekdayNames(locale: AppLanguage.locale)
     }
 
     private func accessibilityText(for date: Date, relation: DayRelation, choice: DailyChoice?, hasNote: Bool) -> String {

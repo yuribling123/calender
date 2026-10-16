@@ -6,6 +6,7 @@ struct CalendarScreen: View {
     @Binding var requestedMonth: Date?
     @Environment(\.modelContext) private var modelContext
     @Environment(\.appTheme) private var theme
+    @Environment(\.colorScheme) private var colorScheme
     @Environment(\.selectionShape) private var selectionShape
     @Environment(\.scenePhase) private var scenePhase
     @AppStorage("calendarTitle") private var storedCalendarTitle = ""
@@ -98,7 +99,7 @@ struct CalendarScreen: View {
                 .padding(24)
             }
             .scrollDisabled(isHorizontalMonthSwipe)
-            .background(theme.palette.background)
+            .background(theme.palette.resolved(for: colorScheme).background)
             .toolbar(.hidden, for: .navigationBar)
             .onChange(of: entries.map { "\($0.id.uuidString)-\($0.updatedAt.timeIntervalSince1970)" }) { _, _ in
                 try? EntryStore(context: modelContext).reconcileDuplicates()
@@ -186,7 +187,7 @@ struct CalendarScreen: View {
                     .font(.system(size: 23, weight: .medium))
                     .lineLimit(1)
                     .minimumScaleFactor(0.7)
-                    .foregroundStyle(.black)
+                    .foregroundStyle(theme.palette.resolved(for: colorScheme).foreground)
                 if !isChoosingMonth {
                 Button {
                     if !isChoosingMonth {
@@ -271,8 +272,7 @@ struct CalendarScreen: View {
                                 }
                             Group {
                                 if let choice = representativeChoice(in: month) {
-                                    Image(choice.imageName)
-                                        .resizable()
+                                    ChoiceArtwork(choice: choice)
                                         .scaledToFit()
                                         .frame(width: 58, height: 38)
                                         .scaleEffect(choice.group == .mood ? 1 : choice.group == .company ? 1.45 : 1.35)
@@ -437,7 +437,7 @@ struct CalendarScreen: View {
                     Text(monthTitle(calendar.component(.month, from: displayedMonth)))
                         // .font(monthHandwritingFont)
                         .font(.system(size: 23, weight: .medium))
-                        .foregroundStyle(.black)
+                        .foregroundStyle(theme.palette.resolved(for: colorScheme).foreground)
 
                 }
                 .fixedSize()

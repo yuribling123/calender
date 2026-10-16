@@ -15,6 +15,7 @@ struct EntryEditorScreen: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     @Environment(\.appTheme) private var theme
+    @Environment(\.colorScheme) private var colorScheme
 
     let day: Date
     let entry: MoodEntry?
@@ -66,7 +67,7 @@ struct EntryEditorScreen: View {
                 }
                 .padding(24)
             }
-            .background(theme.palette.background)
+            .background(theme.palette.resolved(for: colorScheme).background)
             .coordinateSpace(name: "EntryEditor")
             .onPreferenceChange(NoteCardFramePreferenceKey.self) {
                 noteCardFrame = $0
@@ -281,8 +282,7 @@ struct EntryEditorScreen: View {
                 } label: {
                     VStack(spacing: 6) {
                         ZStack(alignment: .topTrailing) {
-                            Image(choice.imageName)
-                                .resizable()
+                            ChoiceArtwork(choice: choice)
                                 .scaledToFit()
                                 .frame(height: 32)
                                 .scaleEffect(selectedGroup == .mood ? 1 : choice == .cake ? 1 : choice == .study ? 1.38 : selectedGroup == .company ? 1.32 : 1.22)
@@ -313,7 +313,7 @@ struct EntryEditorScreen: View {
             }
         }
         .padding(10)
-        .background(Color.white.opacity(0.72), in: RoundedRectangle(cornerRadius: 22))
+        .background(theme.palette.resolved(for: colorScheme).cardBackground, in: RoundedRectangle(cornerRadius: 22))
     }
 
     private var editorHeading: some View {
@@ -382,7 +382,7 @@ struct EntryEditorScreen: View {
         .background {
             GeometryReader { proxy in
                 RoundedRectangle(cornerRadius: 22)
-                    .fill(selectedPaper.color(for: theme))
+                    .fill(selectedPaper.color(for: theme, scheme: colorScheme))
                     .preference(
                         key: NoteCardFramePreferenceKey.self,
                         value: proxy.frame(in: .named("EntryEditor"))
@@ -451,6 +451,7 @@ struct EntryEditorScreen: View {
 
 private struct SongEditorOverlay: View {
     @Environment(\.appTheme) private var theme
+    @Environment(\.colorScheme) private var colorScheme
     @State private var title: String
     @State private var artist: String
     private enum Field: Hashable { case title, artist }
@@ -490,12 +491,12 @@ private struct SongEditorOverlay: View {
     }
 
     private var player: some View {
-        VStack(spacing: 22) {
+        VStack(spacing: 0) {
             HStack {
                 Capsule()
                     .fill(theme.palette.strongAccent.opacity(0.18))
                     .frame(width: 34, height: 7)
-                    .overlay { Capsule().strokeBorder(theme.palette.background, lineWidth: 2) }
+                    .overlay { Capsule().strokeBorder(theme.palette.resolved(for: colorScheme).background, lineWidth: 2) }
                     .accessibilityHidden(true)
                 Spacer()
                 Button(action: onClose) {
@@ -506,18 +507,20 @@ private struct SongEditorOverlay: View {
                 }
                 .accessibilityLabel(localized("取消"))
             }
-            .padding(.bottom, -12)
+            .padding(.bottom, 10)
 
-            VStack(spacing: 18) {
+            VStack(spacing: 10) {
                 Text(isToday ? localized("今天在听") : localized("这一天在听"))
                     .font(.caption)
                     .foregroundStyle(theme.palette.strongAccent)
                 TextField(localized("歌曲名"), text: $title, axis: .vertical)
                     .font(.title2.weight(.medium))
                     .foregroundStyle(theme.palette.strongAccent)
-                    .lineLimit(1...3)
+                    .lineLimit(1...2)
+                    .truncationMode(.tail)
                     .accessibilityLabel(localized("歌曲名"))
                     .focused($focusedField, equals: .title)
+                    .padding(.bottom, 10)
                 TextField(localized("歌手（选填）"), text: $artist)
                     .font(.subheadline)
                     .foregroundStyle(theme.palette.strongAccent.opacity(0.7))
@@ -529,45 +532,85 @@ private struct SongEditorOverlay: View {
             .multilineTextAlignment(.center)
             .textInputAutocapitalization(.never)
             .padding(.horizontal, 18)
-            .padding(.vertical, 24)
-            .frame(maxWidth: .infinity)
-            .background(theme.palette.accent.opacity(0.07), in: RoundedRectangle(cornerRadius: 24))
+            .frame(maxWidth: .infinity, minHeight: 190)
+            .background(colorScheme == .dark ? theme.palette.cardBackground : theme.palette.accent.opacity(0.07),
+                        in: RoundedRectangle(cornerRadius: 24))
 
             HStack(spacing: 22) {
                 speaker
-                Button {
-                    onSave(title.trimmingCharacters(in: .whitespacesAndNewlines),
-                           artist.trimmingCharacters(in: .whitespacesAndNewlines))
-                } label: {
-                    Text(localized("确认"))
-                        .font(.body.weight(.medium))
-                        .padding(.horizontal, 30)
-                        .frame(minHeight: 48)
-                        .foregroundStyle(theme.palette.onStrongAccent)
-                        .background(theme.palette.strongAccent, in: Capsule())
-                        .shadow(color: theme.palette.strongAccent.opacity(0.20), radius: 0, y: 3)
-                }
-                .buttonStyle(.plain)
-                .disabled(isTitleEmpty)
-                .opacity(isTitleEmpty ? 0.45 : 1)
+                confirmationWheel
                 speaker
             }
+            .padding(.top, 24)
             if hasSong {
                 Button(localized("移除歌曲")) { onSave("", "") }
                     .font(.footnote)
                     .foregroundStyle(.secondary)
                     .frame(minHeight: 44)
+                    .padding(.top, 24)
             }
         }
         .foregroundStyle(.primary)
         .padding(.horizontal, 24)
-        .padding(.bottom, 24)
+        .padding(.bottom, 30)
         .background {
             RoundedRectangle(cornerRadius: 36)
-                .fill(theme.palette.background)
+                .fill(colorScheme == .dark ? theme.palette.cardBackground : theme.palette.background)
                 .shadow(color: .black.opacity(0.12), radius: 24, y: 12)
         }
         .frame(maxWidth: 360)
+    }
+
+    private var confirmationWheel: some View {
+        ZStack {
+            Circle()
+                .fill(colorScheme == .dark ? Color(white: 0.23) : Color(white: 0.95))
+                .overlay {
+                    Circle().strokeBorder(.primary.opacity(0.14), lineWidth: 0.8)
+                }
+                .shadow(color: .black.opacity(0.10), radius: 2, y: 2)
+                .accessibilityHidden(true)
+
+            VStack {
+                Text(verbatim: "MENU")
+                    .font(.system(size: 8, weight: .semibold, design: .rounded))
+                    .tracking(0.6)
+                Spacer()
+                Image(systemName: "playpause.fill")
+                    .font(.system(size: 9))
+            }
+            .padding(.vertical, 12)
+            .foregroundStyle(theme.palette.strongAccent)
+            .accessibilityHidden(true)
+            .allowsHitTesting(false)
+
+            HStack {
+                Image(systemName: "backward.end.fill")
+                Spacer()
+                Image(systemName: "forward.end.fill")
+            }
+            .font(.system(size: 9))
+            .padding(.horizontal, 12)
+            .foregroundStyle(theme.palette.strongAccent)
+            .accessibilityHidden(true)
+            .allowsHitTesting(false)
+
+            Button {
+                UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+                onSave(title.trimmingCharacters(in: .whitespacesAndNewlines),
+                       artist.trimmingCharacters(in: .whitespacesAndNewlines))
+            } label: {
+                Text(localized("确认"))
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(theme.palette.strongAccent)
+                    .frame(width: 54, height: 54)
+                    .contentShape(Circle())
+            }
+            .buttonStyle(PlayerCenterButtonStyle())
+            .disabled(isTitleEmpty)
+            .opacity(isTitleEmpty ? 0.45 : 1)
+        }
+        .frame(width: 120, height: 120)
     }
 
     private var speaker: some View {
@@ -581,9 +624,34 @@ private struct SongEditorOverlay: View {
     }
 }
 
+private struct PlayerCenterButtonStyle: ButtonStyle {
+    @Environment(\.colorScheme) private var colorScheme
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .background {
+                Circle()
+                    .fill(LinearGradient(
+                        colors: colorScheme == .dark
+                            ? [Color(white: 0.34), Color(white: 0.24)]
+                            : [.white, Color(white: 0.88)],
+                        startPoint: .topLeading, endPoint: .bottomTrailing
+                    ))
+                    .overlay { Circle().strokeBorder(.primary.opacity(0.16), lineWidth: 0.7) }
+                    .shadow(color: .black.opacity(configuration.isPressed ? 0.04 : 0.18),
+                            radius: configuration.isPressed ? 0 : 2,
+                            y: configuration.isPressed ? 0 : 2)
+            }
+            .scaleEffect(configuration.isPressed ? 0.94 : 1)
+            .offset(y: configuration.isPressed ? 1.5 : 0)
+            .animation(.easeOut(duration: 0.12), value: configuration.isPressed)
+    }
+}
+
 private struct PaperDialPicker: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.appTheme) private var theme
+    @Environment(\.colorScheme) private var colorScheme
     @Binding var selectedPaper: CardPaper
     @State private var rotation = 0.0
     @State private var lastDragAngle: Double?
@@ -652,7 +720,7 @@ private struct PaperDialPicker: View {
                     Image(systemName: "triangle.fill")
                         .font(.system(size: 6))
                         .rotationEffect(.degrees(180))
-                        .foregroundStyle(Color.black.opacity(0.5))
+                        .foregroundStyle(theme.palette.resolved(for: colorScheme).foreground.opacity(0.55))
                         .offset(y: -2)
                         .allowsHitTesting(false)
                 }
@@ -672,13 +740,13 @@ private struct PaperDialPicker: View {
                     .font(.footnote)
                     .foregroundStyle(.secondary)
                 RoundedRectangle(cornerRadius: 14)
-                    .fill(selectedPaper.color(for: theme))
+                    .fill(selectedPaper.color(for: theme, scheme: colorScheme))
                     .frame(height: 52)
                     .overlay { Text(selectedPaper.title).font(.subheadline) }
                     .padding(.horizontal, 28)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(theme.palette.background)
+            .background(theme.palette.resolved(for: colorScheme).background)
             .navigationTitle(localized("色纸"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

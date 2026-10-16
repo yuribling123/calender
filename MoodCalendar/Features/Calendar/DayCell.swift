@@ -58,8 +58,7 @@ struct DayCell: View {
                     // 图标
                     Group {
                         if let choice {
-                            Image(choice.imageName)
-                                .resizable()
+                            ChoiceArtwork(choice: choice)
                                 .scaledToFit()
                                 .frame(
                                     width: min(50, geometry.size.width),

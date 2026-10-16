@@ -102,6 +102,7 @@ struct MoodCalendarApp: App {
                 .environment(\.appTheme, AppTheme(rawValue: storedTheme) ?? .pink)
                 .environment(\.selectionShape, SelectionShape(rawValue: storedSelectionShape) ?? .circle)
                 .tint((AppTheme(rawValue: storedTheme) ?? .pink).palette.strongAccent)
+                .foregroundStyle(.primary)
                 .alert(localized("这样翻翻日历"), isPresented: $isGuidePresented) {
                     Button(localized("知道了")) {
                         UserDefaults.standard.set(true, forKey: guideKey)

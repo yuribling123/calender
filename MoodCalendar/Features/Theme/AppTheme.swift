@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 enum AppTheme: String, CaseIterable, Identifiable {
     case pink, black, apricot, sage, blue, lavender, caramel, creamYellow
@@ -21,35 +22,35 @@ enum AppTheme: String, CaseIterable, Identifiable {
     var palette: ThemePalette {
         switch self {
         case .pink:
-            ThemePalette(accent: rgb(232, 161, 174), selectionFill: rgb(242, 206, 211),
+            ThemePalette.make(accent: rgb(232, 161, 174), selectionFill: rgb(242, 206, 211),
                          softHighlight: rgb(250, 237, 239),
                          strongAccent: rgb(155, 78, 96), todayButtonFill: rgb(174, 91, 110))
         case .apricot:
-            ThemePalette(accent: rgb(216, 171, 143), selectionFill: rgb(237, 216, 200),
+            ThemePalette.make(accent: rgb(216, 171, 143), selectionFill: rgb(237, 216, 200),
                          softHighlight: rgb(248, 241, 233),
                          strongAccent: rgb(133, 91, 63), todayButtonFill: rgb(147, 104, 77))
         case .sage:
-            ThemePalette(accent: rgb(161, 178, 154), selectionFill: rgb(205, 220, 203),
+            ThemePalette.make(accent: rgb(161, 178, 154), selectionFill: rgb(205, 220, 203),
                          softHighlight: rgb(240, 243, 235),
                          strongAccent: rgb(82, 105, 76), todayButtonFill: rgb(100, 123, 96))
         case .blue:
-            ThemePalette(accent: rgb(158, 181, 191), selectionFill: rgb(202, 218, 225),
+            ThemePalette.make(accent: rgb(158, 181, 191), selectionFill: rgb(202, 218, 225),
                          softHighlight: rgb(239, 243, 243),
                          strongAccent: rgb(73, 100, 114), todayButtonFill: rgb(93, 120, 135))
         case .lavender:
-            ThemePalette(accent: rgb(184, 170, 198), selectionFill: rgb(221, 210, 229),
+            ThemePalette.make(accent: rgb(184, 170, 198), selectionFill: rgb(221, 210, 229),
                          softHighlight: rgb(243, 240, 244),
                          strongAccent: rgb(103, 84, 120), todayButtonFill: rgb(121, 103, 137))
         case .caramel:
-            ThemePalette(accent: rgb(178, 157, 134), selectionFill: rgb(223, 211, 195),
+            ThemePalette.make(accent: rgb(178, 157, 134), selectionFill: rgb(223, 211, 195),
                          softHighlight: rgb(244, 240, 233),
                          strongAccent: rgb(112, 91, 69), todayButtonFill: rgb(130, 112, 92))
         case .creamYellow:
-            ThemePalette(accent: rgb(217, 195, 143), selectionFill: rgb(236, 225, 190),
+            ThemePalette.make(accent: rgb(217, 195, 143), selectionFill: rgb(236, 225, 190),
                          softHighlight: rgb(247, 244, 231),
                          strongAccent: rgb(118, 98, 47), todayButtonFill: rgb(137, 118, 63))
         case .black:
-            ThemePalette(accent: rgb(165, 162, 154), selectionFill: rgb(38, 38, 38),
+            ThemePalette.make(accent: rgb(165, 162, 154), selectionFill: rgb(38, 38, 38),
                          softHighlight: rgb(242, 241, 238),
                          strongAccent: rgb(99, 95, 88), todayButtonFill: rgb(113, 109, 101),
                          onSelection: .white)
@@ -109,8 +110,7 @@ enum CardPaper: String, CaseIterable, Identifiable {
 
     func color(for currentTheme: AppTheme) -> Color {
         let paper = self == .original ? CardPaper.matching(currentTheme) : self
-        // Fixed paper colors keep the same tone in both the editor and calendar.
-        return switch paper {
+        let light: Color = switch paper {
         case .original, .pink: rgb(248, 240, 239)
         case .apricot: rgb(248, 241, 233)
         case .yellow: rgb(247, 244, 231)
@@ -120,6 +120,21 @@ enum CardPaper: String, CaseIterable, Identifiable {
         case .caramel: rgb(244, 240, 233)
         case .black: rgb(242, 241, 238)
         }
+        let dark: Color = switch paper {
+        case .original, .pink: rgb(58, 43, 48)
+        case .apricot: rgb(59, 46, 38)
+        case .yellow: rgb(56, 51, 35)
+        case .green: rgb(42, 52, 41)
+        case .blue: rgb(39, 50, 57)
+        case .purple: rgb(50, 43, 59)
+        case .caramel: rgb(53, 47, 40)
+        case .black: rgb(46, 44, 41)
+        }
+        return adaptive(light: light, dark: dark)
+    }
+
+    func color(for currentTheme: AppTheme, scheme: ColorScheme) -> Color {
+        color(for: currentTheme)
     }
 
     func swatchAccent(for currentTheme: AppTheme) -> Color {
@@ -136,9 +151,42 @@ struct ThemePalette {
     let todayButtonFill: Color
     var onSelection: Color = .primary
 
-    let background = rgb(252, 250, 247)
-    let onStrongAccent = rgb(252, 250, 247)
-    var cardBackground: Color { accent.opacity(0.06) }
+    let background: Color
+    let foreground: Color
+    let onStrongAccent: Color
+    let cardBackground: Color
+}
+
+extension ThemePalette {
+    static func make(accent: Color, selectionFill: Color, softHighlight: Color,
+                     strongAccent: Color, todayButtonFill: Color,
+                     onSelection: Color = .primary) -> ThemePalette {
+        ThemePalette(
+            accent: accent,
+            selectionFill: adaptive(light: selectionFill, dark: accent.opacity(0.30)),
+            softHighlight: adaptive(light: softHighlight, dark: rgb(54, 49, 47)),
+            strongAccent: adaptive(light: strongAccent, dark: accent),
+            todayButtonFill: todayButtonFill,
+            onSelection: adaptive(light: onSelection, dark: rgb(247, 242, 236)),
+            background: adaptive(light: rgb(252, 250, 247), dark: rgb(29, 28, 27)),
+            foreground: adaptive(light: rgb(49, 44, 42), dark: rgb(242, 237, 231)),
+            onStrongAccent: rgb(252, 250, 247),
+            cardBackground: adaptive(light: .white.opacity(0.72), dark: rgb(43, 40, 38))
+        )
+    }
+
+    func resolved(for scheme: ColorScheme) -> ThemePalette {
+        // Every color resolves against the window's actual interface style.
+        self
+    }
+}
+
+private func adaptive(light: Color, dark: Color) -> Color {
+    let lightColor = UIColor(light)
+    let darkColor = UIColor(dark)
+    return Color(uiColor: UIColor { traits in
+        traits.userInterfaceStyle == .dark ? darkColor : lightColor
+    })
 }
 
 private func rgb(_ red: Int, _ green: Int, _ blue: Int) -> Color {
@@ -319,5 +367,31 @@ extension EnvironmentValues {
     var selectionShape: SelectionShape {
         get { self[SelectionShapeKey.self] }
         set { self[SelectionShapeKey.self] = newValue }
+    }
+}
+
+/// Keeps the supplied artwork intact and adapts monochrome groups to dark backgrounds.
+struct ChoiceArtwork: View {
+    @Environment(\.colorScheme) private var colorScheme
+    private let imageName: String
+    private let group: ChoiceGroup
+
+    init(choice: DailyChoice) {
+        imageName = choice.imageName
+        group = choice.group
+    }
+
+    init(mood: Mood) {
+        imageName = mood.imageName
+        group = .mood
+    }
+
+    var body: some View {
+        let usesWhiteLines = colorScheme == .dark && group != .playful && group != .rabbit
+        Image(imageName)
+            .renderingMode(usesWhiteLines ? .template : .original)
+            .resizable()
+            .scaledToFit()
+            .foregroundStyle(.white)
     }
 }

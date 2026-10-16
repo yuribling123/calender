@@ -5,6 +5,7 @@ struct MonthlyGoalScreen: View {
     let onOpenMonth: (Date) -> Void
     @Environment(\.modelContext) private var modelContext
     @Environment(\.appTheme) private var theme
+    @Environment(\.colorScheme) private var colorScheme
     @Query private var entries: [MoodEntry]
     @Query private var monthlyNotes: [MonthlyNote]
     @State private var draftNoteText = ""
@@ -30,7 +31,7 @@ struct MonthlyGoalScreen: View {
                 VStack(alignment: .leading, spacing: 0) {
                     Text(localized("月便签"))
                         .font(.system(size: 23, weight: .medium))
-                        .foregroundStyle(.black)
+                        .foregroundStyle(theme.palette.resolved(for: colorScheme).foreground)
                         .padding(.top, 4)
                         .padding(.bottom, 20)
 
@@ -56,7 +57,7 @@ struct MonthlyGoalScreen: View {
                 }
                 .padding(24)
             }
-            .background(theme.palette.background)
+            .background(theme.palette.resolved(for: colorScheme).background)
             .toolbar(.hidden, for: .navigationBar)
             .onChange(of: monthlyNotes.map { "\($0.id.uuidString)-\($0.updatedAt.timeIntervalSince1970)" }) { _, _ in
                 try? MonthlyNoteStore(context: modelContext).reconcileDuplicates()
@@ -279,7 +280,7 @@ struct MonthlyGoalScreen: View {
             if let note = data.note {
                 Text(DemoData.displayText(note))
                     .font(.subheadline)
-                    .foregroundStyle(Color.black.opacity(0.76))
+                    .foregroundStyle(theme.palette.resolved(for: colorScheme).foreground.opacity(0.84))
                     .lineSpacing(4)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
@@ -327,8 +328,7 @@ struct MonthlyGoalScreen: View {
                     .foregroundStyle(.primary)
                     .lineLimit(3)
 
-                Image(choice.imageName)
-                    .resizable()
+                ChoiceArtwork(choice: choice)
                     .scaledToFit()
                     .frame(width: 64, height: 32)
                     // Account for the artwork's transparent margins in the row spacing.

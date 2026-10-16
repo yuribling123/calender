@@ -3,6 +3,7 @@ import SwiftUI
 struct MembershipScreen: View {
     @EnvironmentObject private var membership: MembershipStore
     @Environment(\.appTheme) private var theme
+    @Environment(\.colorScheme) private var colorScheme
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -12,8 +13,7 @@ struct MembershipScreen: View {
                     VStack(spacing: 22) {
                         HStack(spacing: 12) {
                             ForEach([DailyChoice.clover, .guitar, .starRabbit, .wings], id: \.rawValue) { choice in
-                                Image(choice.imageName)
-                                    .resizable()
+                                ChoiceArtwork(choice: choice)
                                     .scaledToFit()
                                     .frame(width: 54, height: 44)
                                     .scaleEffect(1.35)
@@ -41,7 +41,7 @@ struct MembershipScreen: View {
                         }
                         .padding(24)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(Color.white.opacity(0.76), in: RoundedRectangle(cornerRadius: 20))
+                        .background(theme.palette.resolved(for: colorScheme).cardBackground, in: RoundedRectangle(cornerRadius: 20))
 
                         Spacer(minLength: 24)
 
@@ -79,7 +79,7 @@ struct MembershipScreen: View {
                             .padding(.horizontal, 16)
                             .padding(.vertical, 12)
                             .frame(maxWidth: .infinity, minHeight: 54)
-                            .background(theme.palette.strongAccent, in: Capsule())
+                            .background(theme.palette.todayButtonFill, in: Capsule())
                         }
                         .disabled(membership.hasMembershipAccess || membership.product == nil || membership.isLoading)
 
@@ -102,7 +102,7 @@ struct MembershipScreen: View {
                     .frame(minHeight: proxy.size.height)
                 }
             }
-            .background(theme.palette.background.ignoresSafeArea())
+            .background(theme.palette.resolved(for: colorScheme).background.ignoresSafeArea())
             .navigationTitle(localized("永久解锁"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
