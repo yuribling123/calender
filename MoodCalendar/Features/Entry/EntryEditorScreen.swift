@@ -570,7 +570,7 @@ private struct SongEditorOverlay: View {
         .padding(.bottom, 30)
         .background {
             RoundedRectangle(cornerRadius: 36)
-                .fill(colorScheme == .dark ? theme.palette.cardBackground : theme.palette.background)
+                .fill(theme.palette.playerBody)
                 .shadow(color: .black.opacity(0.12), radius: 24, y: 12)
         }
         .frame(maxWidth: 360)

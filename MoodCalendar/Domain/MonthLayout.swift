@@ -29,3 +29,41 @@ struct MonthLayout {
         return (0..<7).map { symbols[(calendar.firstWeekday - 1 + $0) % 7] }
     }
 }
+
+/// Month selection shares the same local calendar and keys as saved monthly notes.
+struct NoteMonthSelection {
+    let calendar: Calendar
+    let currentYear: Int
+    let currentMonth: Int
+
+    init(now: Date = Date(), calendar: Calendar = .current) {
+        self.calendar = calendar
+        currentYear = calendar.component(.year, from: now)
+        currentMonth = calendar.component(.month, from: now)
+    }
+
+    func isAllowed(year: Int, month: Int, allowPastDates: Bool) -> Bool {
+        guard year >= 1, (1...12).contains(month) else { return false }
+        if year == currentYear && month == currentMonth { return true }
+        return allowPastDates && (year < currentYear || year == currentYear && month < currentMonth)
+    }
+
+    func date(year: Int, month: Int) -> Date? {
+        guard year >= 1, (1...12).contains(month),
+              let date = calendar.date(from: DateComponents(year: year, month: month, day: 1)),
+              calendar.component(.year, from: date) == year,
+              calendar.component(.month, from: date) == month else { return nil }
+        return date
+    }
+
+    func key(year: Int, month: Int) -> String {
+        String(format: "%04d-%02d", year, month)
+    }
+
+    func monthName(_ month: Int, locale: Locale) -> String {
+        var localizedCalendar = calendar
+        localizedCalendar.locale = locale
+        return localizedCalendar.monthSymbols[month - 1].uppercased()
+    }
+
+}

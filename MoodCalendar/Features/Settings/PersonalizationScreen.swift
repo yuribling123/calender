@@ -315,9 +315,9 @@ struct PersonalizationScreen: View {
                             .textInputAutocapitalization(.never)
                             .submitLabel(.done)
                             .onSubmit { isCalendarTitleFocused = false }
-                            .accessibilityLabel(localized("日历标题，最多六个字"))
+                            .accessibilityLabel(localized("日历标题，最多十个字"))
                             .onChange(of: storedCalendarTitle) { _, newValue in
-                                let limitedValue = String(newValue.prefix(6))
+                                let limitedValue = String(newValue.prefix(10))
                                 if limitedValue != newValue {
                                     storedCalendarTitle = limitedValue
                                 }
@@ -325,10 +325,10 @@ struct PersonalizationScreen: View {
                     }
                     Spacer(minLength: 8)
                     if isCalendarTitleFocused {
-                        Text("\(storedCalendarTitle.count)/6")
+                        Text("\(storedCalendarTitle.count)/10")
                             .font(.footnote.monospacedDigit())
                             .foregroundStyle(.tertiary)
-                            .accessibilityLabel(localized("已输入%@个字，共六个字", String(describing: storedCalendarTitle.count)))
+                            .accessibilityLabel(localized("已输入%@个字，共十个字", String(describing: storedCalendarTitle.count)))
                     }
                 }
                 .padding(18)

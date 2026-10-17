@@ -158,8 +158,20 @@ struct ThemePalette {
 }
 
 extension ThemePalette {
+    var stampIndicator: Color { adaptive(light: rgb(97, 123, 96), dark: rgb(172, 192, 164)) }
+    var stampWheelBackground: Color { adaptive(light: rgb(240, 238, 233), dark: rgb(34, 33, 30)) }
+
+    var memoBody: Color { adaptive(light: rgb(255, 252, 248), dark: rgb(43, 40, 38)) }
+
+    // A nearly white shell in light mode; just a trace of theme tint in dark mode.
+    var playerBody: Color {
+        tintedSurface(tint: accent, lightBase: (252, 250, 247), darkBase: (43, 40, 38),
+                      lightWeight: 0.04, darkWeight: 0.06)
+    }
+
+    // Opaque so adding color to the shell cannot tint the screen through it.
     var playerScreenBackground: Color {
-        adaptive(light: accent.opacity(0.07), dark: rgb(32, 34, 31))
+        adaptive(light: rgb(255, 254, 252), dark: rgb(32, 34, 31))
     }
 
     var playerScreenTopEdge: Color {
@@ -191,6 +203,27 @@ extension ThemePalette {
         // Every color resolves against the window's actual interface style.
         self
     }
+}
+
+private func tintedSurface(tint: Color, lightBase: (Int, Int, Int), darkBase: (Int, Int, Int),
+                           lightWeight: CGFloat, darkWeight: CGFloat) -> Color {
+    let tintColor = UIColor(tint)
+    return Color(uiColor: UIColor { traits in
+        let isDark = traits.userInterfaceStyle == .dark
+        let base = isDark ? darkBase : lightBase
+        let weight = isDark ? darkWeight : lightWeight
+        var red: CGFloat = 0
+        var green: CGFloat = 0
+        var blue: CGFloat = 0
+        var alpha: CGFloat = 0
+        tintColor.resolvedColor(with: traits).getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+        return UIColor(
+            red: CGFloat(base.0) / 255 * (1 - weight) + red * weight,
+            green: CGFloat(base.1) / 255 * (1 - weight) + green * weight,
+            blue: CGFloat(base.2) / 255 * (1 - weight) + blue * weight,
+            alpha: 1
+        )
+    })
 }
 
 private func adaptive(light: Color, dark: Color) -> Color {

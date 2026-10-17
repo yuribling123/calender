@@ -175,7 +175,7 @@ struct CalendarScreen: View {
     private func openRequestedMonth() {
         guard let date = requestedMonth else { return }
         displayedMonth = MonthLayout(containing: date, calendar: calendar).monthStart
-        selectedDay = displayedMonth
+        selectedDay = calendar.startOfDay(for: date)
         isChoosingMonth = false
         requestedMonth = nil
     }

@@ -2,7 +2,7 @@
 
 A native iPhone mood calendar built with SwiftUI and SwiftData. You can create or edit one entry for today. Allow editing past days defaults to on in Personalization; past days offer an Add / edit action. Turning it off makes past days read-only. Future dates are always read-only.
 
-The app has three tabs: Calendar, Monthly Note, and Settings. Settings lets you choose an accent color, a date and month selection marker, and a calendar title of up to six characters. The title is a member feature; when left blank, the calendar shows “今日份”. Free users can use the circle and star markers. Other markers require the one-time unlock. Preferences are stored locally. Accent colors do not change the five fixed mood colors, saved entries, or supplied sticker artwork.
+The app has three tabs: Calendar, Monthly Note, and Settings. Settings lets you choose an accent color, a date and month selection marker, and a calendar title of up to ten characters. The title is a member feature; when left blank, the calendar shows “今日份”. Free users can use the circle and star markers. Other markers require the one-time unlock. Preferences are stored locally. Accent colors do not change the five fixed mood colors, saved entries, or supplied sticker artwork.
 
 ## Design style / 设计风格
 
@@ -41,7 +41,7 @@ Current-month note and previous-month history:
 - The selected day's mood detail includes a short phrase for each mood level.
 - The app selects today by default. If it stays open past local midnight, returns from the background on a new day, or the device time zone changes, the calendar updates to the new local date. When today has no entry, you can choose a mood from the calendar detail or add a Daily item in the editor. Today’s entry can be edited until the day ends. The empty daily view also offers “选其他表情” to open all sticker groups.
 - The editor uses the same warm background as the calendar. All six sticker groups appear in one row, with a light marker stroke behind the selected label. VoiceOver announces the selected item and date; date text adapts to larger system text sizes.
-- Monthly Note lets you edit a note for the current month, up to 100 characters, and browse every month with a saved entry or note. Historical month headings open the corresponding calendar. Summaries use sticker names: fewer than three records show “那个月记下了”, otherwise “出现最多的是”; ties go to the item recorded last.
+- Monthly Note lets you add or edit a note for any past or current month through ＋, up to 100 characters, and browse every month with a saved entry or note. Historical month headings open the corresponding calendar. Summaries use sticker names: fewer than three records show “那个月记下了”, otherwise “出现最多的是”; Among the most frequent stickers, prefer a record with a nonblank note, then the latest day. Show that note beside the sticker on one line with tail truncation; tapping the row opens its exact calendar day. If none has a note, show the latest sticker alone.
 - Past dates show the saved mood and note, or an appropriate empty-state message. Future dates show that the day has not arrived yet.
 - Daily entries and monthly notes are stored on-device with SwiftData. iCloud sync can be enabled in Settings and uses the user's private CloudKit database when available.
 - Export and restore daily entries and monthly notes with `今日份.zip`. The archive contains `manifest.json` (format version and export time), `data.json`, photos, and a readable `记录.txt`. Import previews additions, keeps existing same-day/month records, and never restores membership entitlement.
@@ -85,7 +85,7 @@ Calendar days are stored as the local year, month, and day when the entry is cre
 
 一款原生 iPhone 心情日历。每天最多一条记录；个性化中的「允许修改往日」默认开启，往日可点「补充」新增或修改，关闭后只读。未来日期始终只能查看。
 
-底部有「日历」「月便签」和「我的」三个页面。「我的」可从八种主题色（含黑色）中选择界面强调色、在六种日期和月份选中图形之间切换，也可设置最多六个字的日历标题；标题留空时显示「今日份」。日历标题属于会员功能。免费用户可使用圆形和星星，图形列表中星星紧跟在圆形之后；其他图形需永久解锁。这些设置保存在本机，下次打开仍然生效。主题色只改变界面强调元素，不改变五档心情的固定颜色、已保存记录或表情原画。
+底部有「日历」「月便签」和「我的」三个页面。「我的」可从八种主题色（含黑色）中选择界面强调色、在六种日期和月份选中图形之间切换，也可设置最多十个字的日历标题；标题留空时显示「今日份」。日历标题属于会员功能。免费用户可使用圆形和星星，图形列表中星星紧跟在圆形之后；其他图形需永久解锁。这些设置保存在本机，下次打开仍然生效。主题色只改变界面强调元素，不改变五档心情的固定颜色、已保存记录或表情原画。
 
 ## 第一版功能
 
@@ -108,7 +108,7 @@ Calendar days are stored as the local year, month, and day when the entry is cre
 - 所选日期的心情详情会在等级名称旁显示对应短句：幸福到融化、心里软乎乎、今天就这样、小小不开心或快要碎掉了。
 - 默认选中今天；若 App 跨过当地午夜后仍在前台，或第二天从后台打开，会自动切到新的一天。手机时区变化时也会按新的当地日期重新显示日历并校准午夜定时器。若尚未记录，可从首页详情区直接选心情，或点「选其他表情」进入完整选择页；今天始终可修改；往日能否修改由「允许修改往日」开关控制。
 - 编辑页使用与首页一致的暖色背景；六个表情分组以两行三列同时显示，所选项目会高亮，并向 VoiceOver 说明选中状态。日历日期也会朗读选中状态，日期文字随系统字号适度放大。
-- 「月便签」显示本月可编辑的一句话，并列出所有有记录或便签的历史月份，不受最近 12 个月限制；点击历史月份标题可打开对应日历；小结少于三条记录时显示「那个月记下了」，其余显示「出现最多的是」，使用表情名称。六组项目参与同一计算，次数相同时取最后出现的项目。
+- 「月便签」显示本月可编辑的一句话，并列出所有有记录或便签的历史月份，不受最近 12 个月限制；点击历史月份标题可打开对应日历；小结少于三条记录时显示「那个月记下了」，其余显示「出现最多的是」，使用表情名称。六组项目参与同一计算，最高次数的表情中优先选择有留言的记录，再按日期取最近一次；全部没有留言时只显示最近的表情。留言只占一行，过长显示省略号；点击整行跳到对应记录当天的日历。
 - 点选过去的日期可在日历下方查看心情和文字；没有文字或没有记录时显示对应提示。点选未来日期会显示“这一天还没到来”。
 - 每日记录和月便签使用 SwiftData 保存在设备本地；用户可在「我的」开启 iCloud 同步，在登录 iCloud 且容器可用时同步到私有 CloudKit 数据库。
 - 「我的」可导出或导入「今日份.zip」，恢复每日记录、月便签和照片。导入前会预览新增数量；同日或同月已有内容会保留，不恢复会员资格。
@@ -203,6 +203,8 @@ The editor shows only the selected paper color; tap to open a rotatable, snappin
 
 星期标题与日期网格共用手机日历的每周起始日；切换 App 语言只翻译星期名称，不改变排列顺序。
 
+歌曲弹窗的机身将当前主题色融入不透明底色：浅色为暖白底混入 4% 主题色，深色为暖深灰底混入 6% 主题色。显示屏独立使用不透明配色（浅色为偏白暖白 #FFFEFC，深色为炭灰），避免机身颜色透入。
+
 歌曲弹窗的确认区采用复古随身听圆盘：MENU、切歌和播放符号仅作装饰，中心「确认」按钮负责保存，按下有下沉动画，确认时播放约 0.1 秒的轻塑料机械咔嗒声；遵循系统静音设置并与其他音乐混音，音频预加载和播放准备在后台队列进行。歌曲名为空时不可确认。
 
 ### Dark mode / 深色模式
@@ -214,3 +216,17 @@ In dark mode, Mood, Daily Life, Company, and Little Joys render as white line ar
 应用自动跟随 iPhone 系统外观，可在 **设置 → 显示与亮度 → 浅色／深色** 中切换；App 内没有单独的外观开关。页面背景、文字、卡片、选中标记及八种色纸同步适配，深色模式采用暖深灰背景和低饱和深色色纸。
 
 深色模式下，「心情」「日常」「陪伴」「小幸」显示白色线条；「随性」「兔兔」保留原色。编辑页、日历格、选中日期详情、月份选择和月便签均采用这一规则。浅色模式保留原始表情颜色，原始素材文件不变。切换外观不改变已保存的记录、心情编号或色纸选择。
+
+### Retro date stamp / 复古日期印章
+
+进入便签编辑后双拨轮收起为紧凑年月标题，输入区固定高度，长文字在输入区内部滚动。弹窗始终使用同一个滚动容器，键盘出现时不切换布局；编辑状态切换完成后再自动聚焦输入框，避免焦点和滚动跳动。
+
+The monthly-note ＋ opens a cream date-stamp object over the dimmed page, without a system sheet. Two year/month wheels share one inset warm-gray chamber and select vertically (e.g. 2026 / OCT). A small green dot marks an existing note. The wide “Write this month” button depresses like a stamp; for an existing note it says “Open note”. The same object expands to edit up to 100 characters. Dark appearance and Reduce Motion are supported; no vibration is added.
+
+月便签 ＋ 打开奶油白的复古日期印章浮层，不使用系统 sheet。年份、月份双拨轮共用一块浅暖灰内凹舱，标签位于舱内上沿，直接上下拨动（如 2026 / OCT）；已有月便签时亮起小绿点，底部宽按键从「写下这个月」变为「打开便签」，按下有盖章下沉感。确认后在同一个物件内编辑最多 100 字的便签，适配深色模式与减弱动态效果，不增加震动。
+
+「允许修改往日」只控制往月列表中的快捷编辑按钮：开启时显示，关闭时隐藏。无论开关状态，月便签 ＋ 都可选择所有往月和本月，新增或修改便签；未来月份不提供选项，保存层也会拦截。选月份或取消不会创建记录，保存非空便签后才加入列表，同月再次保存更新原便签。每日记录仍按原规则受「允许修改往日」限制。
+
+For monthly notes, “Allow editing past days” only shows or hides historical inline edit buttons. The ＋ date stamp always supports past/current monthly notes. Future months remain blocked in both selection and persistence. Daily-entry permissions are unchanged.
+
+日历详情中的歌曲记录保持单行：长歌名优先占用可用空白，将播放装饰图标推至 NOW PLAYING 左侧，空间用尽后再尾部省略；图标与 NOW PLAYING 保持完整。

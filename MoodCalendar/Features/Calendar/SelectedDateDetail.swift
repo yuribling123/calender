@@ -205,7 +205,7 @@ struct DailySongCard: View {
     let artist: String
 
     var body: some View {
-        HStack(spacing: 20) {
+        HStack(spacing: 0) {
             HStack(spacing: 6) {
                 Text("♫")
                     .accessibilityHidden(true)
@@ -216,6 +216,7 @@ struct DailySongCard: View {
             }
             .font(.system(size: 13))
             .foregroundStyle(theme.palette.resolved(for: colorScheme).foreground.opacity(0.72))
+            .layoutPriority(1)
 
             HStack(spacing: 16) {
                 Image(systemName: "backward.fill")
@@ -229,6 +230,7 @@ struct DailySongCard: View {
             .font(.system(size: 10 / 1.15))
             .foregroundStyle(theme.palette.resolved(for: colorScheme).foreground.opacity(0.64))
             .fixedSize()
+            .padding(.leading, 20)
             .accessibilityHidden(true)
 
             Spacer(minLength: 0)
@@ -237,6 +239,7 @@ struct DailySongCard: View {
                 .tracking(0.8)
                 .foregroundStyle(theme.palette.strongAccent)
                 .fixedSize()
+                .padding(.leading, 12)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .accessibilityElement(children: .combine)

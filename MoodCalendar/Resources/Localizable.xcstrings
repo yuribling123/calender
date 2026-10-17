@@ -1,209 +1,6 @@
 {
   "sourceLanguage" : "zh-Hans",
   "strings" : {
-    "允许修改往日": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Allow editing past days"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "過去の日付の編集を許可"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "지난 날짜 수정 허용"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "允许修改往日"
-          }
-        }
-      }
-    },
-    "关闭后，往日记录仅可查看。": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "When off, past entries are view-only."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "オフにすると、過去の記録は閲覧のみになります。"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "끄면 지난 기록은 보기만 할 수 있어요."
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "关闭后，往日记录仅可查看。"
-          }
-        }
-      }
-    },
-    "补充": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Add / edit"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "追記"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "추가·수정"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "补充"
-          }
-        }
-      }
-    },
-    "此日期不可修改，请检查「允许修改往日」设置。": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "This date cannot be edited. Check the past-day editing setting."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "この日付は編集できません。過去の日付の編集設定をご確認ください。"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "이 날짜는 수정할 수 없어요. 지난 날짜 수정 설정을 확인해 주세요."
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "此日期不可修改，请检查「允许修改往日」设置。"
-          }
-        }
-      }
-    },
-    "这一天想记什么？": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "What would you like to remember from this day?"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "この日は何を残しますか？"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "이날의 무엇을 기록할까요?"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "这一天想记什么？"
-          }
-        }
-      }
-    },
-    "文字可选。": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Writing is optional."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "文章は任意です。"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "글은 선택 사항이에요."
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "文字可选。"
-          }
-        }
-      }
-    },
-    "这一天在听": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Listening that day"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "この日の一曲"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "이날 들은 노래"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "这一天在听"
-          }
-        }
-      }
-    },
     "·" : {
 
     },
@@ -219,6 +16,9 @@
           }
         }
       }
+    },
+    "%@ / 100" : {
+
     },
     "%@，%@，需要会员" : {
       "extractionState" : "manual",
@@ -336,7 +136,7 @@
         }
       }
     },
-    "%@/6" : {
+    "%@/10" : {
 
     },
     "%@年%@月" : {
@@ -1215,35 +1015,6 @@
         }
       }
     },
-    "收好": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Save"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "しまう"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "담아두기"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "收好"
-          }
-        }
-      }
-    },
     "今天在听" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1882,6 +1653,35 @@
         }
       }
     },
+    "允许修改往日" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Allow editing past days"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "過去の日付の編集を許可"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "지난 날짜 수정 허용"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "允许修改往日"
+          }
+        }
+      }
+    },
     "兔兔" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1998,6 +1798,35 @@
         }
       }
     },
+    "关闭后，往日记录仅可查看。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "When off, past entries are view-only."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "オフにすると、過去の記録は閲覧のみになります。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "끄면 지난 기록은 보기만 할 수 있어요."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "关闭后，往日记录仅可查看。"
+          }
+        }
+      }
+    },
     "关闭月份选择" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -2081,6 +1910,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "写一句话，留给这个月。"
+          }
+        }
+      }
+    },
+    "写下这个月" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Write this month"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この月に書く"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 달에 쓰기"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "写下这个月"
+          }
+        }
+      }
+    },
+    "写便签" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Write a note"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "メモを書く"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "메모 쓰기"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "写便签"
           }
         }
       }
@@ -3535,6 +3422,35 @@
         }
       }
     },
+    "左右滑动翻找月份，轻点卡片打开" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Swipe to browse months, tap a card to open"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "左右にスワイプして月を探し、カードをタップ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "좌우로 넘겨 월을 찾고 카드를 눌러 열기"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "左右滑动翻找月份，轻点卡片打开"
+          }
+        }
+      }
+    },
     "已关闭" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3589,6 +3505,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "已恢复永久解锁。"
+          }
+        }
+      }
+    },
+    "已有月便签" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Has a monthly note"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "月のメモあり"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "월 메모 있음"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已有月便签"
+          }
+        }
+      }
+    },
+    "已有记录" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Has records"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "記録あり"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "기록 있음"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已有记录"
           }
         }
       }
@@ -3651,31 +3625,31 @@
         }
       }
     },
-    "已输入%@个字，共六个字" : {
+    "已输入%@个字，共十个字" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ of 6 characters"
+            "value" : "%@ of 10 characters"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "6文字中%@文字"
+            "value" : "10文字中%@文字"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "6자 중 %@자 입력"
+            "value" : "10자 중 %@자 입력"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "已输入%@个字，共六个字"
+            "value" : "已输入%@个字，共十个字"
           }
         }
       }
@@ -4231,6 +4205,35 @@
         }
       }
     },
+    "打开便签" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open note"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "メモを開く"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "메모 열기"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打开便签"
+          }
+        }
+      }
+    },
     "打开系统设置，允许每日提醒通知" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -4608,6 +4611,35 @@
         }
       }
     },
+    "收好" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "しまう"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "담아두기"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "收好"
+          }
+        }
+      }
+    },
     "放松" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -4778,6 +4810,35 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "文字可选，今天内可以修改。"
+          }
+        }
+      }
+    },
+    "文字可选。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Writing is optional."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "文章は任意です。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "글은 선택 사항이에요."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "文字可选。"
           }
         }
       }
@@ -5101,31 +5162,31 @@
         }
       }
     },
-    "日历标题，最多六个字" : {
+    "日历标题，最多十个字" : {
       "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Calendar title, up to six characters"
+            "value" : "Calendar title, up to ten characters"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "タイトル、6文字まで"
+            "value" : "タイトル、10文字まで"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "달력 제목, 최대 6자"
+            "value" : "달력 제목, 최대 10자"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "日历标题，最多六个字"
+            "value" : "日历标题，最多十个字"
           }
         }
       }
@@ -5594,6 +5655,35 @@
         }
       }
     },
+    "月份档案盒" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Month card box"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "月のカードボックス"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "월별 카드 보관함"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "月份档案盒"
+          }
+        }
+      }
+    },
     "月便签" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -5967,6 +6057,35 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "正在连接 App Store…"
+          }
+        }
+      }
+    },
+    "此日期不可修改，请检查「允许修改往日」设置。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This date cannot be edited. Check the past-day editing setting."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この日付は編集できません。過去の日付の編集設定をご確認ください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 날짜는 수정할 수 없어요. 지난 날짜 수정 설정을 확인해 주세요."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此日期不可修改，请检查「允许修改往日」设置。"
           }
         }
       }
@@ -6406,6 +6525,35 @@
         }
       }
     },
+    "添加月便签" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add monthly note"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "月のメモを追加"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "월 메모 추가"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "添加月便签"
+          }
+        }
+      }
+    },
     "演示数据" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -6812,6 +6960,35 @@
         }
       }
     },
+    "留一句话给这个月" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leave a line for this month"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この月にひと言を残す"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 달에 한마디 남기기"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "留一句话给这个月"
+          }
+        }
+      }
+    },
     "留一点时间给自己。" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -6895,6 +7072,35 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "留张照片"
+          }
+        }
+      }
+    },
+    "留给哪一个月" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Which month is this for?"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "どの月に残しますか"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "어느 달에 남길까요"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "留给哪一个月"
           }
         }
       }
@@ -7044,35 +7250,6 @@
         }
       }
     },
-    "确认": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Confirm"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "確認"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "확인"
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "确认"
-          }
-        }
-      }
-    },
     "确定" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -7098,6 +7275,35 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "确定"
+          }
+        }
+      }
+    },
+    "确认" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confirm"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "確認"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "확인"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "确认"
           }
         }
       }
@@ -7707,6 +7913,35 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "藤白"
+          }
+        }
+      }
+    },
+    "补充" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add / edit"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "追記"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "추가·수정"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "补充"
           }
         }
       }
@@ -8552,6 +8787,35 @@
         }
       }
     },
+    "转动或轻点选择月份" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Turn or tap to choose a month"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "回すかタップして月を選ぶ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "돌리거나 눌러 월 선택"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "转动或轻点选择月份"
+          }
+        }
+      }
+    },
     "转动或轻点选色" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -8693,6 +8957,93 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "还没有留下记录"
+          }
+        }
+      }
+    },
+    "这一个月还没到来" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This month is still ahead"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この月はまだ先です"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "아직 오지 않은 달이에요"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "这一个月还没到来"
+          }
+        }
+      }
+    },
+    "这一天在听" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Listening that day"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この日の一曲"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이날 들은 노래"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "这一天在听"
+          }
+        }
+      }
+    },
+    "这一天想记什么？" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What would you like to remember from this day?"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この日は何を残しますか？"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이날의 무엇을 기록할까요?"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "这一天想记什么？"
           }
         }
       }
@@ -9099,6 +9450,35 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "选择今日份 ZIP 备份并预览将恢复的内容"
+          }
+        }
+      }
+    },
+    "选择年份" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose year"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "年を選択"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "연도 선택"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "选择年份"
           }
         }
       }

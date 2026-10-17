@@ -69,6 +69,23 @@ struct MonthlyNoteStore {
     let context: ModelContext
 
     func save(monthKey: String, text: String) throws {
+        let calendar = Calendar.current
+        let parts = monthKey.split(separator: "-", omittingEmptySubsequences: false)
+        guard parts.count == 2, parts[0].count == 4, parts[1].count == 2,
+              let year = Int(parts[0]), let month = Int(parts[1]),
+              (1...12).contains(month),
+              let date = calendar.date(from: DateComponents(year: year, month: month, day: 1)),
+              calendar.component(.year, from: date) == year,
+              calendar.component(.month, from: date) == month else {
+            throw EntryStoreError.dateIsReadOnly
+        }
+        let today = DayKey(Date(), calendar: calendar)
+        let currentMonthKey = String(format: "%04d-%02d", today.year, today.month)
+        // The preference only controls inline month-list edit buttons.
+        // The ＋ composer can always write past and current monthly notes.
+        guard monthKey <= currentMonthKey else {
+            throw EntryStoreError.dateIsReadOnly
+        }
         let value = text.trimmingCharacters(in: .whitespacesAndNewlines)
         let descriptor = FetchDescriptor<MonthlyNote>(predicate: #Predicate { $0.monthKey == monthKey })
         let matchingNotes = try context.fetch(descriptor)
