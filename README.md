@@ -4,6 +4,14 @@ A native iPhone mood calendar built with SwiftUI and SwiftData. You can create o
 
 The app has three tabs: Calendar, Monthly Note, and Settings. Settings lets you choose an accent color, a date and month selection marker, and a calendar title of up to six characters. The title is a member feature; when left blank, the calendar shows “今日份”. Free users can use the circle and star markers. Other markers require the one-time unlock. Preferences are stored locally. Accent colors do not change the five fixed mood colors, saved entries, or supplied sticker artwork.
 
+## Design style / 设计风格
+
+**Retro · Girlish · Y2K / 复古 · 少女感 · Y2K**
+
+Soft colors, warm paper surfaces, nostalgic personal electronics, and intimate journal details shape the app's visual direction. The music editor's circular controls and tactile click are examples. Theme colors accent controls and selections; neutral text keeps content readable in both light and dark appearances. Preserve the existing layout and supplied artwork, refining proportions and spacing as needed.
+
+柔和配色、温暖色纸、怀旧随身电子产品与私人手账细节共同构成视觉方向，歌曲弹窗的圆盘按键和机械咔嗒声是其中的例子。少女感不限定粉色，Y2K 元素适量使用；主题色用于控件与选中状态，正文保留清晰的中性色层级。延续现有布局与原始插画，优先打磨比例、间距和触感，同时兼顾浅色与深色外观。
+
 ## Screenshots
 
 September demo calendar with sample stickers and entries:
@@ -195,7 +203,7 @@ The editor shows only the selected paper color; tap to open a rotatable, snappin
 
 星期标题与日期网格共用手机日历的每周起始日；切换 App 语言只翻译星期名称，不改变排列顺序。
 
-歌曲弹窗的确认区采用复古随身听圆盘：MENU、切歌和播放符号仅作装饰，中心「确认」按钮负责保存，按下有下沉动画与轻触反馈；歌曲名为空时不可确认。
+歌曲弹窗的确认区采用复古随身听圆盘：MENU、切歌和播放符号仅作装饰，中心「确认」按钮负责保存，按下有下沉动画，确认时播放约 0.1 秒的轻塑料机械咔嗒声；遵循系统静音设置并与其他音乐混音，音频预加载和播放准备在后台队列进行。歌曲名为空时不可确认。
 
 ### Dark mode / 深色模式
 

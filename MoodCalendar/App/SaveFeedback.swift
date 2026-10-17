@@ -1,5 +1,32 @@
 import AVFoundation
 
+/// A short plastic-button click, with a quieter spring return.
+enum PlayerButtonFeedback {
+    private static let queue = DispatchQueue(label: "MoodCalendar.playerButtonAudio")
+    private static var player: AVAudioPlayer?
+
+    static func prepare() {
+        queue.async { preparePlayer() }
+    }
+
+    static func play() {
+        queue.async {
+            preparePlayer()
+            player?.currentTime = 0
+            player?.play()
+        }
+    }
+
+    private static func preparePlayer() {
+        guard player == nil, FeedbackAudioSession.prepare(),
+              let url = Bundle.main.url(forResource: "player-click", withExtension: "wav"),
+              let sound = try? AVAudioPlayer(contentsOf: url) else { return }
+        sound.volume = 0.35
+        sound.prepareToPlay()
+        player = sound
+    }
+}
+
 private enum FeedbackAudioSession {
     static func prepare() -> Bool {
         do {

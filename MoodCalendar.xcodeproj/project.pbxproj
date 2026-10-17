@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		AB17C1000000000000000001 /* player-click.wav in Resources */ = {isa = PBXBuildFile; fileRef = AB17C1000000000000000002 /* player-click.wav */; };
 		063D1D5D61FAE4C7C9BDDE12 /* MoodCalendar/Domain/MonthLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E4D6142AB9DB5CD211CAB4B /* MoodCalendar/Domain/MonthLayout.swift */; };
 		1562EBB728B9E65040A47063 /* MoodCalendar/App/MoodCalendarApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C0B7456F844A41B2530A42A /* MoodCalendar/App/MoodCalendarApp.swift */; };
 		222F0DBFFE5EB23DCD3FD16F /* MoodCalendar/Resources/Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5B04B2273026590A440D27C9 /* MoodCalendar/Resources/Assets.xcassets */; };
@@ -38,6 +39,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		AB17C1000000000000000002 /* player-click.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "MoodCalendar/Resources/Sounds/player-click.wav"; sourceTree = "<group>"; };
 		152329B8FA3DC8602E5E97F0 /* MoodCalendar/Persistence/EntryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Persistence/EntryStore.swift; sourceTree = "<group>"; };
 		1D9F4BD6307F721500C157D8 /* MoodCalendarDebug.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = MoodCalendarDebug.entitlements; path = MoodCalendar/MoodCalendarDebug.entitlements; sourceTree = "<group>"; };
 		26EE3BBB2D46F5FB94E3D3D6 /* MoodCalendar/App/DemoData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/App/DemoData.swift; sourceTree = "<group>"; };
@@ -76,6 +78,7 @@
 			children = (
 				1D9F4BD6307F721500C157D8 /* MoodCalendarDebug.entitlements */,
 				F071CA1E0000000000000004 /* MoodCalendar/Resources/Sounds/photo-flip.wav */,
+				AB17C1000000000000000002 /* player-click.wav */,
 				F071CA1E0000000000000002 /* MoodCalendar/Resources/Fonts */,
 				C8649DE90000000000000002 /* MoodCalendar/Resources/Localizable.xcstrings */,
 				C8649DE90000000000000004 /* MoodCalendar/Resources/InfoPlist.xcstrings */,
@@ -183,6 +186,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F071CA1E0000000000000003 /* MoodCalendar/Resources/Sounds/photo-flip.wav in Resources */,
+				AB17C1000000000000000001 /* player-click.wav in Resources */,
 				F071CA1E0000000000000001 /* MoodCalendar/Resources/Fonts in Resources */,
 				C8649DE90000000000000001 /* MoodCalendar/Resources/Localizable.xcstrings in Resources */,
 				C8649DE90000000000000003 /* MoodCalendar/Resources/InfoPlist.xcstrings in Resources */,

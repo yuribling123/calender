@@ -158,6 +158,18 @@ struct ThemePalette {
 }
 
 extension ThemePalette {
+    var playerScreenBackground: Color {
+        adaptive(light: accent.opacity(0.07), dark: rgb(32, 34, 31))
+    }
+
+    var playerScreenTopEdge: Color {
+        adaptive(light: rgb(201, 197, 191), dark: rgb(24, 26, 23))
+    }
+
+    var playerScreenBottomEdge: Color {
+        adaptive(light: rgb(243, 240, 235), dark: rgb(66, 69, 62))
+    }
+
     static func make(accent: Color, selectionFill: Color, softHighlight: Color,
                      strongAccent: Color, todayButtonFill: Color,
                      onSelection: Color = .primary) -> ThemePalette {

@@ -493,11 +493,12 @@ private struct SongEditorOverlay: View {
     private var player: some View {
         VStack(spacing: 0) {
             HStack {
-                Capsule()
-                    .fill(theme.palette.strongAccent.opacity(0.18))
-                    .frame(width: 34, height: 7)
-                    .overlay { Capsule().strokeBorder(theme.palette.resolved(for: colorScheme).background, lineWidth: 2) }
-                    .accessibilityHidden(true)
+                if hasSong {
+                    Button(localized("移除歌曲")) { onSave("", "") }
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .frame(minHeight: 44)
+                }
                 Spacer()
                 Button(action: onClose) {
                     Image(systemName: "xmark")
@@ -507,23 +508,25 @@ private struct SongEditorOverlay: View {
                 }
                 .accessibilityLabel(localized("取消"))
             }
-            .padding(.bottom, 10)
+            .padding(.bottom, 24)
 
-            VStack(spacing: 10) {
-                Text(isToday ? localized("今天在听") : localized("这一天在听"))
-                    .font(.caption)
-                    .foregroundStyle(theme.palette.strongAccent)
-                TextField(localized("歌曲名"), text: $title, axis: .vertical)
-                    .font(.title2.weight(.medium))
-                    .foregroundStyle(theme.palette.strongAccent)
+            VStack(spacing: 12) {
+                TextField(localized("歌曲名"), text: $title,
+                          prompt: Text(localized("歌曲名"))
+                            .foregroundColor(theme.palette.foreground.opacity(0.48)),
+                          axis: .vertical)
+                    .font(.system(size: 23, weight: .regular))
+                    .foregroundStyle(theme.palette.foreground)
                     .lineLimit(1...2)
                     .truncationMode(.tail)
                     .accessibilityLabel(localized("歌曲名"))
                     .focused($focusedField, equals: .title)
-                    .padding(.bottom, 10)
-                TextField(localized("歌手（选填）"), text: $artist)
-                    .font(.subheadline)
-                    .foregroundStyle(theme.palette.strongAccent.opacity(0.7))
+                    .padding(.bottom, 2)
+                TextField(localized("歌手（选填）"), text: $artist,
+                          prompt: Text(localized("歌手（选填）"))
+                            .foregroundColor(theme.palette.foreground.opacity(0.40)))
+                    .font(.system(size: 15))
+                    .foregroundStyle(.secondary)
                     .accessibilityLabel(localized("歌手（选填）"))
                     .focused($focusedField, equals: .artist)
                     .submitLabel(.done)
@@ -532,9 +535,28 @@ private struct SongEditorOverlay: View {
             .multilineTextAlignment(.center)
             .textInputAutocapitalization(.never)
             .padding(.horizontal, 18)
-            .frame(maxWidth: .infinity, minHeight: 190)
-            .background(colorScheme == .dark ? theme.palette.cardBackground : theme.palette.accent.opacity(0.07),
-                        in: RoundedRectangle(cornerRadius: 24))
+            .frame(maxWidth: .infinity, minHeight: 180)
+            .background {
+                RoundedRectangle(cornerRadius: 24)
+                    .fill(theme.palette.playerScreenBackground.shadow(
+                        .inner(color: .black.opacity(colorScheme == .dark ? 0.22 : 0.06),
+                               radius: 2, x: 0, y: 1)
+                    ))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 24)
+                            .strokeBorder(LinearGradient(
+                                colors: [theme.palette.playerScreenTopEdge, theme.palette.playerScreenBottomEdge],
+                                startPoint: .top, endPoint: .bottom
+                            ), lineWidth: 0.75)
+                    }
+            }
+            .overlay(alignment: .top) {
+                Text(isToday ? localized("今天在听") : localized("这一天在听"))
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(theme.palette.strongAccent)
+                    .padding(.top, 16)
+                    .allowsHitTesting(false)
+            }
 
             HStack(spacing: 22) {
                 speaker
@@ -542,13 +564,6 @@ private struct SongEditorOverlay: View {
                 speaker
             }
             .padding(.top, 24)
-            if hasSong {
-                Button(localized("移除歌曲")) { onSave("", "") }
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-                    .frame(minHeight: 44)
-                    .padding(.top, 24)
-            }
         }
         .foregroundStyle(.primary)
         .padding(.horizontal, 24)
@@ -596,7 +611,7 @@ private struct SongEditorOverlay: View {
             .allowsHitTesting(false)
 
             Button {
-                UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+                PlayerButtonFeedback.play()
                 onSave(title.trimmingCharacters(in: .whitespacesAndNewlines),
                        artist.trimmingCharacters(in: .whitespacesAndNewlines))
             } label: {
@@ -611,12 +626,13 @@ private struct SongEditorOverlay: View {
             .opacity(isTitleEmpty ? 0.45 : 1)
         }
         .frame(width: 120, height: 120)
+        .onAppear { PlayerButtonFeedback.prepare() }
     }
 
     private var speaker: some View {
         HStack(spacing: 4) {
             ForEach(0..<3) { _ in
-                Capsule().fill(theme.palette.strongAccent.opacity(0.16))
+                Capsule().fill(theme.palette.foreground.opacity(0.12))
                     .frame(width: 3, height: 15)
             }
         }
