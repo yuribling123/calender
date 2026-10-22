@@ -5,7 +5,7 @@ import SwiftData
 struct EntryStore {
     let context: ModelContext
 
-    func save(day: DayKey, choice: DailyChoice, note: String, isMember: Bool = false, photoData: Data? = nil, updatesPhoto: Bool = false, cardPaperID: String? = nil, updatesCardPaper: Bool = false, songTitle: String? = nil, songArtist: String? = nil, updatesSong: Bool = false) throws {
+    func save(day: DayKey, choice: DailyChoice, note: String, isMember: Bool = false, photoData: Data? = nil, updatesPhoto: Bool = false, cardPaperID: String? = nil, updatesCardPaper: Bool = false, songTitle: String? = nil, songArtist: String? = nil, updatesSong: Bool = false, watchTitle: String? = nil, watchKind: String? = nil, watchNote: String? = nil, updatesWatch: Bool = false) throws {
         let allowsPastDates = UserDefaults.standard.object(forKey: "allowPastDateEditing") as? Bool ?? true
         guard day.isEditable(allowPastDates: allowsPastDates) else {
             throw EntryStoreError.dateIsReadOnly
@@ -22,6 +22,9 @@ struct EntryStore {
         let matchingEntries = try context.fetch(descriptor)
         let title = songTitle?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         let artist = songArtist?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        let watched = watchTitle?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        let watchDetail = watchNote?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        let kind = ["movie", "series"].contains(watchKind ?? "") ? watchKind : nil
         if let existing = matchingEntries.max(by: { $0.updatedAt < $1.updatedAt }) {
             existing.moodValue = choice.rawValue
             existing.note = note.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -30,6 +33,11 @@ struct EntryStore {
             if updatesSong {
                 existing.songTitle = title.isEmpty ? nil : title
                 existing.songArtist = title.isEmpty || artist.isEmpty ? nil : artist
+            }
+            if updatesWatch {
+                existing.watchTitle = watched.isEmpty ? nil : watched
+                existing.watchKind = watched.isEmpty ? nil : kind
+                existing.watchNote = watched.isEmpty || watchDetail.isEmpty ? nil : watchDetail
             }
             existing.updatedAt = .now
             matchingEntries.filter { $0.id != existing.id }.forEach(context.delete)
@@ -42,9 +50,31 @@ struct EntryStore {
                 created.songTitle = title.isEmpty ? nil : title
                 created.songArtist = title.isEmpty || artist.isEmpty ? nil : artist
             }
+            if updatesWatch {
+                created.watchTitle = watched.isEmpty ? nil : watched
+                created.watchKind = watched.isEmpty ? nil : kind
+                created.watchNote = watched.isEmpty || watchDetail.isEmpty ? nil : watchDetail
+            }
             context.insert(created)
         }
         try context.save()
+    }
+
+    func delete(day: DayKey) throws {
+        let allowsPastDates = UserDefaults.standard.object(forKey: "allowPastDateEditing") as? Bool ?? true
+        guard day.isEditable(allowPastDates: allowsPastDates) else {
+            throw EntryStoreError.dateIsReadOnly
+        }
+        let key = day.storageValue
+        let descriptor = FetchDescriptor<MoodEntry>(predicate: #Predicate { $0.dayKey == key })
+        let entries = try context.fetch(descriptor)
+        entries.forEach(context.delete)
+        do {
+            try context.save()
+        } catch {
+            context.rollback()
+            throw error
+        }
     }
 
     func reconcileDuplicates() throws {

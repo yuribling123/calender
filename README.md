@@ -12,6 +12,12 @@ Soft colors, warm paper surfaces, nostalgic personal electronics, and intimate j
 
 柔和配色、温暖色纸、怀旧随身电子产品与私人手账细节共同构成视觉方向，歌曲弹窗的圆盘按键和机械咔嗒声是其中的例子。少女感不限定粉色，Y2K 元素适量使用；主题色用于控件与选中状态，正文保留清晰的中性色层级。延续现有布局与原始插画，优先打磨比例、间距和触感，同时兼顾浅色与深色外观。
 
+## Find a memory / 找一找
+
+The calendar’s magnifying glass opens “Find a memory” in a compact portrait notebook overlay. Its neutral body, gray details, and very faint current-theme tint follow the music player's palette. Plain paper, silver inner rings, and a fine ribbon form the notebook; results scroll within its fixed bounds. Results are grouped by month on stamp-edged stickers, with a small date stamp and the original artwork before each one-line preview; long previews truncate with an ellipsis. Saved paper colors appear on the daily result stickers only; original or older records without a saved paper color follow the existing theme behavior. Monthly notes use a neutral sticker. Search only written daily notes and monthly notes; songs, artists, sticker names, and the calendar title are not searched, and there is no image-based sticker filter. An empty query shows only records with written text and a collected-days count; entering a keyword shows the matching-memory count. Each day appears once, newest first, with matching words highlighted. Selecting a result first dismisses the keyboard and waits for it to finish hiding. Daily results then open the exact calendar day; monthly notes open their month. Returning restores the notebook's search text and scroll position. Search works across saved history regardless of past-day editing permission. The body, paper, metal details, and saved paper colors adapt to light and dark appearances.
+
+日历右上角的放大镜打开一本竖向、尺寸有边界的「找一找」手账弹窗。机身沿用随身听的中性色、灰色和极淡当前主题色；纸页保持简单，左侧用银色金属内扣与细丝带形成装订细节，结果在本子内部滚动。记录按月份分组，每条像一枚带邮票齿边的贴纸，轻巧日期戳和原有表情放在一行留言前，留言超长显示省略号。只有每日结果贴纸使用实际保存的色纸颜色；原色纸及未保存色纸颜色的旧记录沿用现有主题色规则，月便签使用中性贴纸。只搜索每日留言与月便签里写下的文字，不搜索歌曲、歌手、表情名称或日历标题，也不提供点选表情图片筛选。未输入关键词时，只展示写过文字的记录，右侧显示「共收藏了 x 个日子」；输入关键词后显示「找到 x 条回忆」。同一天只出现一条结果，按日期从近到远排列并轻标命中词。点击结果后先等待键盘完全收起，再打开每日记录对应那天或月便签对应月份；返回手账时保留关键词和浏览位置。可查找全部已保存历史，不受往日编辑权限影响，机身、纸页、金属细节和色纸均适配浅色与深色。
+
 ## Screenshots
 
 September demo calendar with sample stickers and entries:
@@ -114,7 +120,7 @@ Calendar days are stored as the local year, month, and day when the entry is cre
 - 「我的」可导出或导入「今日份.zip」，恢复每日记录、月便签和照片。导入前会预览新增数量；同日或同月已有内容会保留，不恢复会员资格。
 - 「我的」可开启 iCloud 同步。启用后需完全退出并重新打开 App；CloudKit 会在用户登录 iCloud 且同步可用时自动同步本地每日记录和月便签。关闭开关只停止后续同步，不会删除云端已有副本。开发者需在 Apple Developer 账号中为 `com.qingqing.MoodCalendar` 配置 `iCloud.com.qingqing.MoodCalendar` CloudKit 容器。
 - Debug 构建提供“预览已登录、未开启”和“预览已开启”入口，只用于查看界面，不会开启 CloudKit 同步或更改实际同步设置。
-- 首次打开时，App 先请求通知权限，用户选择后再显示首次使用说明，并为尚未记录的日期安排每日提醒。「我的」中可关闭或重新开启提醒；关闭会撤销尚未发送的提醒。系统通知被拒绝时，「我的」会提供打开 iPhone 设置的入口。Debug 演示模式也可测试提醒开关和通知。
+- 首次打开时，App 先请求通知权限，用户选择后再显示首次使用说明，并为尚未记录的日期安排当地时间每天下午 2 点的提醒。「我的」中可关闭或重新开启提醒；关闭会撤销尚未发送的提醒。系统通知被拒绝时，「我的」会提供打开 iPhone 设置的入口。Debug 演示模式也可测试提醒开关和通知。
 - 「我的」提供一次性永久解锁：免费状态可使用樱粉和黑色主题、圆形与星星选中图形、「心情」「日常」和「陪伴」三组表情；日历标题及其余表情组、主题色和选中图形需购买解锁。购买通过 StoreKit 2 校验，并支持恢复购买。App Store Connect 需创建非消耗型商品 `com.qingqing.MoodCalendar.premium.lifetime` 并在后台配置价格；未配置商品前，购买按钮不可用。
 
 ## 运行
@@ -185,9 +191,9 @@ Chinese, Japanese and Korean month headings bundle Ma Shan Zheng, Yomogi and Nan
 
 ### Card paper preview / 色纸预览
 
-Today’s editor offers eight coordinated, opaque paper colors with light and dark variants with an immediate preview on the note card; theme accents remain unchanged. Records without a paper choice initially select the current theme color in the editor. The choice is saved with the daily record and shown on its calendar detail card. Existing records without a color follow the current theme; past records follow the past-day editing preference. ZIP export/import includes the optional paper color; older backups without it follow the current theme.
+Today’s editor offers eight coordinated, opaque paper colors with light and dark variants with an immediate preview on the note card; theme accents remain unchanged. New records and today’s unrecorded mood prompt use the last manually selected paper, falling back to the current theme color if none has been selected. The choice is saved with the daily record and shown on its calendar detail card. Existing records without a color follow the current theme; past records follow the past-day editing preference. ZIP export/import includes the optional paper color; older backups without it follow the current theme.
 
-当天编辑页可选择八种统一纸感的色纸（提供浅色与深色配色，主题强调色保持不变），没有单独选过色纸时默认选中当前主题对应色，文字卡片即时预览；保存后，日历详情卡片沿用当天的色纸。旧记录未选色时跟随当前主题，过去记录是否可修改由「允许修改往日」控制。ZIP 导出、导入包含可选色纸字段，旧备份缺少该字段时跟随当前主题。
+当天编辑页可选择八种统一纸感的色纸（提供浅色与深色配色，主题强调色保持不变），新记录自动沿用上次手动选择的色纸（即使退出编辑也会记住），今天尚未记录时的「今天什么心情？」详情面板也沿用该色纸。尚未选择过时默认选中当前主题对应色，已有记录保持自己的色纸，文字卡片即时预览；保存后，日历详情卡片沿用当天的色纸。旧记录未选色时跟随当前主题，过去记录是否可修改由「允许修改往日」控制。ZIP 导出、导入包含可选色纸字段，旧备份缺少该字段时跟随当前主题。
 
 ### Listening memory preview / 今天在听预览
 
@@ -203,7 +209,7 @@ The editor shows only the selected paper color; tap to open a rotatable, snappin
 
 星期标题与日期网格共用手机日历的每周起始日；切换 App 语言只翻译星期名称，不改变排列顺序。
 
-歌曲弹窗的机身将当前主题色融入不透明底色：浅色为暖白底混入 4% 主题色，深色为暖深灰底混入 6% 主题色。显示屏独立使用不透明配色（浅色为偏白暖白 #FFFEFC，深色为炭灰），避免机身颜色透入。
+歌曲随身听与小电视使用配套的强调色外壳：浅色直接采用主题强调色（accent），深色为暖深灰底混入 45% 主题强调色。曜黑主题单独使用黑色外壳（浅色 #262628，深色 #161618），机身上的文字与扬声器改用浅色以保持清晰。显示屏独立使用不透明配色（浅色为偏白暖白 #FFFEFC，深色为炭灰），避免机身颜色透入；按键保留浅色或深色中性材质。小电视的「移除影视记录」位于屏幕内左上角，与居中的片名输入保留间距。
 
 歌曲弹窗的确认区采用复古随身听圆盘：MENU、切歌和播放符号仅作装饰，中心「确认」按钮负责保存，按下有下沉动画，确认时播放约 0.1 秒的轻塑料机械咔嗒声；遵循系统静音设置并与其他音乐混音，音频预加载和播放准备在后台队列进行。歌曲名为空时不可确认。
 
@@ -230,3 +236,23 @@ The monthly-note ＋ opens a cream date-stamp object over the dimmed page, witho
 For monthly notes, “Allow editing past days” only shows or hides historical inline edit buttons. The ＋ date stamp always supports past/current monthly notes. Future months remain blocked in both selection and persistence. Daily-entry permissions are unchanged.
 
 日历详情中的歌曲记录保持单行：长歌名优先占用可用空白，将播放装饰图标推至 NOW PLAYING 左侧，空间用尽后再尾部省略；图标与 NOW PLAYING 保持完整。
+
+月便签内容区支持按月份选择月便签样式：素笺（默认无装饰）、方格手账、奶白蕾丝（纱布纹、花边与布带纽扣）、电影票根（暖白票纸、左右齿孔、竖向撕线、编号与右侧「留作纪念」副券，预览及一、两行正文与格子、裙边采用相同高度，长正文随内容增高）、奶茶桌布（燕麦白底、浅卡其宽格与细缝线布边）、播放器（独立配色的银灰随身听：中性银灰半哑光面板、无内框的正文区域、右上角淡圆弧压纹及自绘印刷符号，深色使用中性暗灰及浅色文字、底部采用上方细进度条、下方居中的随机／上一首／圆形暂停／下一首／歌曲列表两层结构；预览与实际共用布局，正文采用与奶茶等皮肤相同的最小高度与总附加高度，一、两行同高，长文自然增高，位于电影票之前）。电影票根保留原有 ticket 标识，播放器使用独立 player 标识，已有电影票选择保持不变。本月调色盘位于月份缩写与「本月」一行的右侧，往月仅在已有非空月便签且允许修改往日时显示月份标题右侧的调色盘；只有状态摘要的月份隐藏调色盘，补上月便签后自动显示；关闭「允许修改往日」时隐藏所有往月调色盘，并禁止继续应用往月便签样式选择。复古屏幕暂时停用，代码以注释保留供参考。点击调色盘选择；月便签样式只包住月便签正文，不包含月份标题、时间线及「那个月记下了／出现最多的是」月度摘要；选择面板仅展示空白便签样式，素笺预览带细边框；此前选择花边便签或透明收纳袋的月份会回退为素笺。选择按月份保存在 SwiftData 中，开启 iCloud 后随记录同步，并通过 ZIP 备份内 data.json 的 monthlyNoteSkins 字段导出、导入（包括尚未写便签的月份）；旧备份缺少该字段时不改动本机皮肤，未知皮肤回退为素笺。导入保留已有月份内容与已有皮肤选择，不恢复会员资格。素笺与方格免费，半杯奶茶、裙边私语、电影票、播放器为会员皮肤；未解锁时保留已存的皮肤编号，显示素笺，点击会员皮肤打开会员页。样式选择作为独立记录同步，即使该月份尚未写便签也会保留；切回素笺同样同步。已有本机 monthlyNoteSkins.v1 选择在启动时迁移，成功保存后移除旧偏好，保留已有记录并优先采用较新的同步选择。新增模型使用有默认值的字段，通过 SwiftData 轻量迁移扩展现有库；无需清空记录。发布前需在 CloudKit 容器中部署新增 MonthlyNoteSkinSelection 记录类型。Debug 演示模式仍使用独立的内存库，不读取或迁移正式偏好。
+
+Monthly note styles are stored as per-month SwiftData records in the existing CloudKit container, including months without note text and explicit resets to plain. On upgrade, legacy local selections migrate after a successful save without replacing existing choices; dated user changes take precedence over legacy selections. The additive model uses defaulted fields for lightweight migration. Deploy the new MonthlyNoteSkinSelection CloudKit record type before distribution. Demo selections remain in the isolated in-memory store.
+
+Run `zsh Tests/run-monthly-note-skin-checks.sh` with full Xcode to check additive store migration, existing-record preservation, legacy style migration, per-month updates and duplicate resolution, plain resets, past/future date restrictions, membership gating, backup merge and isolated in-memory storage. The check reopens an on-disk store in a separate process. Cross-device CloudKit delivery still needs a signed build and two iCloud-connected devices. See [Apple’s SwiftData sync requirements](https://developer.apple.com/documentation/swiftdata/syncing-model-data-across-a-persons-devices).
+
+备份导出会按日期、月份保留更新时间最新的整条记录，避免同步产生的临时重复记录造成同名照片重复打包。导入兼容旧版重复记录备份：校验所有记录后按更新时间合并；同名 ZIP 成员仅在逐项 CRC 校验通过且内容完全一致时接受，不一致仍拒绝。导入不会覆盖本机已有日期或月份。运行 `zsh Tests/run-data-backup-checks.sh` 检查重复记录恢复、最新记录选择、导出往返、照片一致性及损坏文件拒绝。
+
+编辑页的附件入口统一为「记歌」「记影视」「留照片」，影视入口使用圆角小电视图标。随身听屏幕两侧各内收 12 点，机身与圆盘尺寸不变。弹窗是一台复古小电视，左侧为片名屏幕，右上两颗圆形实体按钮分别用于记下／保存和取消，右下为横向扬声器格栅；沿用随身听的主题机身、内凹屏幕和实体按压效果。只输入片名，不区分电影与电视剧，不提供感受或集数输入。支持取消、保存、移除并在当天详情展示，空白片名不可确认。窄屏或键盘出现时可滚动，支持浅色、深色与无障碍标签。影视信息随每日记录保存在本地，遵循日期编辑权限；ZIP 导出与导入保留这些信息，旧记录与旧备份缺少这些可选字段时不显示影视内容。保留此前可选字段以兼容已有数据，旧记录的附加文字不丢弃。
+
+影视记录的片名及兼容字段属于现有 MoodEntry 模型，开启 iCloud 后走同一 SwiftData/CloudKit 容器。ZIP 与可读文本导出包含影视记录；旧备份缺少字段时按空值读取，重复导入保留本机已有记录。`zsh Tests/run-data-backup-checks.sh` 覆盖影视字段往返、仅片名导入、实际磁盘恢复后重开、重复导入不覆盖本机片名。发布前需确认 CloudKit Production 中 MoodEntry 对应的新增字段已部署，并用同一 iCloud 账号的两台真机检查新增、修改与移除片名同步；本地备份检查不代表云端投递已实测。
+
+- 选择表情页面底部右侧提供「删除」，确认后删除该日的表情、文字、照片、歌曲和影视记录。仅已有记录且日期允许编辑时显示，持久化层同样校验日期权限；删除不影响月便签。
+
+使用 `zsh Tests/run-entry-deletion-checks.sh` 检查删除权限、闰日与跨月隔离、同日更新与重复记录清理，以及重新打开后的删除结果。
+
+删除后的新备份不包含该日记录和照片；手动导入包含该日的旧备份会恢复该日记录，仍遵循同日已有内容不覆盖的规则。`zsh Tests/run-data-backup-checks.sh` 包含此导出、导入回归检查。
+
+播放器2为独立月便签会员皮肤：黑色圆润机身、白色正文与爱心／上一首／播放／下一首／加号装饰，不提供真实播放功能；保留原播放器，支持按月份保存与备份。

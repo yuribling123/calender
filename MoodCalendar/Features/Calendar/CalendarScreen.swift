@@ -4,6 +4,8 @@ import UIKit
 
 struct CalendarScreen: View {
     @Binding var requestedMonth: Date?
+    var initialDate: Date? = nil
+    var isSearchDestination = false
     @Environment(\.modelContext) private var modelContext
     @Environment(\.appTheme) private var theme
     @Environment(\.colorScheme) private var colorScheme
@@ -30,6 +32,14 @@ struct CalendarScreen: View {
     @State private var pendingRevealDayKey: String?
     @State private var animatedDayKey: String?
     @State private var saveError: String?
+    @State private var searchPath: [SearchRoute] = []
+    @State private var isSearchPresented = false
+    @State private var didOpenInitialDate = false
+
+    private enum SearchRoute: Hashable {
+        case day(Date)
+        case month(Date)
+    }
 
     private var calendar: Calendar { .autoupdatingCurrent }
 
@@ -49,7 +59,51 @@ struct CalendarScreen: View {
     }
 
     var body: some View {
-        NavigationStack {
+        if isSearchDestination {
+            calendarContent
+        } else {
+            NavigationStack(path: $searchPath) {
+                calendarContent
+                    .navigationDestination(for: SearchRoute.self) { route in
+                        switch route {
+                        case .day(let date):
+                            CalendarScreen(requestedMonth: .constant(nil), initialDate: date, isSearchDestination: true)
+                        case .month(let date):
+                            MonthlyGoalScreen(
+                                onOpenMonth: { date in
+                                    if !searchPath.isEmpty { searchPath.removeLast() }
+                                    searchPath.append(.day(date))
+                                },
+                                initialMonth: date,
+                                isSearchDestination: true
+                            )
+                        }
+                    }
+            }
+            .allowsHitTesting(!isSearchPresented || !searchPath.isEmpty)
+            .accessibilityHidden(isSearchPresented && searchPath.isEmpty)
+            .overlay {
+                if isSearchPresented {
+                    // Keep the notebook mounted while a result is open so returning
+                    // restores both the search text and its place on the page.
+                    RecordSearchScreen(onClose: { isSearchPresented = false }) { result in
+                        searchPath.append(result.source == .day ? .day(result.date) : .month(result.date))
+                    }
+                    .opacity(searchPath.isEmpty ? 1 : 0)
+                    .allowsHitTesting(searchPath.isEmpty)
+                    .accessibilityHidden(!searchPath.isEmpty)
+                }
+            }
+            .toolbar(isSearchPresented ? .hidden : .visible, for: .tabBar)
+        }
+    }
+
+    private var calendarContent: some View {
+        VStack(spacing: 0) {
+            if isSearchDestination {
+                SearchReturnButton()
+                    .padding(.horizontal, 24)
+            }
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
                     intro
@@ -98,77 +152,82 @@ struct CalendarScreen: View {
                 }
                 .padding(24)
             }
-            .scrollDisabled(isHorizontalMonthSwipe)
-            .background(theme.palette.resolved(for: colorScheme).background)
-            .toolbar(.hidden, for: .navigationBar)
-            .onChange(of: entries.map { "\($0.id.uuidString)-\($0.updatedAt.timeIntervalSince1970)" }) { _, _ in
-                try? EntryStore(context: modelContext).reconcileDuplicates()
-            }
-            .task {
+        }
+        .scrollDisabled(isHorizontalMonthSwipe)
+        .background(theme.palette.resolved(for: colorScheme).background)
+        .toolbar(.hidden, for: .navigationBar)
+        .onChange(of: entries.map { "\($0.id.uuidString)-\($0.updatedAt.timeIntervalSince1970)" }) { _, _ in
+            try? EntryStore(context: modelContext).reconcileDuplicates()
+        }
+        .task {
+            await DailyFragmentReminder.refresh(
+                recordedDayKeys: recordedDayKeys,
+                isEnabled: isDailyReminderEnabled,
+                mayRequestAuthorization: false
+            )
+        }
+        .onChange(of: recordedDayKeys.sorted()) { _, _ in
+            Task {
                 await DailyFragmentReminder.refresh(
                     recordedDayKeys: recordedDayKeys,
                     isEnabled: isDailyReminderEnabled,
-                    mayRequestAuthorization: false
+                mayRequestAuthorization: false
                 )
             }
-            .onChange(of: recordedDayKeys.sorted()) { _, _ in
-                Task {
-                    await DailyFragmentReminder.refresh(
-                        recordedDayKeys: recordedDayKeys,
-                        isEnabled: isDailyReminderEnabled,
-                    mayRequestAuthorization: false
-                    )
-                }
+        }
+        .onAppear {
+            refreshSelectedDayIfNeeded()
+            if !didOpenInitialDate, let date = initialDate {
+                displayedMonth = MonthLayout(containing: date, calendar: calendar).monthStart
+                selectedDay = calendar.startOfDay(for: date)
+                didOpenInitialDate = true
             }
-            .onAppear {
-                refreshSelectedDayIfNeeded()
-                openRequestedMonth()
-                scheduleMidnightCheck()
-            }
-            .onChange(of: requestedMonth) { _, _ in
-                openRequestedMonth()
-            }
-            .onDisappear {
+            openRequestedMonth()
+            scheduleMidnightCheck()
+        }
+        .onChange(of: requestedMonth) { _, _ in
+            openRequestedMonth()
+        }
+        .onDisappear {
+            midnightTimer?.invalidate()
+            midnightTimer = nil
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            guard newPhase == .active else {
                 midnightTimer?.invalidate()
                 midnightTimer = nil
+                return
             }
-            .onChange(of: scenePhase) { _, newPhase in
-                guard newPhase == .active else {
-                    midnightTimer?.invalidate()
-                    midnightTimer = nil
-                    return
-                }
-                refreshSelectedDayIfNeeded()
-                scheduleMidnightCheck()
-                Task {
-                    await DailyFragmentReminder.refresh(
-                        recordedDayKeys: recordedDayKeys,
-                        isEnabled: isDailyReminderEnabled,
-                    mayRequestAuthorization: false
-                    )
-                }
-            }
-            .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in
-                guard scenePhase == .active else { return }
-                refreshSelectedDayIfNeeded()
-                scheduleMidnightCheck()
-            }
-            .sheet(isPresented: $isEditorPresented, onDismiss: handleEditorDismissed) {
-                EntryEditorScreen(
-                    day: selectedDay,
-                    entry: selectedEntry,
-                    initialGroup: editorInitialGroup,
-                    onSaved: handleEditorSaved
+            refreshSelectedDayIfNeeded()
+            scheduleMidnightCheck()
+            Task {
+                await DailyFragmentReminder.refresh(
+                    recordedDayKeys: recordedDayKeys,
+                    isEnabled: isDailyReminderEnabled,
+                mayRequestAuthorization: false
                 )
             }
-            .alert(localized("保存失败"), isPresented: Binding(
-                get: { saveError != nil },
-                set: { if !$0 { saveError = nil } }
-            )) {
-                Button(localized("确定"), role: .cancel) { saveError = nil }
-            } message: {
-                Text(saveError ?? localized("请稍后再试。"))
-            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in
+            guard scenePhase == .active else { return }
+            refreshSelectedDayIfNeeded()
+            scheduleMidnightCheck()
+        }
+        .sheet(isPresented: $isEditorPresented, onDismiss: handleEditorDismissed) {
+            EntryEditorScreen(
+                day: selectedDay,
+                entry: selectedEntry,
+                initialGroup: editorInitialGroup,
+                onSaved: handleEditorSaved
+            )
+        }
+        .alert(localized("保存失败"), isPresented: Binding(
+            get: { saveError != nil },
+            set: { if !$0 { saveError = nil } }
+        )) {
+            Button(localized("确定"), role: .cancel) { saveError = nil }
+        } message: {
+            Text(saveError ?? localized("请稍后再试。"))
         }
     }
 
@@ -196,15 +255,26 @@ struct CalendarScreen: View {
                     isChoosingMonth.toggle()
                 } label: {
                     HStack(spacing: 5) {
-                        yearLabel(calendar.component(.year, from: displayedMonth), size: 13)
+                        yearLabel(calendar.component(.year, from: displayedMonth), size: 14)
                     }
-                    .font(.system(size: 13, weight: .regular))
+                    .font(.system(size: 14, weight: .regular))
                     .foregroundStyle(Color.gray)
                     .frame(minHeight: 44, alignment: .leading)
                 }
                 .accessibilityLabel(localized("选择月份"))
                 }
                 Spacer()
+
+                if !isSearchDestination {
+                    Button { isSearchPresented = true } label: {
+                        Image(systemName: "magnifyingglass")
+                            .font(.system(size: 18, weight: .regular))
+                            .foregroundStyle(theme.palette.strongAccent)
+                            .frame(width: 44, height: 44)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(localized("搜索记录"))
+                }
 
                 if !isChoosingMonth && !isDisplayingCurrentMonth {
                     todayButton
@@ -411,7 +481,7 @@ struct CalendarScreen: View {
             HStack {
                 Button { moveMonth(-1) } label: {
                     Image(systemName: "chevron.left")
-                        .foregroundStyle(theme.palette.strongAccent.opacity(0.7))
+                        .foregroundStyle(.secondary)
                         .frame(width: 44, height: 44)
                 }
                 .accessibilityLabel(localized("上个月"))
@@ -423,7 +493,7 @@ struct CalendarScreen: View {
 
                 Button { moveMonth(1) } label: {
                     Image(systemName: "chevron.right")
-                        .foregroundStyle(theme.palette.strongAccent.opacity(0.7))
+                        .foregroundStyle(.secondary)
                         .frame(width: 44, height: 44)
                 }
                 .accessibilityLabel(localized("下个月"))
@@ -436,7 +506,7 @@ struct CalendarScreen: View {
                 HStack(alignment: .firstTextBaseline, spacing: 10) {
                     Text(monthTitle(calendar.component(.month, from: displayedMonth)))
                         // .font(monthHandwritingFont)
-                        .font(.system(size: 23, weight: .medium))
+                        .font(.system(size: 21, weight: .medium))
                         .foregroundStyle(theme.palette.resolved(for: colorScheme).foreground)
 
                 }

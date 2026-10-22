@@ -12,6 +12,10 @@ final class MoodEntry {
     var cardPaperID: String? = nil
     var songTitle: String? = nil
     var songArtist: String? = nil
+    // Optional additions allow existing stores to migrate without replacing records.
+    var watchTitle: String? = nil
+    var watchKind: String? = nil
+    var watchNote: String? = nil
     var updatedAt: Date = Date(timeIntervalSince1970: 0)
 
     init(dayKey: String, choice: DailyChoice, note: String) {

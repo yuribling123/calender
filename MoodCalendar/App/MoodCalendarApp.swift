@@ -28,7 +28,7 @@ struct MoodCalendarApp: App {
     }
 
     private let container: ModelContainer = {
-        let schema = Schema([MoodEntry.self, MonthlyNote.self])
+        let schema = Schema([MoodEntry.self, MonthlyNote.self, MonthlyNoteSkinSelection.self])
         #if ICLOUD_SYNC_ENABLED
         let cloudSyncWasRequested = !DemoData.isEnabled
             && UserDefaults.standard.bool(forKey: "icloudSyncEnabled")
@@ -109,9 +109,9 @@ struct MoodCalendarApp: App {
                     }
                 } message: {
                     Text([
-                        localized("用手指在日历上左右滑动，切换月份"),
-                        localized("点顶部年份，可切换年份"),
-                        localized("点日历中今天的日期，记录今日份")
+                        "Ⅰ　" + localized("用手指在日历上左右滑动，切换月份"),
+                        "Ⅱ　" + localized("点顶部年份，可切换年份"),
+                        "Ⅲ　" + localized("点日历中今天的日期，记录今日份")
                     ].joined(separator: "\n\n"))
                 }
                 .alert(localized("未能开启 iCloud 同步"), isPresented: $isICloudFailurePending) {
@@ -154,5 +154,7 @@ struct MoodCalendarApp: App {
         try MonthlyNoteStore(context: context).migrateLegacyNotes()
         try EntryStore(context: context).reconcileDuplicates()
         try MonthlyNoteStore(context: context).reconcileDuplicates()
+        try MonthlyNoteSkinStore(context: context).migrateLegacySelections()
+        try MonthlyNoteSkinStore(context: context).reconcileDuplicates()
     }
 }

@@ -23,11 +23,11 @@ enum AppLanguage {
     static var locale: Locale { Locale(identifier: selection) }
     static func name(_ code: String) -> String {
         switch code {
-        case "zh-Hans": "简体中文"
-        case "en": "English"
-        case "ja": "日本語"
-        case "ko": "한국어"
-        default: "English"
+        case "zh-Hans": localized("简体中文")
+        case "en": localized("英语")
+        case "ja": localized("日语")
+        case "ko": localized("韩语")
+        default: localized("英语")
         }
     }
 }

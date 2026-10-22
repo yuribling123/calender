@@ -7,7 +7,6 @@ struct DayCell: View {
 
     let date: Date
     let choice: DailyChoice?
-    let hasNote: Bool
     let isToday: Bool
     let isSelected: Bool
     let isFuture: Bool
@@ -52,7 +51,7 @@ struct DayCell: View {
                         }
                     }
 
-                // 图标 + Note 标记
+                // 图标
                 VStack(spacing: 2) {
                     
                     // 图标
@@ -83,31 +82,17 @@ struct DayCell: View {
                         }
                     }
                     .frame(height: 26)
-
-
-                    // 有 Note 时显示两条横线
-                    VStack(alignment: .leading, spacing: 2) {
-                        Capsule()
-                            .frame(width: 12, height: 1.5)
-
-                        Capsule()
-                            .frame(width: 8, height: 1.5)
-                    }
-                    .foregroundStyle(Color.gray.opacity(0.7))
-                    .opacity(hasNote ? 1 : 0)
-                    .frame(height: 8)
-                    .accessibilityHidden(true)
                 }
-                .padding(.top, 2)
+                .padding(.top, 6)
+                .padding(.bottom, 4)
             }
-            .padding(.top, 8)
             .frame(
                 width: geometry.size.width,
-                height: 74,
-                alignment: .top
+                height: 72,
+                alignment: .center
             )
         }
-        .frame(height: 74)
+        .frame(height: 72)
         .onAppear {
             if isRevealPending { prepareReveal() }
         }

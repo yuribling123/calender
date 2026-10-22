@@ -1,19 +1,31 @@
 import SwiftUI
 import SwiftData
+import UIKit
 
 struct MonthlyGoalScreen: View {
     let onOpenMonth: (Date) -> Void
+    var initialMonth: Date? = nil
+    var isSearchDestination = false
     @Environment(\.modelContext) private var modelContext
     @Environment(\.appTheme) private var theme
     @Environment(\.colorScheme) private var colorScheme
     @Query private var entries: [MoodEntry]
     @Query private var monthlyNotes: [MonthlyNote]
+    @EnvironmentObject private var membership: MembershipStore
+    @Query private var monthlySkins: [MonthlyNoteSkinSelection]
+    @State private var skinMonth: Date?
     @State private var draftNoteText = ""
     @AppStorage("allowPastDateEditing") private var allowPastDateEditing = true
     @State private var editingMonth: Date?
     @FocusState private var isNoteFocused: Bool
     @State private var saveError: String?
     @State private var isAddingNote = false
+    @State private var didScrollToInitialMonth = false
+
+    @ScaledMetric(relativeTo: .body) private var noteFontSize: CGFloat = 14
+    private var noteLineSpacing: CGFloat {
+        max(0, noteFontSize * 1.7 - UIFont.systemFont(ofSize: noteFontSize).lineHeight)
+    }
 
     private let noteCharacterLimit = 100
     private let noteVerticalSpacing: CGFloat = 32
@@ -28,58 +40,87 @@ struct MonthlyGoalScreen: View {
     }
 
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 0) {
-                    HStack {
-                        Text(localized("月便签"))
-                            .font(.system(size: 23, weight: .medium))
-                            .foregroundStyle(theme.palette.foreground)
-                        Spacer()
-                        Button { isAddingNote = true } label: {
-                            Image(systemName: "plus")
-                                .font(.system(size: 19, weight: .regular))
-                                .foregroundStyle(theme.palette.strongAccent)
-                                .frame(width: 44, height: 44)
-                        }
-                        .buttonStyle(.plain)
-                        .accessibilityLabel(localized("添加月便签"))
-                    }
-                    .padding(.top, 4)
-                    .padding(.bottom, 20)
+        if isSearchDestination {
+            monthlyContent
+        } else {
+            NavigationStack { monthlyContent }
+        }
+    }
 
-                    LazyVStack(alignment: .leading, spacing: 0) {
-                        ForEach(Array(visibleMonthDates.enumerated()), id: \.element) { index, date in
-                            if index == 1 { historyDivider }
-                            if index > 0 && calendar.component(.year, from: date) != calendar.component(.year, from: visibleMonthDates[index - 1]) {
-                                yearHeader(for: date)
-                            }
-                            monthSection(
-                                for: date,
-                                isFirstHistoricalMonth: index == 1,
-                                isLastHistoricalMonth: index == visibleMonthDates.count - 1
-                            )
-                        }
-
-                        if visibleMonthDates.count == 1 {
-                            historyDivider
-                            historyEmptyState
-                        }
-                    }
-                    .padding(.bottom, 120)
+    private var monthlyContent: some View {
+        ScrollViewReader { proxy in
+            VStack(spacing: 0) {
+                if isSearchDestination {
+                    SearchReturnButton()
+                        .padding(.horizontal, 24)
                 }
-                .padding(24)
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 0) {
+                        HStack {
+                            Text(localized("月便签"))
+                                .font(.system(size: 23, weight: .medium))
+                                .foregroundStyle(theme.palette.foreground)
+                            Spacer()
+                            Button { isAddingNote = true } label: {
+                                Image(systemName: "plus")
+                                    .font(.system(size: 19, weight: .regular))
+                                    .foregroundStyle(theme.palette.strongAccent)
+                                    .frame(width: 44, height: 44)
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityLabel(localized("添加月便签"))
+                        }
+                        .padding(.top, 4)
+                        .padding(.bottom, 20)
+
+                        LazyVStack(alignment: .leading, spacing: 0) {
+                            ForEach(Array(visibleMonthDates.enumerated()), id: \.element) { index, date in
+                                if index == 1 { historyDivider }
+                                if index > 0 && calendar.component(.year, from: date) != calendar.component(.year, from: visibleMonthDates[index - 1]) {
+                                    yearHeader(for: date)
+                                }
+                                monthSection(
+                                    for: date,
+                                    isFirstHistoricalMonth: index == 1,
+                                    isLastHistoricalMonth: index == visibleMonthDates.count - 1
+                                )
+                                .id(monthKey(for: date))
+                            }
+
+                            if visibleMonthDates.count == 1 {
+                                historyDivider
+                                historyEmptyState
+                            }
+                        }
+                        .padding(.bottom, 120)
+                    }
+                    .padding(24)
+                }
             }
             .background(theme.palette.resolved(for: colorScheme).background)
             .toolbar(.hidden, for: .navigationBar)
+            .task {
+                guard !didScrollToInitialMonth, let date = initialMonth else { return }
+                didScrollToInitialMonth = true
+                await Task.yield()
+                proxy.scrollTo(monthKey(for: date), anchor: .top)
+            }
             .onChange(of: allowPastDateEditing) { _, enabled in
-                if !enabled, let date = editingMonth, date < startOfCurrentMonth {
-                    editingMonth = nil
-                    isNoteFocused = false
+                if !enabled {
+                    if let date = editingMonth, date < startOfCurrentMonth {
+                        editingMonth = nil
+                        isNoteFocused = false
+                    }
+                    if let date = skinMonth, date < startOfCurrentMonth {
+                        skinMonth = nil
+                    }
                 }
             }
             .onChange(of: monthlyNotes.map { "\($0.id.uuidString)-\($0.updatedAt.timeIntervalSince1970)" }) { _, _ in
                 try? MonthlyNoteStore(context: modelContext).reconcileDuplicates()
+            }
+            .onChange(of: monthlySkins.map { "\($0.id.uuidString)-\($0.skinID)-\($0.updatedAt.timeIntervalSince1970)" }) { _, _ in
+                try? MonthlyNoteSkinStore(context: modelContext).reconcileDuplicates()
             }
             .alert(localized("保存失败"), isPresented: Binding(
                 get: { saveError != nil },
@@ -88,6 +129,28 @@ struct MonthlyGoalScreen: View {
                 Button(localized("确定"), role: .cancel) { saveError = nil }
             } message: {
                 Text(saveError ?? localized("请稍后再试。"))
+            }
+        }
+        .sheet(isPresented: Binding(
+            get: { skinMonth != nil },
+            set: { if !$0 { skinMonth = nil } }
+        )) {
+            if let date = skinMonth {
+                MonthlyNoteSkinPicker(
+                    monthTitle: date.formatted(.dateTime.locale(AppLanguage.locale).year().month()),
+                    ticketNumber: monthKey(for: date).replacingOccurrences(of: "-", with: ""),
+                    selected: MonthlyNoteSkinStore.skin(for: monthKey(for: date), in: monthlySkins)
+                ) { skin in
+                    guard canChangeSkin(for: date),
+                          !skin.requiresMembership || membership.hasMembershipAccess else { return }
+                    do {
+                        try MonthlyNoteSkinStore(context: modelContext).select(
+                            skin, for: monthKey(for: date), isMember: membership.hasMembershipAccess
+                        )
+                    } catch {
+                        saveError = error.localizedDescription
+                    }
+                }
             }
         }
         .allowsHitTesting(!isAddingNote)
@@ -171,13 +234,30 @@ struct MonthlyGoalScreen: View {
                     HStack(alignment: .top) {
                         historicalMonthHeader(for: date)
                         Spacer()
+                        if canChangeSkin(for: date) {
+                            skinButton(for: date)
+                        }
                     }
-                    if editingMonth == date {
-                        monthNoteEditor(for: date)
-                            .padding(.top, 16)
-                    } else {
-                        pastMonthContent(data)
+                    if editingMonth == date || data.note != nil {
+                        MonthlyNoteSurface(
+                            skin: displayedSkin(for: date),
+                            monthLabel: date.formatted(.dateTime.locale(Locale(identifier: "en_US")).month(.abbreviated).year()).uppercased(),
+                            ticketNumber: monthKey(for: date).replacingOccurrences(of: "-", with: "")
+                        ) {
+                            if editingMonth == date {
+                                monthNoteEditor(for: date)
+                            } else if let note = data.note {
+                                Text(DemoData.displayText(note))
+                                    .font(.system(size: noteFontSize, weight: .regular))
+                                    .foregroundStyle(displayedSkin(for: date) == .player2 ? theme.palette.monthlyPlayer2Ink : displayedSkin(for: date) == .player ? theme.palette.monthlyPlayerInk : theme.palette.foreground)
+                                    .lineSpacing(noteLineSpacing)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                            }
+                        }
+                        .padding(.top, 20)
                     }
+                    pastMonthSummary(data)
+                        .padding(.top, editingMonth == date || data.note != nil ? 28 : 18)
                 }
             }
             .padding(.bottom, isCurrent ? 0 : 48)
@@ -207,22 +287,60 @@ struct MonthlyGoalScreen: View {
         VStack(alignment: .leading, spacing: 0) {
             Text(String(format: "%02d", calendar.component(.month, from: date)))
                 .font(.system(size: 42, weight: .semibold))
-                .foregroundStyle(.primary)
+                .foregroundStyle(theme.palette.strongAccent)
             HStack(spacing: 5) {
                 Text(monthAbbreviation(for: date))
                     .tracking(1.2)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(theme.palette.strongAccent.opacity(0.7))
                 Text("·")
                     .foregroundStyle(.secondary)
                 Text(localized("本月"))
                     .foregroundStyle(theme.palette.strongAccent)
+                Spacer(minLength: 12)
+                skinButton(for: date)
+                    .padding(.vertical, -10)
             }
             .font(.caption)
+            .frame(minHeight: 24)
 
-            monthNoteEditor(for: date)
-                .padding(.top, noteVerticalSpacing)
+            MonthlyNoteSurface(
+                skin: displayedSkin(for: date),
+                monthLabel: date.formatted(.dateTime.locale(Locale(identifier: "en_US")).month(.abbreviated).year()).uppercased(),
+                ticketNumber: monthKey(for: date).replacingOccurrences(of: "-", with: ""),
+                showsPlainBorder: false
+            ) {
+                monthNoteEditor(for: date)
+            }
+            .padding(.top, noteVerticalSpacing)
         }
         .accessibilityElement(children: .contain)
+    }
+
+    private func displayedSkin(for date: Date) -> MonthlyNoteSkin {
+        let skin = MonthlyNoteSkinStore.skin(for: monthKey(for: date), in: monthlySkins)
+        return skin.requiresMembership && !membership.hasMembershipAccess ? .plain : skin
+    }
+
+    private func canChangeSkin(for date: Date) -> Bool {
+        if date == startOfCurrentMonth { return true }
+        let hasNote = !(storedNote(for: date)?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true)
+        return allowPastDateEditing && date < startOfCurrentMonth && hasNote
+    }
+
+    private func skinButton(for date: Date) -> some View {
+        Button {
+            guard canChangeSkin(for: date) else { return }
+            isNoteFocused = false
+            skinMonth = date
+        } label: {
+            Image(systemName: "paintpalette")
+                .font(.system(size: 17))
+                .foregroundStyle(theme.palette.strongAccent)
+                .frame(width: 44, height: 44)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(localized("月便签样式") + " " + date.formatted(.dateTime.locale(AppLanguage.locale).year().month()))
     }
 
     private func monthNoteEditor(for date: Date) -> some View {
@@ -230,8 +348,9 @@ struct MonthlyGoalScreen: View {
         return VStack(alignment: .leading, spacing: 10) {
             if editingMonth == date {
                 TextEditor(text: $draftNoteText)
-                    .font(.subheadline)
-                    .foregroundStyle(.primary)
+                    .font(.system(size: noteFontSize, weight: .regular))
+                    .lineSpacing(noteLineSpacing)
+                    .foregroundStyle(displayedSkin(for: date) == .player2 ? theme.palette.monthlyPlayer2Ink : displayedSkin(for: date) == .player ? theme.palette.monthlyPlayerInk : theme.palette.foreground)
                     .focused($isNoteFocused)
                     .scrollContentBackground(.hidden)
                     .frame(minHeight: 88)
@@ -245,18 +364,18 @@ struct MonthlyGoalScreen: View {
                 HStack {
                     Text("\(draftNoteText.count) / \(noteCharacterLimit)")
                         .font(.system(size: 13))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(displayedSkin(for: date) == .player2 ? theme.palette.monthlyPlayer2Ink.opacity(0.7) : Color.secondary)
                     Spacer()
                     Button(localized("保存")) { saveNote(for: date) }
                         .font(.system(size: 15, weight: .semibold))
-                        .foregroundStyle(theme.palette.strongAccent)
+                        .foregroundStyle(displayedSkin(for: date) == .player2 ? theme.palette.monthlyPlayer2Ink : theme.palette.strongAccent)
                 }
             } else if noteText.isEmpty {
                 HStack(spacing: 5) {
                     Text(localized("写一句话，留给这个月。"))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(displayedSkin(for: date) == .player2 ? theme.palette.monthlyPlayer2Ink.opacity(0.7) : Color.secondary)
                     Text("→")
-                        .foregroundStyle(theme.palette.strongAccent)
+                        .foregroundStyle(displayedSkin(for: date) == .player2 ? theme.palette.monthlyPlayer2Ink : theme.palette.strongAccent)
                 }
                 .font(.subheadline)
                 .contentShape(Rectangle())
@@ -266,15 +385,18 @@ struct MonthlyGoalScreen: View {
             } else {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(DemoData.displayText(noteText))
-                        .font(.subheadline)
-                        .foregroundStyle(.primary)
-                        .lineSpacing(6)
+                        .font(.system(size: noteFontSize, weight: .regular))
+                        /* 复古屏幕文字样式，保留供参考。
+                        .tracking(MonthlyNoteSkinStore.skin(for: monthKey(for: date), in: monthlySkins) == .screen ? 1 : 0)
+                        .foregroundStyle(MonthlyNoteSkinStore.skin(for: monthKey(for: date), in: monthlySkins) == .screen
+                                         ? theme.palette.monthlyScreenInk : theme.palette.foreground)
+                        .lineSpacing(MonthlyNoteSkinStore.skin(for: monthKey(for: date), in: monthlySkins) == .screen ? 8 : 6)
+                        */
+                        .foregroundStyle(displayedSkin(for: date) == .player2 ? theme.palette.monthlyPlayer2Ink : displayedSkin(for: date) == .player ? theme.palette.monthlyPlayerInk : theme.palette.foreground)
+                        .lineSpacing(noteLineSpacing)
                         .frame(maxWidth: .infinity, alignment: .leading)
 
-                    NoteWaveMark()
-                        .stroke(theme.palette.accent.opacity(0.42), style: StrokeStyle(lineWidth: 1.3, lineCap: .round))
-                        .frame(width: 26, height: 7)
-                        .padding(.top, noteVerticalSpacing)
+
                 }
                 .contentShape(Rectangle())
                     .onTapGesture { beginNoteEditing(for: date) }
@@ -310,15 +432,8 @@ struct MonthlyGoalScreen: View {
         }
     }
 
-    private func pastMonthContent(_ data: MonthData) -> some View {
-        VStack(alignment: .leading, spacing: 22) {
-            if let note = data.note {
-                Text(DemoData.displayText(note))
-                    .font(.subheadline)
-                    .foregroundStyle(theme.palette.resolved(for: colorScheme).foreground.opacity(0.84))
-                    .lineSpacing(4)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-            }
+    private func pastMonthSummary(_ data: MonthData) -> some View {
+        Group {
             if let entry = data.summaryEntry, let choice = entry.choice {
                 Button {
                     let parts = entry.dayKey.split(separator: "-").compactMap { Int($0) }
@@ -336,19 +451,18 @@ struct MonthlyGoalScreen: View {
                 .accessibilityHint(localized("查看这个月的日历"))
             }
         }
-        .padding(.top, 16)
     }
 
     private func historicalMonthHeader(for date: Date) -> some View {
         Button { onOpenMonth(date) } label: {
-            VStack(alignment: .leading, spacing: 1) {
+            VStack(alignment: .leading, spacing: 3) {
                 Text(String(format: "%02d", calendar.component(.month, from: date)))
-                    .font(.title2.weight(.semibold))
+                    .font(.system(.title2, design: .rounded, weight: .semibold))
                     .foregroundStyle(theme.palette.strongAccent)
                 Text(monthAbbreviation(for: date))
-                    .font(.caption.weight(.semibold))
-                    .tracking(1.1)
-                    .foregroundStyle(theme.palette.strongAccent.opacity(0.65))
+                    .font(.caption)
+                    .tracking(0.8)
+                    .foregroundStyle(theme.palette.strongAccent.opacity(0.7))
             }
         }
         .buttonStyle(.plain)
@@ -365,28 +479,28 @@ struct MonthlyGoalScreen: View {
     }
 
     private func summaryRow(title: String, choice: DailyChoice, entryNote: String) -> some View {
-        VStack(alignment: .leading, spacing: 5) {
+        VStack(alignment: .leading, spacing: 6) {
             Text(title)
-                .font(.footnote.weight(.medium))
-                .foregroundStyle(.secondary)
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(theme.palette.strongAccent)
 
             HStack(alignment: .center, spacing: 8) {
                 Text(choice.title)
-                    .font(.subheadline)
-                    .foregroundStyle(.primary)
+                    .font(.footnote.weight(.medium))
+                    .foregroundStyle(AppTheme.black.palette.strongAccent)
                     .lineLimit(1)
                     .fixedSize(horizontal: true, vertical: false)
 
                 ChoiceArtwork(choice: choice)
                     .scaledToFit()
-                    .frame(width: 64, height: 32)
+                    .frame(width: 56, height: 28)
                     // Account for the artwork's transparent margins in the row spacing.
-                    .frame(width: choice.group == .mood ? 60 : 32, height: 32)
+                    .frame(width: choice.group == .mood ? 52 : 28, height: 28)
                     .accessibilityHidden(true)
 
                 Text(DemoData.displayText(entryNote))
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .font(.footnote)
+                    .foregroundStyle(theme.palette.foreground.opacity(0.82))
                     .lineLimit(1)
                     .truncationMode(.tail)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -548,13 +662,6 @@ private struct MonthlyNoteComposer: View {
         .background {
             RoundedRectangle(cornerRadius: 34)
                 .fill(theme.palette.memoBody)
-                .overlay {
-                    RoundedRectangle(cornerRadius: 34)
-                        .strokeBorder(LinearGradient(
-                            colors: [.white.opacity(colorScheme == .dark ? 0.12 : 0.9), theme.palette.foreground.opacity(0.08)],
-                            startPoint: .topLeading, endPoint: .bottomTrailing
-                        ), lineWidth: 0.8)
-                }
                 .shadow(color: .black.opacity(0.14), radius: 24, y: 14)
         }
         .frame(maxWidth: 340)

@@ -30,13 +30,21 @@ struct EntryEditorScreen: View {
     @State private var photoLoadTask: Task<Void, Never>?
     @State private var note = ""
     @State private var showsNote = false
+    @AppStorage("lastSelectedCardPaper") private var lastSelectedCardPaper = ""
     @State private var selectedPaper: CardPaper = .pink
+    @State private var watchTitle = ""
+    @State private var watchKind = ""
+    @State private var watchNote = ""
+    @State private var isWatchEditorPresented = false
     @State private var showsSong = false
     @State private var songTitle = ""
     @State private var songArtist = ""
     @State private var isSongEditorPresented = false
     @State private var isPaperPickerPresented = false
     @State private var errorMessage: String?
+    @State private var showsDeleteConfirmation = false
+    @State private var errorTitle = localized("保存失败")
+    @AppStorage("allowPastDateEditing") private var allowPastDateEditing = true
     @State private var isMembershipPresented = false
     @State private var noteCardFrame: CGRect = .zero
     @FocusState private var isNoteFocused: Bool
@@ -61,9 +69,28 @@ struct EntryEditorScreen: View {
 
                     songAttachment
 
+                    watchAttachment
+
                     photoAttachment
 
                     paperPicker
+
+                    if entry != nil && DayKey(day).isEditable(allowPastDates: allowPastDateEditing) {
+                        HStack {
+                            Spacer(minLength: 0)
+                            Button(role: .destructive) {
+                                isNoteFocused = false
+                                showsDeleteConfirmation = true
+                            } label: {
+                                Text(localized("删除"))
+                                    .font(.footnote)
+                                    .foregroundStyle(theme.palette.destructiveAction)
+                                    .frame(minHeight: 44)
+                                    .contentShape(Rectangle())
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
                 }
                 .padding(24)
             }
@@ -92,7 +119,7 @@ struct EntryEditorScreen: View {
                         .disabled(selectedChoice == nil || isLoadingPhoto || (showsSong && songTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty))
                 }
             }
-            .alert(localized("保存失败"), isPresented: Binding(
+            .alert(errorTitle, isPresented: Binding(
                 get: { errorMessage != nil },
                 set: { if !$0 { errorMessage = nil } }
             )) {
@@ -105,7 +132,13 @@ struct EntryEditorScreen: View {
                     .environmentObject(membership)
             }
             .sheet(isPresented: $isPaperPickerPresented) {
-                PaperDialPicker(selectedPaper: $selectedPaper)
+                PaperDialPicker(selectedPaper: Binding(
+                    get: { selectedPaper },
+                    set: { paper in
+                        selectedPaper = paper
+                        lastSelectedCardPaper = paper.rawValue
+                    }
+                ))
             }
             .onChange(of: photoItem) { _, item in
                 photoLoadTask?.cancel()
@@ -137,17 +170,33 @@ struct EntryEditorScreen: View {
                 photoData = entry?.photoData
                 note = entry?.note ?? ""
                 showsNote = !(entry?.note.isEmpty ?? true)
-                let savedPaper = CardPaper.resolve(entry?.cardPaperID)
+                let savedPaper = CardPaper.resolve(entry == nil ? lastSelectedCardPaper : entry?.cardPaperID)
                 selectedPaper = savedPaper == .original ? CardPaper.matching(theme) : savedPaper
                 songTitle = entry?.songTitle ?? ""
                 songArtist = entry?.songArtist ?? ""
                 showsSong = !songTitle.isEmpty
+                watchTitle = entry?.watchTitle ?? ""
+                watchKind = entry?.watchKind ?? ""
+                watchNote = entry?.watchNote ?? ""
             }
         }
-        .allowsHitTesting(!isSongEditorPresented)
-        .accessibilityHidden(isSongEditorPresented)
+        .allowsHitTesting(!isSongEditorPresented && !isWatchEditorPresented && !showsDeleteConfirmation)
+        .accessibilityHidden(isSongEditorPresented || isWatchEditorPresented || showsDeleteConfirmation)
         .overlay {
-            if isSongEditorPresented {
+            if showsDeleteConfirmation {
+                deleteConfirmation
+            } else if isWatchEditorPresented {
+                WatchEditorOverlay(title: watchTitle, onClose: {
+                    isWatchEditorPresented = false
+                }) { title in
+                    watchTitle = title
+                    if title.isEmpty {
+                        watchKind = ""
+                        watchNote = ""
+                    }
+                    isWatchEditorPresented = false
+                }
+            } else if isSongEditorPresented {
                 SongEditorOverlay(title: songTitle, artist: songArtist, isToday: DayKey(day).relationToToday == .today, onClose: {
                     isSongEditorPresented = false
                 }) { title, artist in
@@ -158,6 +207,65 @@ struct EntryEditorScreen: View {
                 }
             }
         }
+    }
+
+    private var deleteConfirmation: some View {
+        ZStack {
+            Color.black.opacity(0.22)
+                .ignoresSafeArea()
+                .accessibilityHidden(true)
+            ViewThatFits(in: .vertical) {
+                deleteConfirmationCard.padding(24)
+                ScrollView { deleteConfirmationCard.padding(24) }
+            }
+        }
+        .accessibilityAddTraits(.isModal)
+        .accessibilityAction(.escape) { showsDeleteConfirmation = false }
+    }
+
+    private var deleteConfirmationCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(localized("删除当天记录？"))
+                .font(.headline)
+                .accessibilityAddTraits(.isHeader)
+            Text(day.formatted(.dateTime.locale(AppLanguage.locale).year().month().day()))
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+            Text(localized("当天的表情、文字、照片、歌曲和影视记录都会删除，且无法恢复。"))
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+            HStack(spacing: 10) {
+                Button {
+                    showsDeleteConfirmation = false
+                } label: {
+                    Text(localized("取消"))
+                        .frame(maxWidth: .infinity, minHeight: 44)
+                        .background(.primary.opacity(0.06), in: RoundedRectangle(cornerRadius: 14))
+                }
+                Button(role: .destructive) {
+                    showsDeleteConfirmation = false
+                    deleteEntry()
+                } label: {
+                    Text(localized("删除"))
+                        .foregroundStyle(theme.palette.destructiveAction)
+                        .frame(maxWidth: .infinity, minHeight: 44)
+                        .background(theme.palette.destructiveAction.opacity(0.08), in: RoundedRectangle(cornerRadius: 14))
+                }
+            }
+            .font(.headline)
+            .buttonStyle(.plain)
+            .padding(.top, 4)
+        }
+        .foregroundStyle(theme.palette.foreground)
+        .padding(20)
+        .frame(maxWidth: 320)
+        .background(theme.palette.resolved(for: colorScheme).background, in: RoundedRectangle(cornerRadius: 26))
+        .overlay {
+            RoundedRectangle(cornerRadius: 26)
+                .strokeBorder(.primary.opacity(0.08), lineWidth: 0.5)
+        }
+        .shadow(color: .black.opacity(0.12), radius: 20, y: 8)
     }
 
     private var songAttachment: some View {
@@ -176,24 +284,52 @@ struct EntryEditorScreen: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 } else {
-                    Text(localized("记首歌"))
+                    Text(localized("记歌"))
                 }
             }
             .font(.subheadline)
-            .foregroundStyle(theme.palette.strongAccent)
+            .foregroundStyle(.primary)
             .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
     }
 
+    private var watchAttachment: some View {
+        Button {
+            isNoteFocused = false
+            isWatchEditorPresented = true
+        } label: {
+            HStack(spacing: 8) {
+                WatchTVIcon()
+                    .frame(width: 19, height: 17)
+                    .accessibilityHidden(true)
+                Text(watchTitle.isEmpty ? localized("记影视") : watchTitle)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+                if !watchTitle.isEmpty {
+                    Spacer(minLength: 8)
+                    Image(systemName: "pencil")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .font(.subheadline)
+            .foregroundStyle(.primary)
+            .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(watchTitle.isEmpty ? localized("记影视") : "\(localized("记影视"))，\(watchTitle)")
+    }
+
     private var photoAttachment: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 20) {
                 PhotosPicker(selection: $photoItem, matching: .images) {
-                    Label(localized(photoData == nil ? "留张照片" : "更换照片"), systemImage: "photo.badge.plus")
+                    Label(localized(photoData == nil ? "留照片" : "更换照片"), systemImage: "photo.badge.plus")
                         .font(.subheadline)
-                        .foregroundStyle(theme.palette.strongAccent)
+                        .foregroundStyle(.primary)
                         .frame(minHeight: 44)
                 }
                 if isLoadingPhoto { ProgressView() }
@@ -204,7 +340,8 @@ struct EntryEditorScreen: View {
                         photoItem = nil
                         photoData = nil
                     }
-                    .font(.footnote)
+                    .font(.caption)
+                    .foregroundStyle(theme.palette.destructiveAction)
                     .frame(minHeight: 44)
                 }
             }
@@ -364,7 +501,7 @@ struct EntryEditorScreen: View {
                     Text(localized("写文字"))
                         .font(.body.weight(.medium))
                         .foregroundStyle(.primary)
-                    Text(localized("文字可选。"))
+                    Text(localized("文字可选"))
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }
@@ -373,7 +510,7 @@ struct EntryEditorScreen: View {
                 .accessibilityLabel(localized("写文字"))
             }
             if showsNote {
-                Text(localized("文字可选。"))
+                Text(localized("文字可选"))
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }
@@ -417,7 +554,7 @@ struct EntryEditorScreen: View {
                 Image(systemName: "chevron.right")
                     .font(.caption2)
             }
-            .font(.footnote)
+            .font(.subheadline)
             .foregroundStyle(.secondary)
             .frame(minHeight: 44)
             .contentShape(Rectangle())
@@ -425,21 +562,36 @@ struct EntryEditorScreen: View {
         .buttonStyle(.plain)
     }
 
+    private func deleteEntry() {
+        do {
+            try EntryStore(context: modelContext).delete(day: DayKey(day))
+            dismiss()
+        } catch {
+            errorTitle = localized("删除失败")
+            errorMessage = error.localizedDescription
+        }
+    }
+
     private func save() {
+        errorTitle = localized("保存失败")
         guard let selectedChoice else { return }
         let savedNote = (showsNote ? note : "").trimmingCharacters(in: .whitespacesAndNewlines)
-        let savedPaper = CardPaper.resolve(entry?.cardPaperID)
+        let savedPaper = CardPaper.resolve(entry == nil ? lastSelectedCardPaper : entry?.cardPaperID)
         let initialPaper = savedPaper == .original ? CardPaper.matching(theme) : savedPaper
         let savedSong = showsSong ? songTitle.trimmingCharacters(in: .whitespacesAndNewlines) : ""
         let savedArtist = showsSong ? songArtist.trimmingCharacters(in: .whitespacesAndNewlines) : ""
-        let hasChanges = selectedChoice != entry?.choice || savedNote != (entry?.note ?? "") || photoData != entry?.photoData || selectedPaper != initialPaper || savedSong != (entry?.songTitle ?? "") || savedArtist != (entry?.songArtist ?? "")
+        let savedWatch = watchTitle.trimmingCharacters(in: .whitespacesAndNewlines)
+        let savedWatchNote = savedWatch.isEmpty ? "" : watchNote.trimmingCharacters(in: .whitespacesAndNewlines)
+        let watchChanged = savedWatch != (entry?.watchTitle ?? "") || (!savedWatch.isEmpty && watchKind != (entry?.watchKind ?? "")) || savedWatchNote != (entry?.watchNote ?? "")
+        let hasChanges = watchChanged || selectedChoice != entry?.choice || savedNote != (entry?.note ?? "") || photoData != entry?.photoData || selectedPaper != initialPaper || savedSong != (entry?.songTitle ?? "") || savedArtist != (entry?.songArtist ?? "")
         do {
             try EntryStore(context: modelContext).save(
                 day: DayKey(day), choice: selectedChoice, note: showsNote ? note : "",
                 isMember: hasPremiumAccess, photoData: photoData, updatesPhoto: true,
                 cardPaperID: selectedPaper.rawValue,
                 updatesCardPaper: true,
-                songTitle: savedSong, songArtist: savedArtist, updatesSong: true
+                songTitle: savedSong, songArtist: savedArtist, updatesSong: true,
+                watchTitle: savedWatch, watchKind: watchKind, watchNote: savedWatchNote, updatesWatch: true
             )
             onSaved(selectedChoice, hasChanges)
             dismiss()
@@ -496,7 +648,7 @@ private struct SongEditorOverlay: View {
                 if hasSong {
                     Button(localized("移除歌曲")) { onSave("", "") }
                         .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(theme.palette.playerShellInk.opacity(0.65))
                         .frame(minHeight: 44)
                 }
                 Spacer()
@@ -508,24 +660,24 @@ private struct SongEditorOverlay: View {
                 }
                 .accessibilityLabel(localized("取消"))
             }
+            .foregroundStyle(theme.palette.playerShellInk)
             .padding(.bottom, 24)
 
-            VStack(spacing: 12) {
+            VStack(spacing: 16) {
                 TextField(localized("歌曲名"), text: $title,
                           prompt: Text(localized("歌曲名"))
-                            .foregroundColor(theme.palette.foreground.opacity(0.48)),
+                            .foregroundColor(theme.palette.foreground.opacity(0.56)),
                           axis: .vertical)
-                    .font(.system(size: 23, weight: .regular))
+                    .font(.system(size: 21, weight: .regular))
                     .foregroundStyle(theme.palette.foreground)
                     .lineLimit(1...2)
                     .truncationMode(.tail)
                     .accessibilityLabel(localized("歌曲名"))
                     .focused($focusedField, equals: .title)
-                    .padding(.bottom, 2)
                 TextField(localized("歌手（选填）"), text: $artist,
                           prompt: Text(localized("歌手（选填）"))
-                            .foregroundColor(theme.palette.foreground.opacity(0.40)))
-                    .font(.system(size: 15))
+                            .foregroundColor(theme.palette.foreground.opacity(0.50)))
+                    .font(.system(size: 17))
                     .foregroundStyle(.secondary)
                     .accessibilityLabel(localized("歌手（选填）"))
                     .focused($focusedField, equals: .artist)
@@ -535,10 +687,11 @@ private struct SongEditorOverlay: View {
             .multilineTextAlignment(.center)
             .textInputAutocapitalization(.never)
             .padding(.horizontal, 18)
+            .padding(.vertical, 28)
             .frame(maxWidth: .infinity, minHeight: 180)
             .background {
                 RoundedRectangle(cornerRadius: 24)
-                    .fill(theme.palette.playerScreenBackground.shadow(
+                    .fill(theme.palette.musicPlayerScreenBackground.shadow(
                         .inner(color: .black.opacity(colorScheme == .dark ? 0.22 : 0.06),
                                radius: 2, x: 0, y: 1)
                     ))
@@ -550,13 +703,8 @@ private struct SongEditorOverlay: View {
                             ), lineWidth: 0.75)
                     }
             }
-            .overlay(alignment: .top) {
-                Text(isToday ? localized("今天在听") : localized("这一天在听"))
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(theme.palette.strongAccent)
-                    .padding(.top, 16)
-                    .allowsHitTesting(false)
-            }
+
+            .padding(.horizontal, 12)
 
             HStack(spacing: 22) {
                 speaker
@@ -571,6 +719,10 @@ private struct SongEditorOverlay: View {
         .background {
             RoundedRectangle(cornerRadius: 36)
                 .fill(theme.palette.playerBody)
+                .overlay {
+                    RoundedRectangle(cornerRadius: 36)
+                        .strokeBorder(theme.palette.playerBodyRim, lineWidth: 1.5)
+                }
                 .shadow(color: .black.opacity(0.12), radius: 24, y: 12)
         }
         .frame(maxWidth: 360)
@@ -579,7 +731,7 @@ private struct SongEditorOverlay: View {
     private var confirmationWheel: some View {
         ZStack {
             Circle()
-                .fill(colorScheme == .dark ? Color(white: 0.23) : Color(white: 0.95))
+                .fill(theme.palette.playerWheelBackground)
                 .overlay {
                     Circle().strokeBorder(.primary.opacity(0.14), lineWidth: 0.8)
                 }
@@ -632,7 +784,7 @@ private struct SongEditorOverlay: View {
     private var speaker: some View {
         HStack(spacing: 4) {
             ForEach(0..<3) { _ in
-                Capsule().fill(theme.palette.foreground.opacity(0.12))
+                Capsule().fill(theme.palette.playerShellInk.opacity(theme.palette.isObsidian ? 0.20 : 0.12))
                     .frame(width: 3, height: 15)
             }
         }
@@ -641,16 +793,14 @@ private struct SongEditorOverlay: View {
 }
 
 private struct PlayerCenterButtonStyle: ButtonStyle {
-    @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.appTheme) private var theme
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .background {
                 Circle()
                     .fill(LinearGradient(
-                        colors: colorScheme == .dark
-                            ? [Color(white: 0.34), Color(white: 0.24)]
-                            : [.white, Color(white: 0.88)],
+                        colors: [theme.palette.playerButtonTop, theme.palette.playerButtonBottom],
                         startPoint: .topLeading, endPoint: .bottomTrailing
                     ))
                     .overlay { Circle().strokeBorder(.primary.opacity(0.16), lineWidth: 0.7) }
@@ -810,3 +960,201 @@ private struct GroupHighlightBrush: Shape {
 }
 
 private enum PhotoLoadError: Error { case invalidImage }
+
+// A small rounded television keeps the entry as quiet as the music row.
+struct WatchTVIcon: View {
+    var body: some View {
+        GeometryReader { geometry in
+            let scale = min(geometry.size.width / 24, geometry.size.height / 18)
+            let transform = CGAffineTransform(scaleX: scale, y: scale)
+            ZStack {
+                Path { path in
+                    path.addRoundedRect(in: CGRect(x: 1, y: 1, width: 22, height: 16),
+                                        cornerSize: CGSize(width: 4, height: 4))
+                    path.addRoundedRect(in: CGRect(x: 4, y: 4, width: 12, height: 10),
+                                        cornerSize: CGSize(width: 2, height: 2))
+                }
+                .applying(transform)
+                .stroke(lineWidth: 1.5 * scale)
+                Path { path in
+                    path.addEllipse(in: CGRect(x: 19, y: 5, width: 2, height: 2))
+                    path.addEllipse(in: CGRect(x: 19, y: 10, width: 2, height: 2))
+                }
+                .applying(transform)
+                .fill()
+            }
+        }
+        .aspectRatio(4.0 / 3.0, contentMode: .fit)
+    }
+}
+
+private struct WatchEditorOverlay: View {
+    @Environment(\.appTheme) private var theme
+    @Environment(\.colorScheme) private var colorScheme
+    @State var title: String
+    @FocusState private var isTitleFocused: Bool
+    private let hasRecord: Bool
+    let onClose: () -> Void
+    let onSave: (String) -> Void
+
+    init(title: String, onClose: @escaping () -> Void, onSave: @escaping (String) -> Void) {
+        _title = State(initialValue: title)
+        hasRecord = !title.isEmpty
+        self.onClose = onClose
+        self.onSave = onSave
+    }
+
+    private var trimmedTitle: String {
+        title.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    var body: some View {
+        ZStack {
+            Color.black.opacity(0.22)
+                .ignoresSafeArea()
+                .onTapGesture { isTitleFocused = false }
+                .accessibilityHidden(true)
+            ViewThatFits(in: .vertical) {
+                television.padding(24)
+                ScrollView { television.padding(24) }
+            }
+        }
+        .tint(theme.palette.strongAccent)
+        .accessibilityAddTraits(.isModal)
+    }
+
+    private var television: some View {
+        VStack(spacing: 8) {
+            HStack(alignment: .top, spacing: 16) {
+                screen
+                VStack(spacing: 10) {
+                    Button {
+                        PlayerButtonFeedback.play()
+                        onSave(trimmedTitle)
+                    } label: {
+                        Text(localized(hasRecord ? "保存" : "记下"))
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundStyle(theme.palette.strongAccent)
+                            .frame(width: 52, height: 52)
+                            .contentShape(Circle())
+                    }
+                    .buttonStyle(TelevisionKnobStyle())
+                    .disabled(trimmedTitle.isEmpty)
+                    .opacity(trimmedTitle.isEmpty ? 0.45 : 1)
+
+                    Button(action: onClose) {
+                        Text(localized("取消"))
+                            .font(.system(size: 12))
+                            .foregroundStyle(.secondary)
+                            .frame(width: 52, height: 52)
+                            .contentShape(Circle())
+                    }
+                    .buttonStyle(TelevisionKnobStyle())
+
+                    VStack(spacing: 4) {
+                        ForEach(0..<7) { _ in
+                            Capsule()
+                                .fill(theme.palette.playerShellInk.opacity(theme.palette.isObsidian ? 0.20 : 0.11))
+                                .frame(height: 1.5)
+                        }
+                    }
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 10)
+                    .background {
+                        RoundedRectangle(cornerRadius: 10)
+                            .fill(theme.palette.foreground.opacity(0.025))
+                    }
+                    .accessibilityHidden(true)
+                }
+                .frame(width: 56)
+                .padding(.top, 6)
+            }
+        }
+        .padding(20)
+        .background {
+            RoundedRectangle(cornerRadius: 34)
+                .fill(theme.palette.televisionBody)
+                .overlay {
+                    RoundedRectangle(cornerRadius: 34)
+                        .strokeBorder(theme.palette.televisionBodyRim,
+                                      lineWidth: theme.palette.isObsidian ? 0.75 : 1.5)
+                }
+                .shadow(color: .black.opacity(0.10), radius: 16, y: 7)
+        }
+        .frame(maxWidth: 400)
+        .onAppear { PlayerButtonFeedback.prepare() }
+    }
+
+    private var screen: some View {
+        VStack {
+            TextField(localized("片名"), text: $title,
+                      prompt: Text(localized("片名"))
+                        .foregroundColor(theme.palette.foreground.opacity(0.56)),
+                      axis: .vertical)
+                .font(.system(size: 21))
+                .foregroundStyle(theme.palette.foreground)
+                .multilineTextAlignment(.center)
+                .lineLimit(1...5)
+                .textInputAutocapitalization(.never)
+                .focused($isTitleFocused)
+                .accessibilityLabel(localized("片名"))
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, hasRecord ? 50 : 28)
+        .frame(maxWidth: .infinity, minHeight: 204)
+        .background {
+            RoundedRectangle(cornerRadius: 30)
+                .fill(theme.palette.televisionScreenBackground.shadow(
+                    .inner(color: .black.opacity(colorScheme == .dark ? 0.20 : 0.06),
+                           radius: 3, x: 0, y: 2)
+                ))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 30)
+                        .strokeBorder(LinearGradient(
+                            colors: [theme.palette.playerScreenTopEdge, theme.palette.playerScreenBottomEdge],
+                            startPoint: .top, endPoint: .bottom
+                        ), lineWidth: 0.75)
+                }
+        }
+        .overlay(alignment: .topLeading) {
+            if hasRecord {
+                Button(localized("移除影视记录")) { onSave("") }
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .frame(minHeight: 44)
+                    .padding(.leading, 16)
+                    .padding(.top, 6)
+            }
+        }
+        .padding(4)
+        .background {
+            RoundedRectangle(cornerRadius: 34)
+                .fill(theme.palette.foreground.opacity(0.055))
+        }
+    }
+}
+
+private struct TelevisionKnobStyle: ButtonStyle {
+    @Environment(\.appTheme) private var theme
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .background {
+                Circle()
+                    .fill(LinearGradient(
+                        colors: [theme.palette.playerButtonTop, theme.palette.playerButtonBottom],
+                        startPoint: .top, endPoint: .bottom
+                    ))
+                    .overlay {
+                        Circle()
+                            .strokeBorder(.primary.opacity(0.12), lineWidth: 0.75)
+                    }
+                    .shadow(color: .black.opacity(configuration.isPressed ? 0.04 : 0.14),
+                            radius: configuration.isPressed ? 0 : 2,
+                            y: configuration.isPressed ? 0 : 2)
+            }
+            .offset(y: configuration.isPressed ? 1.5 : 0)
+            .scaleEffect(configuration.isPressed ? 0.97 : 1)
+            .animation(.easeOut(duration: 0.12), value: configuration.isPressed)
+    }
+}

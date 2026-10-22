@@ -3,8 +3,10 @@ import SwiftUI
 struct SelectedDateDetail: View {
     @Environment(\.appTheme) private var theme
     @Environment(\.colorScheme) private var colorScheme
+    @ScaledMetric(relativeTo: .subheadline) private var detailTextSize: CGFloat = 14
 
     @AppStorage("allowPastDateEditing") private var allowPastDateEditing = true
+    @AppStorage("lastSelectedCardPaper") private var lastSelectedCardPaper = ""
 
     @State private var isPhotoPresented = false
 
@@ -17,68 +19,44 @@ struct SelectedDateDetail: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 14) {
-                Text(relation == .today
-                     ? localized("今天")
-                     : "\(date.formatted(.dateTime.locale(AppLanguage.locale).month().day())) · \(date.formatted(.dateTime.locale(AppLanguage.locale).weekday(.wide)))")
-                    .font(.subheadline.weight(.medium))
-                    .foregroundStyle(theme.palette.resolved(for: colorScheme).foreground.opacity(0.82))
-                if entry?.photoData != nil {
-                    Button { isPhotoPresented = true } label: {
-                        ViewThatFits(in: .horizontal) {
-                            HStack(spacing: 5) {
-                                PhotoStackOutline()
-                                    .stroke(style: StrokeStyle(lineWidth: 1.1, lineCap: .round, lineJoin: .round))
-                                    .foregroundStyle(theme.palette.strongAccent.opacity(0.75))
-                                    .frame(width: 16, height: 19)
-                                    .accessibilityHidden(true)
-                                Text(localized("这天有个画面"))
-                                    .foregroundStyle(theme.palette.strongAccent.opacity(0.75))
-                            }
-                            .fixedSize()
-                            PhotoStackOutline()
-                                .stroke(style: StrokeStyle(lineWidth: 1.1, lineCap: .round, lineJoin: .round))
-                                .foregroundStyle(theme.palette.strongAccent.opacity(0.75))
-                                .frame(width: 16, height: 19)
-                                .accessibilityHidden(true)
-                        }
-                        .font(.caption2)
-                        .frame(minWidth: 44, minHeight: 44)
-                        .contentShape(Rectangle())
+            if relation != .today || entry?.choice != nil {
+                HStack(spacing: 14) {
+                    Text(relation == .today
+                         ? localized("今天")
+                         : "\(date.formatted(.dateTime.locale(AppLanguage.locale).month().day())) · \(date.formatted(.dateTime.locale(AppLanguage.locale).weekday(.wide)))")
+                        .font(.system(size: detailTextSize, weight: .medium))
+                        .foregroundStyle(AppTheme.black.palette.strongAccent)
+                    Spacer(minLength: 8)
+                    if relation == .past && allowPastDateEditing || relation == .today && entry?.choice != nil {
+                        Color.clear.frame(width: relation == .past ? 60 : 44, height: 22)
                     }
-                    .buttonStyle(.plain)
-                    .padding(.vertical, -11)
-                    .accessibilityLabel(localized("这天有个画面"))
                 }
-                Spacer(minLength: 8)
-                if relation == .past && allowPastDateEditing || relation == .today && entry?.choice != nil {
-                    Color.clear.frame(width: relation == .past ? 60 : 44, height: 22)
-                }
-            }
-            .frame(minHeight: 22)
-            .padding(.bottom, -8)
-            .overlay(alignment: .trailing) {
-                if relation == .past && allowPastDateEditing || relation == .today && entry?.choice != nil {
-                    Button(action: onEdit) {
-                        Group {
-                            if relation == .past {
-                                Text(localized("补充"))
-                                    .font(.footnote.weight(.medium))
-                                    .foregroundStyle(theme.palette.strongAccent)
-                            } else {
-                                Image(systemName: "square.and.pencil")
-                                    .font(.system(size: 18, weight: .medium))
+                .frame(minHeight: 22)
+                .padding(.bottom, -8)
+                .overlay(alignment: .trailing) {
+                    if relation == .past && allowPastDateEditing || relation == .today && entry?.choice != nil {
+                        Button(action: onEdit) {
+                            Group {
+                                if relation == .past {
+                                    Text(localized("补充"))
+                                        .font(.system(size: detailTextSize, weight: .medium))
+                                        .foregroundStyle(theme.palette.strongAccent)
+                                } else {
+                                    Image(systemName: "square.and.pencil")
+                                        .font(.system(size: detailTextSize + 2, weight: .medium))
+                                        .foregroundStyle(theme.palette.strongAccent)
+                                }
                             }
+                            .frame(minWidth: 44, minHeight: 44)
+                            .contentShape(Rectangle())
                         }
-                        .frame(minWidth: 44, minHeight: 44)
-                        .contentShape(Rectangle())
+                        .buttonStyle(.plain)
+                        .accessibilityLabel(relation == .past ? localized("补充") : localized("修改记录"))
+                        .transition(.scale(scale: 0.72).combined(with: .opacity))
                     }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel(relation == .past ? localized("补充") : localized("修改记录"))
-                    .transition(.scale(scale: 0.72).combined(with: .opacity))
                 }
+                .animation(.spring(response: 0.42, dampingFraction: 0.64), value: entry?.choice)
             }
-            .animation(.spring(response: 0.42, dampingFraction: 0.64), value: entry?.choice)
 
             switch relation {
             case .today:
@@ -87,7 +65,7 @@ struct SelectedDateDetail: View {
                 } else {
                     HStack {
                         Text(localized("今天什么心情？"))
-                            .font(.subheadline.weight(.medium))
+                            .font(.system(size: detailTextSize, weight: .medium))
 
                     }
 
@@ -106,7 +84,7 @@ struct SelectedDateDetail: View {
                     }
 
                     Button(localized("选其他表情"), action: onEdit)
-                        .font(.footnote.weight(.medium))
+                        .font(.system(size: detailTextSize, weight: .medium))
                         .foregroundStyle(theme.palette.strongAccent)
                         .padding(.vertical, 8)
                         .buttonStyle(.plain)
@@ -132,7 +110,11 @@ struct SelectedDateDetail: View {
         .padding(16)
         .background {
             RoundedRectangle(cornerRadius: 18)
-                .fill(CardPaper.resolve(entry?.cardPaperID).color(for: theme, scheme: colorScheme))
+                .fill(CardPaper.resolve(
+                    relation == .today && entry?.choice == nil
+                        ? lastSelectedCardPaper
+                        : entry?.cardPaperID
+                ).color(for: theme, scheme: colorScheme))
         }
     }
 
@@ -141,6 +123,7 @@ struct SelectedDateDetail: View {
             .scaledToFit()
             .frame(width: 60, height: 52) // 图片渲染尺寸，不要改
             .scaleEffect([DailyChoice.poutyRabbit, .absentRabbit, .glassesRabbit, .tearfulRabbit].contains(choice) ? 1.17 : choice.group == .mood ? 1 : choice == .cake ? 1.15 : 1.3)
+            .scaleEffect(choice.group == .daily ? 0.9 : 1)
             .offset(x: choice.group == .mood ? 0 : -10)
             .frame(
                 width: choice.group == .mood ? 60 : 44,
@@ -155,17 +138,17 @@ struct SelectedDateDetail: View {
                 choiceArtwork(choice)
                     .accessibilityHidden(true)
                 ViewThatFits(in: .horizontal) {
-                    HStack(alignment: .firstTextBaseline, spacing: 14) {
-                    Text(choice.title)
-                        .font(.subheadline.weight(.medium))
-                    Text(choice.caption)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                    HStack(alignment: .firstTextBaseline, spacing: 8) {
+                        Text(choice.title)
+                            .font(.system(size: detailTextSize, weight: .medium))
+                        Text(choice.caption)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
                     }
                     .fixedSize(horizontal: true, vertical: false)
                     VStack(alignment: .leading, spacing: 4) {
                         Text(choice.title)
-                            .font(.subheadline.weight(.medium))
+                            .font(.system(size: detailTextSize, weight: .medium))
                         Text(choice.caption)
                             .font(.caption)
                             .foregroundStyle(.secondary)
@@ -173,16 +156,78 @@ struct SelectedDateDetail: View {
                 }
                 .accessibilityElement(children: .combine)
                 .accessibilityLabel("\(choice.group.title), \(choice.title), \(choice.caption)")
+                Spacer(minLength: 8)
+                if let data = entry?.photoData, let image = UIImage(data: data) {
+                    Button { isPhotoPresented = true } label: {
+                        Image(uiImage: image)
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: 22, height: 18)
+                            .clipShape(RoundedRectangle(cornerRadius: 3))
+                            .padding(1)
+                            .background(theme.palette.resolved(for: colorScheme).cardBackground)
+                            .clipShape(RoundedRectangle(cornerRadius: 4))
+                            .accessibilityHidden(true)
+                            .frame(minWidth: 44, minHeight: 44, alignment: .center)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(localized("这天有个画面"))
+                }
             }
+            // 🎬 电影
+            if let title = entry?.watchTitle, !title.isEmpty {
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack(spacing: 6) {
+                        WatchTVIcon()
+                            .frame(width: 16, height: 12)
+                            .foregroundStyle(theme.palette.resolved(for: colorScheme).foreground.opacity(0.72))
+                            .accessibilityHidden(true)
+
+                        Text(title)
+                            .font(.system(size: 13))
+                            .foregroundStyle(theme.palette.strongAccent)
+                            .lineLimit(1)
+                            .truncationMode(.tail)
+
+                        Spacer(minLength: 0)
+                        Text(verbatim: "WATCHING")
+                            .font(.system(size: 8, weight: .medium))
+                            .tracking(0.5)
+                            .fixedSize()
+                            .padding(.leading, 12)
+                    }
+
+                    if let note = entry?.watchNote, !note.isEmpty {
+                        Text(note)
+                            .font(.system(size: 13))
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .foregroundStyle(.primary)
+                .padding(.top, 7)
+                .padding(
+                    .bottom,
+                    entry?.songTitle?.isEmpty == false
+                        ? 0
+                        : (entry?.note.isEmpty == false ? 18 : 12)
+                )
+                .accessibilityElement(children: .combine)
+            }
+
+            // 🎵 音乐
             if let title = entry?.songTitle, !title.isEmpty {
-                DailySongCard(title: title, artist: entry?.songArtist ?? "")
-                    .padding(.top, -6)
-                    .padding(.bottom, entry?.note.isEmpty == false ? 18 : 4)
+                DailySongCard(
+                    title: title,
+                    artist: entry?.songArtist ?? ""
+                )
+                .padding(.top, 7)
+                .padding(.bottom, entry?.note.isEmpty == false ? 18 : 12)
             }
             if let note = entry?.note, !note.isEmpty {
                 Text(DemoData.displayText(note))
-                    .font(.subheadline)
-                    .lineSpacing(4)
+                    .font(.system(size: detailTextSize))
+                    .lineSpacing(9)
                     .foregroundStyle(.primary)
             }
 
@@ -191,7 +236,7 @@ struct SelectedDateDetail: View {
 
     private func statusMessage(_ message: String) -> some View {
         Text(message)
-            .font(.subheadline)
+            .font(.system(size: detailTextSize))
             .foregroundStyle(.secondary)
             .frame(maxWidth: .infinity, minHeight: 52, alignment: .leading)
     }
@@ -218,16 +263,16 @@ struct DailySongCard: View {
             .foregroundStyle(theme.palette.resolved(for: colorScheme).foreground.opacity(0.72))
             .layoutPriority(1)
 
-            HStack(spacing: 16) {
+            HStack(spacing: 14) {
                 Image(systemName: "backward.fill")
                     .frame(width: 11)
                 Image(systemName: "play.fill")
-                    .font(.system(size: 10))
+                    .font(.system(size: 9))
                     .frame(width: 11)
                 Image(systemName: "forward.fill")
                     .frame(width: 11)
             }
-            .font(.system(size: 10 / 1.15))
+            .font(.system(size: 8))
             .foregroundStyle(theme.palette.resolved(for: colorScheme).foreground.opacity(0.64))
             .fixedSize()
             .padding(.leading, 20)
@@ -235,9 +280,8 @@ struct DailySongCard: View {
 
             Spacer(minLength: 0)
             Text(verbatim: "NOW PLAYING")
-                .font(.system(size: 9, weight: .medium))
-                .tracking(0.8)
-                .foregroundStyle(theme.palette.strongAccent)
+                .font(.system(size: 8, weight: .medium))
+                .tracking(0.5)
                 .fixedSize()
                 .padding(.leading, 12)
         }
@@ -320,33 +364,5 @@ private struct DailyPhotoPreview: View {
             try? await Task.sleep(for: .milliseconds(200))
             dismiss()
         }
-    }
-}
-
-// Only the exposed edges of the rear photo are drawn, so the outlines never overlap.
-private struct PhotoStackOutline: Shape {
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        let x = rect.width / 18
-        let y = rect.height / 22
-        func point(_ px: CGFloat, _ py: CGFloat) -> CGPoint {
-            CGPoint(x: rect.minX + px * x, y: rect.minY + py * y)
-        }
-        path.move(to: point(3.8, 16.5))
-        path.addLine(to: point(0.9, 4.1))
-        path.addQuadCurve(to: point(1.8, 2.9), control: point(0.6, 3.2))
-        path.addLine(to: point(11.1, 0.7))
-        path.addQuadCurve(to: point(12.4, 1.5), control: point(12.1, 0.5))
-        path.addLine(to: point(13, 3.6))
-        path.move(to: point(3.8, 10.5))
-        path.addLine(to: point(2.5, 5.1))
-        path.addLine(to: point(3.8, 4.8))
-        path.addRoundedRect(in: CGRect(x: rect.minX + 3.8 * x, y: rect.minY + 3.6 * y,
-                                      width: 13.3 * x, height: 17.6 * y),
-                            cornerSize: CGSize(width: 1.2 * x, height: 1.2 * y))
-        path.addRoundedRect(in: CGRect(x: rect.minX + 5.3 * x, y: rect.minY + 5.3 * y,
-                                      width: 10.3 * x, height: 11.9 * y),
-                            cornerSize: CGSize(width: 0.2 * x, height: 0.2 * y))
-        return path
     }
 }

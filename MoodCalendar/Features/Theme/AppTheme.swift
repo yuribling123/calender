@@ -2,9 +2,13 @@ import SwiftUI
 import UIKit
 
 enum AppTheme: String, CaseIterable, Identifiable {
-    case pink, black, apricot, sage, blue, lavender, caramel, creamYellow
+    case black, pink, apricot, sage, blue, lavender, caramel, creamYellow
 
     var id: String { rawValue }
+
+    var swatchColor: Color {
+        self == .black ? rgb(38, 38, 38) : palette.accent
+    }
 
     var title: String {
         switch self {
@@ -15,7 +19,7 @@ enum AppTheme: String, CaseIterable, Identifiable {
         case .lavender: localized("紫藤")
         case .caramel: localized("亚麻")
         case .creamYellow: localized("奶油")
-        case .black: localized("暖灰")
+        case .black: localized("曜黑")
         }
     }
 
@@ -50,10 +54,11 @@ enum AppTheme: String, CaseIterable, Identifiable {
                          softHighlight: rgb(247, 244, 231),
                          strongAccent: rgb(118, 98, 47), todayButtonFill: rgb(137, 118, 63))
         case .black:
-            ThemePalette.make(accent: rgb(165, 162, 154), selectionFill: rgb(38, 38, 38),
-                         softHighlight: rgb(242, 241, 238),
-                         strongAccent: rgb(99, 95, 88), todayButtonFill: rgb(113, 109, 101),
-                         onSelection: .white)
+            ThemePalette.make(accent: adaptive(light: rgb(56, 56, 56), dark: rgb(180, 180, 180)),
+                         selectionFill: rgb(38, 38, 38),
+                         softHighlight: rgb(240, 240, 238),
+                         strongAccent: rgb(38, 38, 38), todayButtonFill: rgb(113, 109, 101),
+                         onSelection: .white, isObsidian: true)
         }
     }
 }
@@ -90,7 +95,7 @@ enum CardPaper: String, CaseIterable, Identifiable {
         case .blue: "水蓝"
         case .purple: "紫藤"
         case .caramel: "亚麻"
-        case .black: "暖灰"
+        case .black: "曜黑"
         }
         return localized(key)
     }
@@ -118,7 +123,7 @@ enum CardPaper: String, CaseIterable, Identifiable {
         case .blue: rgb(239, 243, 243)
         case .purple: rgb(243, 240, 244)
         case .caramel: rgb(244, 240, 233)
-        case .black: rgb(242, 241, 238)
+        case .black: rgb(239, 238, 235)
         }
         let dark: Color = switch paper {
         case .original, .pink: rgb(58, 43, 48)
@@ -155,23 +160,119 @@ struct ThemePalette {
     let foreground: Color
     let onStrongAccent: Color
     let cardBackground: Color
+    var isObsidian: Bool = false
 }
 
 extension ThemePalette {
+    var searchFieldBackground: Color {
+        adaptive(light: rgb(244, 242, 239), dark: rgb(47, 45, 43))
+    }
+
+    var monthlyPlayerPaper: Color { adaptive(light: rgb(233, 234, 232), dark: rgb(65, 66, 65)) }
+    var monthlyPlayer2Body: Color { adaptive(light: rgb(39, 40, 38), dark: rgb(32, 33, 31)) }
+    var monthlyPlayer2Ink: Color { rgb(242, 242, 237) }
+    var monthlyPlayerShellTint: Color { adaptive(light: rgb(216, 219, 216), dark: rgb(65, 66, 65)) }
+    var monthlyPlayerShellHighlight: Color { adaptive(light: .white.opacity(0.65), dark: .white.opacity(0.19)) }
+    var monthlyPlayerShellShade: Color { adaptive(light: .black.opacity(0.10), dark: .black.opacity(0.26)) }
+    var monthlyPlayerShellShadow: Color { adaptive(light: .black.opacity(0.07), dark: .black.opacity(0.18)) }
+    var monthlyPlayerWindow: Color { adaptive(light: rgb(245, 245, 241), dark: rgb(66, 67, 64)) }
+    var monthlyPlayerInk: Color { adaptive(light: rgb(41, 43, 41), dark: rgb(232, 233, 228)) }
+    var monthlyPlayerHeart: Color { adaptive(light: rgb(188, 67, 82), dark: rgb(226, 120, 133)) }
+
+    var destructiveAction: Color {
+        adaptive(light: rgb(158, 76, 79), dark: rgb(224, 150, 153))
+    }
+
+    var calendarWeekdayText: Color {
+        tintedSurface(tint: strongAccent, lightBase: (112, 108, 105), darkBase: (180, 176, 172),
+                      lightWeight: 0.55, darkWeight: 0.45)
+    }
+
     var stampIndicator: Color { adaptive(light: rgb(97, 123, 96), dark: rgb(172, 192, 164)) }
     var stampWheelBackground: Color { adaptive(light: rgb(240, 238, 233), dark: rgb(34, 33, 30)) }
 
+    var monthlyFlowerPaper: Color { adaptive(light: rgb(253, 243, 239), dark: rgb(49, 40, 40)) }
+    var monthlyLacePaper: Color { adaptive(light: rgb(247, 245, 237), dark: rgb(58, 56, 51)) }
+    var monthlyLaceThread: Color { adaptive(light: rgb(149, 146, 128), dark: rgb(164, 158, 139)) }
+    var monthlyLaceTrim: Color { adaptive(light: rgb(255, 254, 248), dark: rgb(202, 197, 177)) }
+    var monthlyLaceHem: Color { adaptive(light: rgb(250, 249, 239), dark: rgb(87, 83, 73)) }
+    var monthlyLaceYarn: Color { adaptive(light: monthlyLaceTrim.opacity(0.45), dark: monthlyLaceTrim.opacity(0.14)) }
+    var monthlyLaceButton: Color { adaptive(light: rgb(98, 85, 77), dark: rgb(53, 50, 46)) }
+    var monthlyLaceButtonEdge: Color { adaptive(light: rgb(112, 105, 95), dark: rgb(127, 119, 107)) }
+    var monthlyLaceButtonHole: Color { adaptive(light: rgb(34, 31, 28), dark: rgb(28, 26, 23)) }
+    var monthlyLaceButtonStitch: Color { adaptive(light: rgb(235, 226, 213), dark: rgb(221, 212, 190)) }
+    var monthlyTicketPaper: Color { adaptive(light: rgb(252, 250, 246), dark: rgb(43, 40, 38)) }
+    var monthlyTicketInk: Color { foreground }
+    var monthlyTicketStubInk: Color { adaptive(light: rgb(122, 48, 56), dark: rgb(211, 170, 176)) }
+    var monthlyTicketRule: Color { foreground.opacity(0.35) }
+    var monthlyClothBase: Color { adaptive(light: rgb(247, 241, 228), dark: rgb(49, 45, 39)) }
+    var monthlyClothCheck: Color { adaptive(light: rgb(183, 158, 125), dark: rgb(167, 144, 114)) }
+    var monthlyClothStitch: Color { adaptive(light: rgb(150, 128, 101), dark: rgb(190, 170, 143)) }
+//     var monthlyScreenPaper: Color { adaptive(light: rgb(236, 232, 240), dark: rgb(49, 42, 55)) }
+//     var monthlyScreenBezel: Color { adaptive(light: rgb(244, 239, 231), dark: rgb(70, 61, 72)) }
+//     var monthlyScreenInk: Color { adaptive(light: rgb(87, 70, 95), dark: rgb(222, 208, 229)) }
+//     var monthlyScreenHighlight: Color { adaptive(light: rgb(255, 251, 245), dark: rgb(126, 109, 132)) }
+
     var memoBody: Color { adaptive(light: rgb(255, 252, 248), dark: rgb(43, 40, 38)) }
 
-    // A nearly white shell in light mode; just a trace of theme tint in dark mode.
-    var playerBody: Color {
-        tintedSurface(tint: accent, lightBase: (252, 250, 247), darkBase: (43, 40, 38),
-                      lightWeight: 0.04, darkWeight: 0.06)
+    var notebookCover: Color {
+        tintedSurface(tint: accent, lightBase: (125, 116, 108), darkBase: (38, 35, 33),
+                      lightWeight: 0.65, darkWeight: 0.28)
     }
+    var notebookPageEdge: Color {
+        adaptive(light: rgb(231, 225, 215), dark: rgb(58, 57, 52))
+    }
+    var notebookPaper: Color {
+        if isObsidian { return adaptive(light: rgb(250, 247, 242), dark: rgb(32, 30, 29)) }
+        return adaptive(light: rgb(255, 254, 252), dark: rgb(32, 34, 31))
+    }
+
+    // Warm ivory player shell, with the theme color reserved for its rim.
+    var playerBody: Color {
+        if isObsidian { return adaptive(light: rgb(46, 43, 45), dark: rgb(26, 23, 25)) }
+        return adaptive(light: rgb(249, 248, 245), dark: rgb(53, 52, 49))
+    }
+
+    var playerBodyRim: Color {
+        isObsidian ? .clear : adaptive(light: accent.opacity(0.47), dark: accent.opacity(0.40))
+    }
+
+    var televisionBody: Color {
+        playerBody
+    }
+
+    var televisionBodyRim: Color {
+        isObsidian ? Color.primary.opacity(0.09) : playerBodyRim
+    }
+
+    var televisionScreenBackground: Color {
+        if isObsidian { return playerScreenBackground }
+        return adaptive(light: rgb(235, 234, 231), dark: rgb(29, 28, 26))
+    }
+
+    var playerShellInk: Color { isObsidian ? rgb(235, 233, 230) : foreground }
 
     // Opaque so adding color to the shell cannot tint the screen through it.
     var playerScreenBackground: Color {
-        adaptive(light: rgb(255, 254, 252), dark: rgb(32, 34, 31))
+        adaptive(light: rgb(250, 247, 242), dark: rgb(32, 30, 29))
+    }
+
+    var musicPlayerScreenBackground: Color {
+        if isObsidian { return playerScreenBackground }
+        return adaptive(light: rgb(244, 243, 240), dark: rgb(34, 33, 31))
+    }
+
+    var playerWheelBackground: Color {
+        if isObsidian { return adaptive(light: rgb(237, 236, 233), dark: rgb(59, 57, 56)) }
+        return adaptive(light: rgb(237, 236, 233), dark: rgb(60, 58, 55))
+    }
+
+    var playerButtonTop: Color {
+        adaptive(light: rgb(250, 247, 242), dark: rgb(70, 67, 66))
+    }
+
+    var playerButtonBottom: Color {
+        adaptive(light: rgb(237, 236, 233), dark: rgb(52, 49, 48))
     }
 
     var playerScreenTopEdge: Color {
@@ -184,7 +285,7 @@ extension ThemePalette {
 
     static func make(accent: Color, selectionFill: Color, softHighlight: Color,
                      strongAccent: Color, todayButtonFill: Color,
-                     onSelection: Color = .primary) -> ThemePalette {
+                     onSelection: Color = .primary, isObsidian: Bool = false) -> ThemePalette {
         ThemePalette(
             accent: accent,
             selectionFill: adaptive(light: selectionFill, dark: accent.opacity(0.30)),
@@ -195,7 +296,8 @@ extension ThemePalette {
             background: adaptive(light: rgb(252, 250, 247), dark: rgb(29, 28, 27)),
             foreground: adaptive(light: rgb(49, 44, 42), dark: rgb(242, 237, 231)),
             onStrongAccent: rgb(252, 250, 247),
-            cardBackground: adaptive(light: .white.opacity(0.72), dark: rgb(43, 40, 38))
+            cardBackground: adaptive(light: .white.opacity(0.72), dark: rgb(43, 40, 38)),
+            isObsidian: isObsidian
         )
     }
 

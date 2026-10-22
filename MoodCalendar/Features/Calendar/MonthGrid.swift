@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct MonthGrid: View {
+    @Environment(\.appTheme) private var theme
     @ScaledMetric(relativeTo: .body) private var scaledWeekdaySize: CGFloat = 15
 
     let layout: MonthLayout
@@ -13,12 +14,12 @@ struct MonthGrid: View {
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 2), count: 7)
 
     var body: some View {
-        VStack(spacing: 0) {
+        VStack(spacing: 8) {
             LazyVGrid(columns: columns, spacing: 0) {
                 ForEach(0..<7, id: \.self) { index in
                     Text(weekdayNames[index])
                         .font(.system(size: min(scaledWeekdaySize, 19), weight: .medium))
-                        .foregroundStyle(Color.gray)
+                        .foregroundStyle(theme.palette.calendarWeekdayText.opacity(0.85))
                         .frame(maxWidth: .infinity, alignment: .center)
                 }
             }
@@ -31,7 +32,7 @@ struct MonthGrid: View {
                         let choice = entry?.choice
                         let hasNote = entry.map { !$0.note.isEmpty } ?? false
                         Button { onSelect(date) } label: {
-                            DayCell(date: date, choice: choice, hasNote: hasNote,
+                            DayCell(date: date, choice: choice,
                                     isToday: relation == .today,
                                     isSelected: key == selectedDay,
                                     isFuture: relation == .future,
@@ -42,7 +43,7 @@ struct MonthGrid: View {
                         .accessibilityLabel(accessibilityText(for: date, relation: relation, choice: choice, hasNote: hasNote))
                         .accessibilityAddTraits(key == selectedDay ? .isSelected : [])
                     } else {
-                        Color.clear.frame(height: 74)
+                        Color.clear.frame(height: 72)
                     }
                 }
             }

@@ -15,7 +15,9 @@ private struct CalendarTitleCardFramePreferenceKey: PreferenceKey {
 }
 
 private struct ThemePaletteIcon: View {
-    let palette: ThemePalette
+    let theme: AppTheme
+
+    private var palette: ThemePalette { theme.palette }
 
     var body: some View {
         ZStack(alignment: .bottomLeading) {
@@ -29,7 +31,7 @@ private struct ThemePaletteIcon: View {
                 .offset(x: 10, y: -7)
 
             RoundedRectangle(cornerRadius: 6)
-                .fill(palette.selectionFill)
+                .fill(palette.strongAccent)
                 .frame(width: 21, height: 21)
                 .offset(x: 5, y: -3)
 
@@ -251,7 +253,7 @@ struct PersonalizationScreen: View {
                         importPlan.monthlyNotesToImport.count,
                         importPlan.existingEntryCount,
                         importPlan.existingMonthlyNoteCount
-                    ))
+                    ) + "\n" + localized("将恢复 %d 个月份的便签皮肤；本机已有选择会保留。", importPlan.monthlyNoteSkins.count))
                 }
             }
             .alert(localized("数据备份"), isPresented: Binding(
@@ -354,7 +356,7 @@ struct PersonalizationScreen: View {
                 isThemePickerPresented = true
             } label: {
                 HStack(spacing: 14) {
-                    ThemePaletteIcon(palette: theme.palette)
+                    ThemePaletteIcon(theme: theme)
                         .accessibilityHidden(true)
                         .frame(width: 33, height: 30)
                     VStack(alignment: .leading, spacing: 4) {
@@ -385,7 +387,7 @@ struct PersonalizationScreen: View {
                 HStack(spacing: 14) {
                     SelectionShapeIcon(
                         shape: selectionShape,
-                        color: theme.palette.accent,
+                        color: theme.swatchColor,
                         size: 28
                     )
                         .accessibilityHidden(true)
@@ -531,8 +533,9 @@ struct PersonalizationScreen: View {
         do {
             let entries = try modelContext.fetch(FetchDescriptor<MoodEntry>())
             let monthlyNotes = try modelContext.fetch(FetchDescriptor<MonthlyNote>())
+            let skins = try MonthlyNoteSkinStore(context: modelContext).backupSelections()
             backupDocument = DataBackupDocument(
-                data: try DataBackupExporter.makeArchive(entries: entries, monthlyNotes: monthlyNotes)
+                data: try DataBackupExporter.makeArchive(entries: entries, monthlyNotes: monthlyNotes, monthlyNoteSkins: skins)
             )
             isShowingBackupExporter = true
         } catch {
@@ -580,7 +583,7 @@ struct PersonalizationScreen: View {
                         existingMonthKeys: existingMonthKeys
                     )
                 }.value
-                guard !plan.entriesToImport.isEmpty || !plan.monthlyNotesToImport.isEmpty else {
+                guard !plan.entriesToImport.isEmpty || !plan.monthlyNotesToImport.isEmpty || !plan.monthlyNoteSkins.isEmpty else {
                     backupMessage = localized("备份中的记录都已存在，没有需要补入的内容。")
                     return
                 }
@@ -596,7 +599,7 @@ struct PersonalizationScreen: View {
         self.importPlan = nil
         do {
             let result = try DataBackupImporter.restore(importPlan, into: modelContext)
-            backupMessage = localized("导入完成：新增 %d 条每日记录和 %d 条月便签。", result.entries, result.monthlyNotes)
+            backupMessage = localized("导入完成：新增 %d 条每日记录和 %d 条月便签。", result.entries, result.monthlyNotes) + "\n" + localized("月便签皮肤已合并，本机已有选择会保留。")
         } catch {
             backupMessage = localized("导入失败：%@", error.localizedDescription)
         }
@@ -606,14 +609,14 @@ struct PersonalizationScreen: View {
         VStack(alignment: .leading, spacing: 18) {
             VStack(alignment: .leading, spacing: 8) {
                 Toggle(localized("允许修改往日"), isOn: $allowPastDateEditing)
-                Text(localized("关闭后，往日记录仅可查看。"))
+                Text(localized("关闭后过往每日记录和月便签皮肤不可修改"))
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }
             Divider()
             VStack(alignment: .leading, spacing: 8) {
                 Toggle(localized("显示翻月箭头"), isOn: $showMonthArrows)
-                Text(localized("关闭后，仍可用手指左右滑动切换月份。"))
+                Text(localized("关闭后，仍可用手指左右滑动切换月份"))
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }
@@ -638,7 +641,9 @@ struct PersonalizationScreen: View {
                     }
                 }
                 .pickerStyle(.menu)
+                .font(.body)
             }
+            .font(.body)
             .padding(20)
             .background(theme.palette.resolved(for: colorScheme).cardBackground, in: RoundedRectangle(cornerRadius: 24))
         }
@@ -962,7 +967,7 @@ struct PersonalizationScreen: View {
                         } label: {
                             HStack(spacing: 14) {
                                 Circle()
-                                    .fill(option.palette.accent)
+                                    .fill(option.swatchColor)
                                     .frame(width: 28, height: 28)
                                     .accessibilityHidden(true)
                                 Text(option.title)
@@ -1031,7 +1036,7 @@ struct PersonalizationScreen: View {
                         HStack(spacing: 14) {
                             SelectionShapeIcon(
                                 shape: option,
-                                color: theme.palette.accent,
+                                color: theme.swatchColor,
                                 size: [.star, .sakura, .leaf, .cat].contains(option) ? 32 : 28
                             )
                                 .frame(width: 32, height: 32)

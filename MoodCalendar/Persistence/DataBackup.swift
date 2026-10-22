@@ -22,7 +22,19 @@ struct DataBackupDocument: FileDocument {
 }
 
 enum DataBackupExporter {
-    static func makeArchive(entries: [MoodEntry], monthlyNotes: [MonthlyNote]) throws -> Data {
+    static func makeArchive(entries: [MoodEntry], monthlyNotes: [MonthlyNote], monthlyNoteSkins: [String: String] = [:]) throws -> Data {
+        // CloudKit can deliver duplicate records before the normal reconciliation
+        // runs. Export one whole, latest record per day/month, including its photo.
+        let entries = Dictionary(grouping: entries, by: \.dayKey).values.compactMap {
+            $0.max {
+                $0.updatedAt == $1.updatedAt ? $0.id.uuidString < $1.id.uuidString : $0.updatedAt < $1.updatedAt
+            }
+        }
+        let monthlyNotes = Dictionary(grouping: monthlyNotes, by: \.monthKey).values.compactMap {
+            $0.max {
+                $0.updatedAt == $1.updatedAt ? $0.id.uuidString < $1.id.uuidString : $0.updatedAt < $1.updatedAt
+            }
+        }
         let dateFormatter = ISO8601DateFormatter()
         let manifest = Manifest(
             appIdentifier: "com.qingqing.MoodCalendar",
@@ -39,10 +51,14 @@ enum DataBackupExporter {
                     cardPaperID: $0.cardPaperID,
                     songTitle: $0.songTitle,
                     songArtist: $0.songArtist,
+                    watchTitle: $0.watchTitle,
+                    watchKind: $0.watchKind,
+                    watchNote: $0.watchNote,
                     photoPath: $0.photoData == nil ? nil : "photos/\($0.dayKey).jpg",
                     updatedAt: dateFormatter.string(from: $0.updatedAt)
                 )
             },
+            monthlyNoteSkins: monthlyNoteSkins,
             monthlyNotes: monthlyNotes.sorted { $0.monthKey < $1.monthKey }.map {
                 BackupMonthlyNote(
                     monthKey: $0.monthKey,
@@ -72,6 +88,10 @@ enum DataBackupExporter {
         for entry in entries.sorted(by: { $0.dayKey < $1.dayKey }) {
             lines.append("\(entry.dayKey) · \(entry.choice?.title ?? localized("Unknown sticker (%@)", String(entry.moodValue)))")
             if !entry.note.isEmpty { lines.append(entry.note) }
+            if let title = entry.watchTitle, !title.isEmpty {
+                lines.append("\(localized("看了什么")) · \(title)")
+                if let note = entry.watchNote, !note.isEmpty { lines.append(note) }
+            }
             if let title = entry.songTitle, !title.isEmpty {
                 let artist = entry.songArtist.flatMap { $0.isEmpty ? nil : $0 }
                 lines.append("♫ \(title)" + (artist.map { " · \($0)" } ?? ""))
@@ -99,6 +119,7 @@ private struct Manifest: Codable {
 
 private struct BackupPayload: Codable {
     let entries: [BackupEntry]
+    let monthlyNoteSkins: [String: String]?
     let monthlyNotes: [BackupMonthlyNote]
 }
 
@@ -109,6 +130,9 @@ private struct BackupEntry: Codable {
     let cardPaperID: String?
     let songTitle: String?
     let songArtist: String?
+    let watchTitle: String?
+    let watchKind: String?
+    let watchNote: String?
     let photoPath: String?
     let updatedAt: String
 }
@@ -127,6 +151,9 @@ struct DataBackupImportPlan: Sendable {
         let cardPaperID: String?
         let songTitle: String?
         let songArtist: String?
+        let watchTitle: String?
+        let watchKind: String?
+        let watchNote: String?
         let updatedAt: Date
         let photoData: Data?
     }
@@ -137,6 +164,7 @@ struct DataBackupImportPlan: Sendable {
         let updatedAt: Date
     }
 
+    let monthlyNoteSkins: [String: String]
     let entriesToImport: [Entry]
     let monthlyNotesToImport: [MonthlyNote]
     let existingEntryCount: Int
@@ -190,7 +218,13 @@ enum DataBackupImporter {
         guard payload.entries.count <= maximumFileCount,
               payload.monthlyNotes.count <= maximumFileCount else { throw ImportError.invalidBackup }
 
-        var seenDayKeys = Set<String>()
+        let importedSkins = payload.monthlyNoteSkins ?? [:]
+        guard importedSkins.count <= maximumFileCount,
+              importedSkins.allSatisfy({ isValidMonthKey($0.key) && $0.value.utf8.count <= 100 }) else {
+            throw ImportError.invalidBackup
+        }
+        let skins = importedSkins.mapValues { MonthlyNoteSkin(rawValue: $0)?.rawValue ?? MonthlyNoteSkin.plain.rawValue }
+
         let entries = try payload.entries.map { item -> DataBackupImportPlan.Entry in
             guard isValidDayKey(item.dayKey),
                   (1...30).contains(item.choiceID),
@@ -198,7 +232,9 @@ enum DataBackupImporter {
                   (item.cardPaperID?.utf8.count ?? 0) <= 100,
                   (item.songTitle?.utf8.count ?? 0) <= 1_000_000,
                   (item.songArtist?.utf8.count ?? 0) <= 1_000_000,
-                  seenDayKeys.insert(item.dayKey).inserted,
+                  (item.watchTitle?.utf8.count ?? 0) <= 1_000_000,
+                  (item.watchNote?.utf8.count ?? 0) <= 1_000_000,
+                  ["movie", "series"].contains(item.watchKind ?? "movie"),
                   let updatedAt = parseDate(item.updatedAt) else {
                 throw ImportError.invalidBackup
             }
@@ -225,17 +261,18 @@ enum DataBackupImporter {
                 cardPaperID: item.cardPaperID.flatMap { CardPaper(rawValue: $0)?.rawValue },
                 songTitle: songTitle,
                 songArtist: songTitle == nil ? nil : nonEmpty(item.songArtist),
+                watchTitle: nonEmpty(item.watchTitle),
+                watchKind: nonEmpty(item.watchTitle) == nil ? nil : item.watchKind,
+                watchNote: nonEmpty(item.watchTitle) == nil ? nil : nonEmpty(item.watchNote),
                 updatedAt: updatedAt,
                 photoData: photoData
             )
         }
 
-        var seenMonthKeys = Set<String>()
         let notes = try payload.monthlyNotes.map { item -> DataBackupImportPlan.MonthlyNote in
             guard isValidMonthKey(item.monthKey),
                   !item.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
                   item.text.count <= 100,
-                  seenMonthKeys.insert(item.monthKey).inserted,
                   let updatedAt = parseDate(item.updatedAt) else {
                 throw ImportError.invalidBackup
             }
@@ -253,13 +290,24 @@ enum DataBackupImporter {
             throw ImportError.invalidBackup
         }
 
-        let newEntries = entries.filter { !existingDayKeys.contains($0.dayKey) }
-        let newNotes = notes.filter { !existingMonthKeys.contains($0.monthKey) }
+        // Validate every member above, then recover older app-generated backups
+        // using the latest whole record. Equal timestamps use the last occurrence.
+        let latestEntries = entries.reduce(into: [String: DataBackupImportPlan.Entry]()) { result, entry in
+            if let saved = result[entry.dayKey], saved.updatedAt > entry.updatedAt { return }
+            result[entry.dayKey] = entry
+        }
+        let latestNotes = notes.reduce(into: [String: DataBackupImportPlan.MonthlyNote]()) { result, note in
+            if let saved = result[note.monthKey], saved.updatedAt > note.updatedAt { return }
+            result[note.monthKey] = note
+        }
+        let newEntries = latestEntries.values.filter { !existingDayKeys.contains($0.dayKey) }.sorted { $0.dayKey < $1.dayKey }
+        let newNotes = latestNotes.values.filter { !existingMonthKeys.contains($0.monthKey) }.sorted { $0.monthKey < $1.monthKey }
         return DataBackupImportPlan(
+            monthlyNoteSkins: skins.filter { !existingMonthKeys.contains($0.key) },
             entriesToImport: newEntries,
             monthlyNotesToImport: newNotes,
-            existingEntryCount: entries.count - newEntries.count,
-            existingMonthlyNoteCount: notes.count - newNotes.count
+            existingEntryCount: latestEntries.count - newEntries.count,
+            existingMonthlyNoteCount: latestNotes.count - newNotes.count
         )
     }
 
@@ -281,6 +329,9 @@ enum DataBackupImporter {
             entry.cardPaperID = item.cardPaperID
             entry.songTitle = item.songTitle
             entry.songArtist = item.songArtist
+            entry.watchTitle = item.watchTitle
+            entry.watchKind = item.watchKind
+            entry.watchNote = item.watchNote
             context.insert(entry)
         }
         for item in notes {
@@ -290,6 +341,7 @@ enum DataBackupImporter {
         }
 
         do {
+            try MonthlyNoteSkinStore(context: context).restore(plan.monthlyNoteSkins, excluding: existingMonthKeys)
             try context.save()
         } catch {
             context.rollback()
@@ -374,8 +426,10 @@ private enum ZipArchive {
     static func make(files: [(name: String, contents: Data)]) throws -> Data {
         var archive = Data()
         var directoryEntries: [DirectoryEntry] = []
+        var filenames = Set<String>()
 
         for file in files {
+            guard filenames.insert(file.name).inserted else { throw ArchiveError.duplicateFilename }
             let name = Data(file.name.utf8)
             guard let size = UInt32(exactly: file.contents.count),
                   let offset = UInt32(exactly: archive.count) else {
@@ -519,7 +573,6 @@ private enum ZipArchive {
                 guard expandedSizeValue == 0 else { throw ImportError.invalidArchive }
                 continue
             }
-            guard files[filename] == nil else { throw ImportError.invalidArchive }
             let fileSize = Int(expandedSizeValue)
             guard fileSize <= maximumExpandedSize - expandedSize else { throw ImportError.invalidArchive }
             expandedSize += fileSize
@@ -544,7 +597,13 @@ private enum ZipArchive {
                   CRC32.checksum(contents) == checksum else {
                 throw ImportError.invalidArchive
             }
-            files[filename] = contents
+            if let existing = files[filename] {
+                // Some earlier exports repeated the same photo. Accept only
+                // byte-identical, individually CRC-checked copies.
+                guard existing == contents else { throw ImportError.invalidArchive }
+            } else {
+                files[filename] = contents
+            }
         }
         guard cursor == directoryEnd else { throw ImportError.invalidArchive }
         return files
@@ -552,6 +611,7 @@ private enum ZipArchive {
 
     private enum ArchiveError: Error {
         case fileTooLarge
+        case duplicateFilename
     }
 
     private enum ImportError: Error {

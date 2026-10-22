@@ -51,14 +51,14 @@ enum DailyFragmentReminder {
             guard let day = calendar.date(byAdding: .day, value: offset, to: today) else { continue }
             let dayKey = DayKey(day).storageValue
             guard !recordedDayKeys.contains(dayKey),
-                  let fireDate = calendar.date(bySettingHour: 21, minute: 30, second: 0, of: day),
+                  let fireDate = calendar.date(bySettingHour: 14, minute: 0, second: 0, of: day),
                   fireDate > now else {
                 continue
             }
 
             var components = calendar.dateComponents([.year, .month, .day], from: day)
-            components.hour = 21
-            components.minute = 30
+            components.hour = 14
+            components.minute = 0
 
             let content = UNMutableNotificationContent()
             content.title = localized("今天的零碎")
