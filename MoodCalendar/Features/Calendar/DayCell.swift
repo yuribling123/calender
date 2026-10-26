@@ -7,11 +7,14 @@ struct DayCell: View {
 
     let date: Date
     let choice: DailyChoice?
+    var isStarred = false
     let isToday: Bool
     let isSelected: Bool
     let isFuture: Bool
     let isRevealPending: Bool
     let isAnimating: Bool
+
+    @AppStorage("calendarBookmarkStyle") private var storedBookmarkStyle = CalendarBookmarkStyle.dateColor.rawValue
 
     @State private var revealScale: CGFloat = 1
     @State private var revealOpacity: CGFloat = 1
@@ -30,13 +33,20 @@ struct DayCell: View {
                         )
                     )
                     .foregroundStyle(
-                        isSelected
-                            ? theme.palette.onSelection
-                            : isToday
-                                ? theme.palette.accent
-                                : Color.primary
+                        isStarred
+                            ? (CalendarBookmarkStyle.resolve(storedBookmarkStyle) == .dateColor ? CalendarBookmarkStyle.ink : theme.palette.bookmarkHighlightInk)
+                            : isSelected
+                                ? theme.palette.onSelection
+                                : isToday
+                                    ? theme.palette.accent
+                                    : Color.primary
                     )
-                    .opacity(isFuture ? 0.55 : 1)
+                    .background {
+                        if isStarred && CalendarBookmarkStyle.resolve(storedBookmarkStyle) == .highlighter {
+                            BookmarkHighlight()
+                        }
+                    }
+                    .opacity(isFuture && !isStarred ? 0.55 : 1)
                     .frame(
                         width: min(34, geometry.size.width),
                         height: 28

@@ -12,63 +12,62 @@ struct SelectedDateDetail: View {
 
     let date: Date
     let entry: MoodEntry?
+    var isStarred = false
+    var onToggleStar: () -> Void = {}
     let onRecordMood: (Mood) -> Void
     let onEdit: () -> Void
 
     private var relation: DayRelation { DayKey(date).relationToToday }
+    private var canMark: Bool { relation != .past || allowPastDateEditing }
+    private var pastEditTitle: String { localized("编辑") }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            if relation != .today || entry?.choice != nil {
-                HStack(spacing: 14) {
-                    Text(relation == .today
-                         ? localized("今天")
-                         : "\(date.formatted(.dateTime.locale(AppLanguage.locale).month().day())) · \(date.formatted(.dateTime.locale(AppLanguage.locale).weekday(.wide)))")
-                        .font(.system(size: detailTextSize, weight: .medium))
-                        .foregroundStyle(AppTheme.black.palette.strongAccent)
-                    Spacer(minLength: 8)
-                    if relation == .past && allowPastDateEditing || relation == .today && entry?.choice != nil {
-                        Color.clear.frame(width: relation == .past ? 60 : 44, height: 22)
+            HStack(spacing: 14) {
+                Text(relation == .today
+                     ? localized(entry?.choice == nil ? "今天什么心情？" : "今天")
+                     : "\(date.formatted(.dateTime.locale(AppLanguage.locale).month().day())) · \(date.formatted(.dateTime.locale(AppLanguage.locale).weekday(.wide)))")
+                    .font(.system(size: detailTextSize, weight: .medium))
+                    .foregroundStyle(AppTheme.black.palette.strongAccent)
+                Spacer(minLength: 8)
+                Color.clear.frame(width: (relation == .past && allowPastDateEditing || relation == .today && entry?.choice != nil) ? 124 : (canMark ? 60 : 0), height: 22)
+            }
+            .frame(minHeight: 22)
+            .padding(.bottom, -8)
+            .overlay(alignment: .trailing) {
+                HStack(spacing: 4) {
+                    if canMark {
+                        Button(action: onToggleStar) {
+                            Text(localized(isStarred ? "已标记" : "标记"))
+                                .font(.system(size: detailTextSize, weight: .medium))
+                                .foregroundStyle(theme.palette.resolved(for: colorScheme).foreground.opacity(0.65))
+                                .frame(width: 60, height: 44)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel(localized(isStarred ? "取消标记这一天" : "标记这一天"))
                     }
-                }
-                .frame(minHeight: 22)
-                .padding(.bottom, -8)
-                .overlay(alignment: .trailing) {
                     if relation == .past && allowPastDateEditing || relation == .today && entry?.choice != nil {
                         Button(action: onEdit) {
-                            Group {
-                                if relation == .past {
-                                    Text(localized("补充"))
-                                        .font(.system(size: detailTextSize, weight: .medium))
-                                        .foregroundStyle(theme.palette.strongAccent)
-                                } else {
-                                    Image(systemName: "square.and.pencil")
-                                        .font(.system(size: detailTextSize + 2, weight: .medium))
-                                        .foregroundStyle(theme.palette.strongAccent)
-                                }
-                            }
-                            .frame(minWidth: 44, minHeight: 44)
+                            Text(pastEditTitle)
+                            .font(.system(size: detailTextSize, weight: .medium))
+                            .foregroundStyle(theme.palette.strongAccent)
+                            .frame(width: 60, height: 44)
                             .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
-                        .accessibilityLabel(relation == .past ? localized("补充") : localized("修改记录"))
+                        .accessibilityLabel(relation == .past ? pastEditTitle : localized("修改记录"))
                         .transition(.scale(scale: 0.72).combined(with: .opacity))
                     }
                 }
-                .animation(.spring(response: 0.42, dampingFraction: 0.64), value: entry?.choice)
             }
+            .animation(.spring(response: 0.42, dampingFraction: 0.64), value: entry?.choice)
 
             switch relation {
             case .today:
                 if let choice = entry?.choice {
                     recordedChoice(choice)
                 } else {
-                    HStack {
-                        Text(localized("今天什么心情？"))
-                            .font(.system(size: detailTextSize, weight: .medium))
-
-                    }
-
                     HStack(spacing: 8) {
                         ForEach(Mood.allCases) { mood in
                             Button { onRecordMood(mood) } label: {

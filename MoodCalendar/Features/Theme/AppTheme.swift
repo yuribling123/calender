@@ -1,6 +1,50 @@
 import SwiftUI
 import UIKit
 
+/// Display preferences for existing date bookmarks; saved dates remain unchanged.
+enum CalendarBookmarkStyle: String, CaseIterable, Identifiable {
+    case dateColor, highlighter
+
+    var id: String { rawValue }
+    var title: String {
+        switch self {
+        case .dateColor: localized("日期改色")
+        case .highlighter: localized("荧光笔")
+        }
+    }
+
+    static func resolve(_ value: String) -> Self { Self(rawValue: value) ?? .dateColor }
+
+    static let ink = adaptive(light: rgb(151, 84, 100), dark: rgb(221, 164, 180))
+}
+
+/// A short, slightly uneven stroke behind the date; never changes its layout.
+struct BookmarkHighlight: View {
+    @Environment(\.appTheme) private var theme
+
+    var body: some View {
+        BookmarkStroke()
+            .fill(theme.palette.bookmarkHighlight)
+            .padding(.horizontal, -3)
+            .frame(height: 16)
+            .rotationEffect(.degrees(-3))
+            .allowsHitTesting(false)
+            .accessibilityHidden(true)
+    }
+}
+
+private struct BookmarkStroke: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        path.move(to: CGPoint(x: rect.minX + 2, y: rect.minY + 1))
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY))
+        path.addLine(to: CGPoint(x: rect.maxX - 2, y: rect.maxY - 1))
+        path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
+        path.closeSubpath()
+        return path
+    }
+}
+
 enum AppTheme: String, CaseIterable, Identifiable {
     case black, pink, apricot, sage, blue, lavender, caramel, creamYellow
 
@@ -164,6 +208,18 @@ struct ThemePalette {
 }
 
 extension ThemePalette {
+    var bookmarkHighlight: Color {
+        if isObsidian {
+            return adaptive(light: rgb(219, 217, 212), dark: rgb(177, 174, 167))
+        }
+        return tintedSurface(tint: accent, lightBase: (255, 253, 248), darkBase: (35, 33, 31),
+                             lightWeight: 0.45, darkWeight: 0.40)
+    }
+
+    var bookmarkHighlightInk: Color {
+        isObsidian ? rgb(49, 44, 42) : foreground
+    }
+
     var searchFieldBackground: Color {
         adaptive(light: rgb(244, 242, 239), dark: rgb(47, 45, 43))
     }
@@ -534,7 +590,7 @@ struct ChoiceArtwork: View {
     }
 
     var body: some View {
-        let usesWhiteLines = colorScheme == .dark && group != .playful && group != .rabbit
+        let usesWhiteLines = colorScheme == .dark && group != .playful && group != .rabbit && group != .everyday
         Image(imageName)
             .renderingMode(usesWhiteLines ? .template : .original)
             .resizable()

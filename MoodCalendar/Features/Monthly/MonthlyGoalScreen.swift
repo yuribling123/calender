@@ -317,8 +317,8 @@ struct MonthlyGoalScreen: View {
     }
 
     private func displayedSkin(for date: Date) -> MonthlyNoteSkin {
-        let skin = MonthlyNoteSkinStore.skin(for: monthKey(for: date), in: monthlySkins)
-        return skin.requiresMembership && !membership.hasMembershipAccess ? .plain : skin
+        // Preserve restored styles for viewing; membership is checked when selecting a style.
+        MonthlyNoteSkinStore.skin(for: monthKey(for: date), in: monthlySkins)
     }
 
     private func canChangeSkin(for date: Date) -> Bool {

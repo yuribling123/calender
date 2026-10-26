@@ -1,68 +1,34 @@
 import SwiftUI
 
-/// Narrow silver notebook binding.
-struct RibbonNotebookBinding: View {
-    @Environment(\.colorScheme) private var colorScheme
+/// Subtle woven spine, with no metal hardware.
+struct ClothNotebookSpine: View {
+    @Environment(\.appTheme) private var theme
 
     var body: some View {
         Canvas { context, size in
-            let scale = min(size.width / 32, 1)
-            guard scale > 0, size.height > 70 else { return }
-            let ringCenters = stride(from: CGFloat(70), through: size.height - 28, by: 82).map { $0 }
-            for center in ringCenters {
-                drawRing(at: center, scale: scale, in: &context)
+            for x in stride(from: CGFloat(1), to: size.width, by: 2) {
+                var thread = Path()
+                thread.move(to: CGPoint(x: x, y: 0))
+                thread.addLine(to: CGPoint(x: x, y: size.height))
+                context.stroke(thread, with: .color(theme.palette.foreground.opacity(0.045)), lineWidth: 0.5)
             }
-
+            for y in stride(from: CGFloat(1), to: size.height, by: 3) {
+                var thread = Path()
+                thread.move(to: CGPoint(x: 0, y: y))
+                thread.addLine(to: CGPoint(x: size.width, y: y))
+                context.stroke(thread, with: .color(.white.opacity(0.07)), lineWidth: 0.5)
+            }
         }
+        .overlay {
+            LinearGradient(
+                colors: [.black.opacity(0.06), .clear, .black.opacity(0.12)],
+                startPoint: .leading, endPoint: .trailing
+            )
+        }
+        .clipShape(UnevenRoundedRectangle(topLeadingRadius: 12, bottomLeadingRadius: 12))
         .allowsHitTesting(false)
         .accessibilityHidden(true)
     }
-
-    private func drawRing(at y: CGFloat, scale: CGFloat, in context: inout GraphicsContext) {
-        let hole = Path(ellipseIn: CGRect(x: 24 * scale, y: y - 4, width: 5 * scale, height: 8))
-        context.fill(hole, with: .color(.black.opacity(colorScheme == .dark ? 0.42 : 0.15)))
-
-        var ring = Path()
-        ring.move(to: CGPoint(x: 27 * scale, y: y - 2))
-        ring.addCurve(
-            to: CGPoint(x: 27 * scale, y: y + 3),
-            control1: CGPoint(x: -5 * scale, y: y - 18),
-            control2: CGPoint(x: -5 * scale, y: y + 18)
-        )
-
-        context.stroke(
-            ring.applying(CGAffineTransform(translationX: 0, y: 1)),
-            with: .color(.black.opacity(colorScheme == .dark ? 0.30 : 0.13)),
-            style: StrokeStyle(lineWidth: 3.5 * scale, lineCap: .round)
-        )
-        context.stroke(
-            ring,
-            with: .linearGradient(
-                Gradient(stops: [
-                    .init(color: Color(white: 0.48), location: 0),
-                    .init(color: Color(white: 0.95), location: 0.30),
-                    .init(color: Color(white: 0.64), location: 0.54),
-                    .init(color: Color(white: 0.91), location: 0.72),
-                    .init(color: Color(white: 0.42), location: 1)
-                ]),
-                startPoint: CGPoint(x: 0, y: y - 9),
-                endPoint: CGPoint(x: 0, y: y + 9)
-            ),
-            style: StrokeStyle(lineWidth: 2.8 * scale, lineCap: .round)
-        )
-
-        var glint = Path()
-        glint.move(to: CGPoint(x: 6 * scale, y: y - 3))
-        glint.addQuadCurve(
-            to: CGPoint(x: 19 * scale, y: y - 5),
-            control: CGPoint(x: 9 * scale, y: y - 7)
-        )
-        context.stroke(
-            glint, with: .color(.white.opacity(0.78)),
-            style: StrokeStyle(lineWidth: 0.65 * scale, lineCap: .round)
-        )
-    }
-
 }
 
 /// Rounded stamp paper with small inward perforations along all four edges.

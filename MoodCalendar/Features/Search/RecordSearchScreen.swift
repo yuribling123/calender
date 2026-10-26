@@ -3,13 +3,13 @@ import SwiftData
 import UIKit
 
 struct RecordSearchScreen: View {
+    var starredDayKeys: Set<String> = []
     let onClose: () -> Void
     let onOpenResult: (RecordSearchResult) -> Void
     @Environment(\.appTheme) private var theme
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Query private var entries: [MoodEntry]
-    @Query private var monthlyNotes: [MonthlyNote]
     @State private var query = ""
     @State private var topResultID: String?
     @State private var isKeyboardVisible = false
@@ -18,7 +18,7 @@ struct RecordSearchScreen: View {
     @ScaledMetric(relativeTo: .body) private var contentFontSize: CGFloat = 14
 
     private var results: [RecordSearchResult] {
-        RecordSearch.results(entries: entries, monthlyNotes: monthlyNotes, query: query)
+        RecordSearch.results(entries: entries, monthlyNotes: [], query: query)
     }
 
     private var resultMonths: [JournalMonth] {
@@ -95,50 +95,47 @@ struct RecordSearchScreen: View {
 
     private var notebook: some View {
         ZStack(alignment: .leading) {
-            RoundedRectangle(cornerRadius: 22)
+            RoundedRectangle(cornerRadius: 13)
                 .fill(theme.palette.notebookCover)
                 .overlay {
-                    RoundedRectangle(cornerRadius: 22)
+                    RoundedRectangle(cornerRadius: 13)
                         .strokeBorder(theme.palette.foreground.opacity(0.09), lineWidth: 0.75)
                 }
-                .shadow(color: .black.opacity(colorScheme == .dark ? 0.30 : 0.15), radius: 20, y: 12)
+                .shadow(color: .black.opacity(colorScheme == .dark ? 0.24 : 0.11), radius: 8, y: 4)
 
-            RoundedRectangle(cornerRadius: 14)
+            // Two thin sheets exposed only along the right and bottom edges.
+            RoundedRectangle(cornerRadius: 7)
                 .fill(theme.palette.notebookPageEdge)
-                .shadow(color: .black.opacity(0.10), radius: 1, x: 0.5, y: 1)
-                .padding(.leading, 23)
-                .padding(.trailing, 4)
-                .padding(.top, 10)
-                .padding(.bottom, 5)
-                .overlay(alignment: .bottom) {
-                    RoundedRectangle(cornerRadius: 1)
-                        .fill(theme.palette.foreground.opacity(0.10))
-                        .frame(height: 0.5)
-                        .padding(.leading, 31)
-                        .padding(.trailing, 16)
-                        .padding(.bottom, 7)
-                }
+                .shadow(color: .black.opacity(0.12), radius: 0.8, x: 0.5, y: 1)
+                .padding(.leading, 14)
+                .padding(.trailing, 4.5)
+                .padding(.top, 2)
+                .padding(.bottom, 3)
 
-            RoundedRectangle(cornerRadius: 14)
+            RoundedRectangle(cornerRadius: 7)
                 .fill(theme.palette.memoBody)
-                .shadow(color: .black.opacity(0.08), radius: 0.75, x: 0.5, y: 1)
                 .overlay {
-                    RoundedRectangle(cornerRadius: 14)
+                    RoundedRectangle(cornerRadius: 7)
                         .strokeBorder(theme.palette.foreground.opacity(0.08), lineWidth: 0.5)
                 }
-                .padding(.leading, 24)
-                .padding(.trailing, 5.5)
-                .padding(.top, 8.5)
-                .padding(.bottom, 7.5)
+                .padding(.leading, 13.5)
+                .padding(.trailing, 5.75)
+                .padding(.top, 1)
+                .padding(.bottom, 4.5)
 
             notebookContents
                 .background(theme.palette.notebookPaper)
                 .overlay(alignment: .leading) {
                     LinearGradient(
-                        colors: [theme.palette.foreground.opacity(0.08), .clear],
+                        stops: [
+                            .init(color: .black.opacity(colorScheme == .dark ? 0.22 : 0.10), location: 0),
+                            .init(color: .black.opacity(0.035), location: 0.3),
+                            .init(color: .white.opacity(0.10), location: 0.65),
+                            .init(color: .clear, location: 1)
+                        ],
                         startPoint: .leading, endPoint: .trailing
                     )
-                    .frame(width: 10)
+                    .frame(width: 18)
                     .overlay(alignment: .leading) {
                         Rectangle()
                             .fill(theme.palette.foreground.opacity(0.10))
@@ -147,14 +144,15 @@ struct RecordSearchScreen: View {
                     .allowsHitTesting(false)
                     .accessibilityHidden(true)
                 }
-                .clipShape(RoundedRectangle(cornerRadius: 14))
-                .padding(.leading, 24)
+                .clipShape(RoundedRectangle(cornerRadius: 7))
+                .padding(.leading, 13)
                 .padding(.trailing, 7)
-                .padding(.top, 7)
-                .padding(.bottom, 10)
+                .padding(.top, 0)
+                .padding(.bottom, 6)
 
-            RibbonNotebookBinding()
-                .frame(width: 32)
+            ClothNotebookSpine()
+                .frame(width: 13)
+                .padding(.bottom, 2)
         }
     }
 
@@ -178,15 +176,17 @@ struct RecordSearchScreen: View {
             }
             .scrollPosition(id: $topResultID, anchor: .top)
             .scrollDismissesKeyboard(.interactively)
-
-            Text(verbatim: "— 01 —")
-                .font(.system(size: 10, design: .serif))
-                .monospacedDigit()
-                .foregroundStyle(theme.palette.foreground.opacity(0.38))
-                .padding(.top, 5)
-                .padding(.bottom, 7)
+            .overlay(alignment: .bottom) {
+                LinearGradient(
+                    colors: [theme.palette.notebookPaper.opacity(0), theme.palette.notebookPaper],
+                    startPoint: .top, endPoint: .bottom
+                )
+                .frame(height: 18)
+                .allowsHitTesting(false)
                 .accessibilityHidden(true)
+            }
         }
+        .padding(.bottom, 8)
     }
 
     private var journalHeader: some View {
@@ -216,20 +216,20 @@ struct RecordSearchScreen: View {
             // }
 
             searchField
-                .padding(.top, 14)
+                .padding(.top, 6)
                 .disabled(pendingResult != nil)
 
             HStack(spacing: 8) {
                 Spacer(minLength: 0)
                 Text(localized(
                     query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-                        ? "共收藏了 %@ 个日子" : "找到 %@ 条回忆",
+                        ? "共记录了 %@ 个日子" : "找到 %@ 条回忆",
                     String(results.count)
                 ))
             }
             .font(.caption2)
             .foregroundStyle(.secondary)
-            .padding(.top, 12)
+            .padding(.top, 6)
             .padding(.bottom, 2)
             .accessibilityElement(children: .combine)
             .accessibilityAddTraits(.updatesFrequently)
@@ -265,13 +265,13 @@ struct RecordSearchScreen: View {
                 .accessibilityLabel(localized("清除搜索"))
             }
         }
-        .padding(.leading, 13)
-        .padding(.trailing, query.isEmpty ? 13 : 0)
-        .frame(minHeight: 48)
-        .background(theme.palette.searchFieldBackground, in: RoundedRectangle(cornerRadius: 9))
-        .overlay {
-            RoundedRectangle(cornerRadius: 9)
-                .strokeBorder(theme.palette.foreground.opacity(0.10), lineWidth: 0.6)
+        .padding(.leading, 2)
+        .frame(minHeight: 44)
+        .overlay(alignment: .bottom) {
+            Rectangle()
+                .fill(theme.palette.foreground.opacity(isSearchFocused ? 0.35 : 0.16))
+                .frame(height: 0.5)
+                .accessibilityHidden(true)
         }
     }
 
@@ -287,7 +287,11 @@ struct RecordSearchScreen: View {
                                 Button {
                                     requestOpenResult(result)
                                 } label: {
-                                    SearchResultRow(result: result, query: query)
+                                    SearchResultRow(
+                                        result: result,
+                                        query: query,
+                                        isStarred: result.source == .day && starredDayKeys.contains(DayKey(result.date).storageValue)
+                                    )
                                 }
                                 .buttonStyle(.plain)
                                 .accessibilityElement(children: .combine)
@@ -325,7 +329,6 @@ struct RecordSearchScreen: View {
 
     private var emptyState: some View {
         let hasWrittenNotes = entries.contains { !$0.note.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
-            || monthlyNotes.contains { !$0.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
         return VStack(spacing: 10) {
             Text(localized(hasWrittenNotes ? "没有找到这段回忆" : "还没有写下文字"))
                 .font(.subheadline)
@@ -369,15 +372,17 @@ struct SearchReturnButton: View {
 }
 
 private struct SearchResultRow: View {
+    @AppStorage("calendarBookmarkStyle") private var storedBookmarkStyle = CalendarBookmarkStyle.dateColor.rawValue
     let result: RecordSearchResult
     let query: String
+    let isStarred: Bool
     @Environment(\.appTheme) private var theme
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @ScaledMetric(relativeTo: .body) private var noteFontSize: CGFloat = 14
     @ScaledMetric(relativeTo: .caption2) private var secondaryFontSize: CGFloat = 11
 
     private var paper: Color {
-        result.source == .day ? CardPaper.resolve(result.cardPaperID).color(for: theme) : theme.palette.memoBody
+        CardPaper.resolve(result.cardPaperID).swatchAccent(for: theme)
     }
 
     var body: some View {
@@ -397,13 +402,23 @@ private struct SearchResultRow: View {
         .padding(.horizontal, 12)
         .padding(.vertical, 5)
         .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
-        .background {
-            PostageStickerShape(perforationDepth: result.source == .day ? 0.3 : 1)
-                .fill(paper)
-                .overlay {
-                    PostageStickerShape(perforationDepth: result.source == .day ? 0.3 : 1)
-                        .stroke(theme.palette.foreground.opacity(0.07), lineWidth: 0.5)
-                }
+        .foregroundStyle(theme.palette.foreground)
+        .overlay(alignment: .bottom) {
+            if result.source == .day {
+                Rectangle()
+                    .fill(theme.palette.foreground.opacity(0.09))
+                    .frame(height: 0.5)
+                    .padding(.horizontal, 12)
+                    .accessibilityHidden(true)
+            }
+        }
+        .overlay(alignment: .leading) {
+            if result.source == .day {
+                Capsule()
+                    .fill(paper)
+                    .frame(width: 4, height: 22)
+                    .accessibilityHidden(true)
+            }
         }
         .contentShape(Rectangle())
     }
@@ -413,7 +428,7 @@ private struct SearchResultRow: View {
             if let choice = result.choice {
                 // Balance visible subjects rather than their transparent canvases.
                 let canvasWidth: CGFloat = switch choice.group {
-                case .mood: 38
+                case .mood: 42
                 case .daily: 50
                 case .rabbit: 52
                 default: 60
@@ -422,13 +437,14 @@ private struct SearchResultRow: View {
                     .frame(width: canvasWidth, height: canvasWidth / 2)
                     .frame(width: 40, height: 30)
                     .accessibilityLabel(choice.title)
+            } else if result.source == .month {
+                Image(systemName: "note.text")
+                    .font(.system(size: 21, weight: .light))
+                    .foregroundStyle(theme.palette.foreground.opacity(0.63))
+                    .frame(width: 40, height: 30)
+                    .accessibilityHidden(true)
             }
             VStack(alignment: .leading, spacing: 3) {
-                if result.source == .month {
-                    Text(localized("月便签"))
-                        .font(.system(size: secondaryFontSize))
-                        .foregroundStyle(.secondary)
-                }
                 highlighted(result.preview)
                     .font(.system(size: noteFontSize))
                     .lineLimit(1)
@@ -443,11 +459,21 @@ private struct SearchResultRow: View {
             if result.source == .day {
                 Text(result.date.formatted(.dateTime.locale(AppLanguage.locale).day()))
                     .monospacedDigit()
+                    .foregroundStyle(isStarred
+                        ? (CalendarBookmarkStyle.resolve(storedBookmarkStyle) == .dateColor ? CalendarBookmarkStyle.ink : theme.palette.bookmarkHighlightInk)
+                        : theme.palette.foreground.opacity(0.63))
+                    .background {
+                        if isStarred && CalendarBookmarkStyle.resolve(storedBookmarkStyle) == .highlighter {
+                            BookmarkHighlight()
+                        }
+                    }
                 Text(result.date.formatted(.dateTime.locale(AppLanguage.locale).weekday(.abbreviated)))
             } else {
-                Image(systemName: "note.text")
-                    .font(.system(size: 13, weight: .light))
-                    .accessibilityHidden(true)
+                Text(localized("月便签"))
+                    .font(.system(size: secondaryFontSize))
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.8)
+                    .frame(width: dynamicTypeSize.isAccessibilitySize ? nil : 32, alignment: .leading)
             }
         }
         .font(.system(size: 11, weight: .regular))

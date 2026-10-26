@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		F19A20260000000000000005 /* Features/Monthly/MonthlyNoteSkinView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F19A20260000000000000006; };
 		F19A20260000000000000003 /* Persistence/MonthlyNoteSkinStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F19A20260000000000000004; };
+		F19A20260000000000000007 /* Persistence/StarredDayStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F19A20260000000000000008; };
 		F19A20260000000000000001 /* Domain/MonthlyNoteSkin.swift in Sources */ = {isa = PBXBuildFile; fileRef = F19A20260000000000000002; };
 		F18D20260000000000000005 /* MoodCalendar/Features/Search/NotebookDecorations.swift in Sources */ = {isa = PBXBuildFile; fileRef = F18D20260000000000000006 /* MoodCalendar/Features/Search/NotebookDecorations.swift */; };
 		F18D20260000000000000003 /* MoodCalendar/Features/Search/RecordSearchScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = F18D20260000000000000004 /* MoodCalendar/Features/Search/RecordSearchScreen.swift */; };
@@ -47,6 +48,7 @@
 /* Begin PBXFileReference section */
 		F19A20260000000000000006 /* Features/Monthly/MonthlyNoteSkinView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Features/Monthly/MonthlyNoteSkinView.swift; sourceTree = "<group>"; };
 		F19A20260000000000000004 /* Persistence/MonthlyNoteSkinStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Persistence/MonthlyNoteSkinStore.swift; sourceTree = "<group>"; };
+		F19A20260000000000000008 /* Persistence/StarredDayStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Persistence/StarredDayStore.swift; sourceTree = "<group>"; };
 		F19A20260000000000000002 /* Domain/MonthlyNoteSkin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Domain/MonthlyNoteSkin.swift; sourceTree = "<group>"; };
 		F18D20260000000000000006 /* MoodCalendar/Features/Search/NotebookDecorations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Features/Search/NotebookDecorations.swift; sourceTree = "<group>"; };
 		F18D20260000000000000004 /* MoodCalendar/Features/Search/RecordSearchScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Features/Search/RecordSearchScreen.swift; sourceTree = "<group>"; };
@@ -123,6 +125,7 @@
 				C91A00000000000000000002 /* MoodCalendar/Features/Monthly/MonthlyGoalScreen.swift */,
 				F19A20260000000000000006 /* Features/Monthly/MonthlyNoteSkinView.swift */,
 				F19A20260000000000000004 /* Persistence/MonthlyNoteSkinStore.swift */,
+				F19A20260000000000000008 /* Persistence/StarredDayStore.swift */,
 				F19A20260000000000000002 /* Domain/MonthlyNoteSkin.swift */,
 				FBDC4F23F93125BBEEAE800C /* Products */,
 			);
@@ -247,6 +250,7 @@
 				C91A00000000000000000001 /* MoodCalendar/Features/Monthly/MonthlyGoalScreen.swift in Sources */,
 				F19A20260000000000000005 /* Features/Monthly/MonthlyNoteSkinView.swift in Sources */,
 				F19A20260000000000000003 /* Persistence/MonthlyNoteSkinStore.swift in Sources */,
+				F19A20260000000000000007 /* Persistence/StarredDayStore.swift in Sources */,
 				F19A20260000000000000001 /* Domain/MonthlyNoteSkin.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -5,7 +5,7 @@ import SwiftData
 final class MoodEntry {
     var id: UUID = UUID()
     var dayKey: String = ""
-    // Keep the original field for SwiftData compatibility; it stores DailyChoice IDs 1–20.
+    // Keep the original field for SwiftData compatibility; it stores stable DailyChoice IDs.
     var moodValue: Int = DailyChoice.veryGood.rawValue
     var note: String = ""
     @Attribute(.externalStorage) var photoData: Data? = nil

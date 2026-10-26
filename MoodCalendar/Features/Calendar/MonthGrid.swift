@@ -6,6 +6,7 @@ struct MonthGrid: View {
 
     let layout: MonthLayout
     let entries: [String: MoodEntry]
+    var starredDayKeys: Set<String> = []
     let selectedDay: DayKey
     let pendingRevealDayKey: String?
     let animatingDayKey: String?
@@ -33,6 +34,7 @@ struct MonthGrid: View {
                         let hasNote = entry.map { !$0.note.isEmpty } ?? false
                         Button { onSelect(date) } label: {
                             DayCell(date: date, choice: choice,
+                                    isStarred: starredDayKeys.contains(key.storageValue),
                                     isToday: relation == .today,
                                     isSelected: key == selectedDay,
                                     isFuture: relation == .future,
@@ -56,9 +58,10 @@ struct MonthGrid: View {
 
     private func accessibilityText(for date: Date, relation: DayRelation, choice: DailyChoice?, hasNote: Bool) -> String {
         let dateText = date.formatted(.dateTime.locale(AppLanguage.locale).year().month().day())
-        if relation == .future { return localized("%@，还没到来", String(describing: dateText)) }
+        let starText = starredDayKeys.contains(DayKey(date).storageValue) ? ", " + localized("已标记") : ""
+        if relation == .future { return localized("%@，还没到来", String(describing: dateText)) + starText }
         let entryText = choice.map { "\(dateText), \($0.group.title), \($0.title)" } ?? localized("%@，未记录", String(describing: dateText))
         let todayText = relation == .today ? localized("今天，%@", String(describing: entryText)) : entryText
-        return hasNote ? localized("%@，有文字记录", String(describing: todayText)) : todayText
+        return (hasNote ? localized("%@，有文字记录", String(describing: todayText)) : todayText) + starText
     }
 }

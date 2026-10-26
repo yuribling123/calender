@@ -1,0 +1,25 @@
+Generated with the built-in image_gen tool.
+Style references: activityWork.png and activityStudy.png from Assets.xcassets.
+Shared prompt: Match existing 日常 artwork: minimal monochrome black pixel-outline line drawing; thin stepped raster strokes; transparent background and interiors; one centered object with clear margin; readable at calendar size; no text, people, animals, colored fills, shadows, gradients, white sticker outline, or decorative extras.
+Gaming: compact retro controller, plus-shaped directional pad at left, two action buttons at right, small center button; no cable or hands.
+Cooking: squat pot with two side handles, two short stepped steam strokes, a spoon leaning from inside; no stove or kitchen scene.
+
+Game Boy revision (built-in image_gen): Replace the controller with a classic Nintendo Game Boy handheld; portrait rectangular body, inset top screen, plus D-pad, two diagonal round buttons, start/select dashes and three speaker slots. Preserve sparse black stepped pixel-outline artwork and transparent interiors/background. No text, logo, screen content, hands, shading or decorative extras. Complete centered silhouette with clear margin, recognizable at calendar size.
+
+PSP revision (built-in image_gen): Replace the vertical Game Boy with a PSP horizontal handheld, wide rounded body, central blank widescreen, left plus D-pad and analog nub, four right-side buttons in a diamond, tiny lower controls. Match existing 日常 sparse black stepped pixel outlines. Transparent background, body and screen interiors. No logo, text, color fill, shadows, hands or decorative extras.
+
+Clamshell revision (built-in image_gen): Open Nintendo DS Lite style dual-screen clamshell, visibly hinged upper lid and lower base, two blank screens, left D-pad and four right action buttons. Open around 120 degrees in a slight three-quarter view. Preserve sparse black stepped pixel outlines, transparent background and interiors. No text, logos, colors, shading, hands or extras.
+
+Reference-sheet revision (built-in image_gen): New isolated open DS Lite clamshell console, two blank screens, visible hinge, left black D-pad, four right round black buttons. Use the user-provided sheet as style reference: bold black hand-drawn rounded outlines, simple three-quarter perspective, sparse details, solid black controls, white-filled body and screens, transparent outside background. No pixelated linework, grid paper, signature, text, logos, decorative extras or shading.
+
+Pink pixel-sheet revision (built-in image_gen): Single open clamshell DS dual-screen handheld matching the new user reference: chunky stepped black pixel outlines, white body, soft strawberry-pink case accents, sparse gray pixels. Upper pink screen with a white pixel heart, lower blank screen with pink frame, left D-pad and four right action buttons. Transparent outside background, opaque device interiors. No words, watermark, collage, floating decorations or smooth vector curves.
+
+Cooking pink-pixel revision (built-in image_gen): Matching the pink DS and user reference sheet, one squat pale-pink pot with side handles, white interior, diagonal white spoon and two short stepped steam trails. Chunky black pixel outlines on a coarse grid, flat pink-white palette with sparse gray pixels, transparent outside background. No people, face, words, watermark, decoration, kitchen scene or gradients.
+
+Black pixel-controller revision (built-in image_gen): Closely match user's controller reference: compact symmetric front view, two stepped grips, solid black body, thin opaque white inset rim, white plus D-pad, four white action squares in diamond, two tiny white center buttons. Coarse crisp pixel grid; transparent outer background. No cable, sticks, text, branding, watermark, gradients, decoration or shadows.
+
+Headphone-style controller revision (built-in image_gen): Match user's bold black headphone graphic using a single smooth rounded solid-black game controller silhouette, white plus D-pad, four white round action buttons, two white middle buttons, minimal white curved grip separations. Transparent exterior. No pixelated edges, cable, text, logos, shading, gradients, shadows or decoration.
+
+Smooth controller revision (built-in image_gen): Edit user's pixel controller to smooth rounded antialiased contours only; retain proportions, solid black body, continuous white inset perimeter, left plus D-pad, four square right action buttons and two square center buttons. Transparent exterior, opaque black-white artwork. No grip stripes, new features, text, gradients or shadows.
+
+Pastel lavender controller (built-in image_gen): Matching user's pastel sticker sheet, single front-facing gamepad with muted lavender stepped pixel outlines, creamy white body, lavender D-pad, pale pink/blue square action buttons and two small center buttons. Coarse pixel grid, minimal low-saturation detail, transparent background. No text, logos, decorative extras, cable, gradients or shadows.

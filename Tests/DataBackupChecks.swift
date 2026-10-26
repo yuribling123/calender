@@ -90,6 +90,22 @@ struct DataBackupChecks {
         expect(roundTrip.monthlyNotesToImport.count == 1 && roundTrip.monthlyNotesToImport.first?.text == "new month")
         expect(roundTrip.monthlyNoteSkins == imported.monthlyNoteSkins)
 
+        // New member stickers must round-trip without changing any saved IDs.
+        let everydayEntries = [
+            MoodEntry(dayKey: "2024-02-29", choice: .cooking, note: "做饭"),
+            MoodEntry(dayKey: "2024-03-01", choice: .gaming, note: "打游戏"),
+            MoodEntry(dayKey: "2024-03-02", choice: .tastyFood, note: "吃好吃的"),
+            MoodEntry(dayKey: "2024-03-03", choice: .watchingShows, note: "看剧"),
+            MoodEntry(dayKey: "2024-03-04", choice: .walking, note: "散步"),
+            MoodEntry(dayKey: "2024-03-05", choice: .shopping, note: "逛街")
+        ]
+        let everydayArchive = try DataBackupExporter.makeArchive(entries: everydayEntries, monthlyNotes: [])
+        let everydayPlan = try DataBackupImporter.makePlan(from: everydayArchive, existingDayKeys: [], existingMonthKeys: [])
+        expect(Set(everydayPlan.entriesToImport.map(\.choiceID)) == [31, 32, 33, 34, 35, 36])
+        expect(DailyChoice.choices(in: .everyday) == [.cooking, .gaming, .tastyFood, .watchingShows, .shopping])
+        expect(DailyChoice(rawValue: 35) == .walking) // Historical walks stay readable.
+        expect(DailyChoice.cooking.group == .everyday && DailyChoice.gaming.group == .everyday)
+
         // New optional fields must survive export/import, while old backups stay readable.
         expect(imported.entriesToImport.first?.watchTitle == nil)
         entries[0].watchTitle = "测试电影"

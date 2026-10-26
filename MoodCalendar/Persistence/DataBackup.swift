@@ -227,7 +227,7 @@ enum DataBackupImporter {
 
         let entries = try payload.entries.map { item -> DataBackupImportPlan.Entry in
             guard isValidDayKey(item.dayKey),
-                  (1...30).contains(item.choiceID),
+                  DailyChoice(rawValue: item.choiceID) != nil,
                   item.note.utf8.count <= 1_000_000,
                   (item.cardPaperID?.utf8.count ?? 0) <= 100,
                   (item.songTitle?.utf8.count ?? 0) <= 1_000_000,

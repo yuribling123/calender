@@ -47,8 +47,9 @@ func localized(_ key: String, _ arguments: CVarArg...) -> String {
 
 enum ChoiceGroup: String, CaseIterable, Identifiable {
     case mood = "心情"
-    case activity = "日常"
     case company = "陪伴"
+    case activity = "日常"
+    case everyday = "日常Ⅱ"
     case daily = "小幸"
     case playful = "随性"
     case rabbit = "兔兔"
@@ -66,6 +67,11 @@ enum DailyChoice: Int, CaseIterable, Identifiable {
     case guitar = 21, wings = 22, cocktail = 23
     case lighter = 24, quill = 25
     case starRabbit = 26, glassesRabbit = 27, tearfulRabbit = 28, poutyRabbit = 29, absentRabbit = 30
+    case cooking = 31, gaming = 32
+    case tastyFood = 33, watchingShows = 34
+    // Retained for existing records and backups; no longer offered in the picker.
+    case walking = 35
+    case shopping = 36
 
     var id: Int { rawValue }
     var mood: Mood? { Mood(rawValue: rawValue) }
@@ -74,7 +80,8 @@ enum DailyChoice: Int, CaseIterable, Identifiable {
         if rawValue <= 10 { return .daily }
         if rawValue <= 15 { return .activity }
         if rawValue <= 20 { return .company }
-        return rawValue <= 25 ? .playful : .rabbit
+        if rawValue <= 25 { return .playful }
+        return rawValue <= 30 ? .rabbit : .everyday
     }
 
     static func choices(in group: ChoiceGroup) -> [DailyChoice] {
@@ -82,6 +89,7 @@ enum DailyChoice: Int, CaseIterable, Identifiable {
         case .mood: [.veryGood, .good, .okay, .bad, .veryBad]
         case .daily: [.clover, .heart, .music, .coffee, .cake]
         case .activity: [.exercise, .work, .relax, .gather, .study]
+        case .everyday: [.cooking, .gaming, .tastyFood, .watchingShows, .shopping]
         case .company: [.alone, .thinkingOfSomeone, .fluffy, .friends, .family]
         case .playful: [.guitar, .wings, .cocktail, .lighter, .quill]
         case .rabbit: [.starRabbit, .glassesRabbit, .tearfulRabbit, .poutyRabbit, .absentRabbit]
@@ -101,6 +109,12 @@ enum DailyChoice: Int, CaseIterable, Identifiable {
         case .relax: localized("放松")
         case .gather: localized("聚一聚")
         case .study: localized("学习")
+        case .cooking: localized("做饭")
+        case .gaming: localized("打游戏")
+        case .tastyFood: localized("吃好吃的")
+        case .watchingShows: localized("看剧")
+        case .walking: localized("散步")
+        case .shopping: localized("逛街")
         case .family: localized("和家人")
         case .thinkingOfSomeone: localized("想一个人")
         case .fluffy: localized("毛绒绒")
@@ -127,12 +141,18 @@ enum DailyChoice: Int, CaseIterable, Identifiable {
         case .heart: localized("一眼沦陷")
         case .music: localized("世界退到耳机外面")
         case .coffee: localized("找个角落坐坐")
-        case .cake: localized("吃到了好吃的")
+        case .cake: localized("给今天加一点甜")
         case .exercise: localized("动一动，状态回来啦")
         case .work: localized("认真忙了一会")
         case .relax: localized("什么都不做也很好")
         case .gather: localized("出来碰个头")
         case .study: localized("知识进度加一")
+        case .cooking: localized("做顿热乎的")
+        case .gaming: localized("上线玩一会")
+        case .tastyFood: localized("这一口好满足")
+        case .watchingShows: localized("再看一集就休息")
+        case .walking: localized("出去走走，慢慢悠悠")
+        case .shopping: localized("慢慢逛，随便看看")
         case .family: localized("和家人窝在一起")
         case .thinkingOfSomeone: localized("脑袋里偷偷住进一个人")
         case .fluffy: localized("被毛茸茸治愈了一下")
@@ -165,6 +185,12 @@ enum DailyChoice: Int, CaseIterable, Identifiable {
         case .relax: "activityRelax"
         case .gather: "activityGather"
         case .study: "activityStudy"
+        case .cooking: "everydayCooking"
+        case .gaming: "everydayGaming"
+        case .tastyFood: "everydayTastyFood"
+        case .watchingShows: "everydayWatchingShows"
+        case .walking: "everydayWalking"
+        case .shopping: "everydayShopping"
         case .family: "companyFamily"
         case .thinkingOfSomeone: "companyThinking"
         case .fluffy: "companyFluffy"

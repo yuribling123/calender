@@ -15,6 +15,8 @@ struct CalendarScreen: View {
     @AppStorage("dailyReminderEnabled") private var isDailyReminderEnabled = true
     @AppStorage("allowPastDateEditing") private var allowPastDateEditing = true
     @AppStorage("showMonthArrows") private var showMonthArrows = true
+    @AppStorage("starredDays.v1") private var storedStarredDays = "[]"
+    @State private var demoStarredDays: Set<String> = []
     @Query private var entries: [MoodEntry]
     @GestureState private var isHorizontalMonthSwipe = false
     @State private var displayedMonth = MonthLayout(containing: Date()).monthStart
@@ -54,6 +56,21 @@ struct CalendarScreen: View {
         }
     }
 
+    private var starredDayKeys: Set<String> {
+        DemoData.isEnabled ? demoStarredDays : StarredDayStore.decode(storedStarredDays)
+    }
+
+    private func toggleSelectedDayStar() {
+        let day = DayKey(selectedDay)
+        guard StarredDayStore.canToggle(day, allowPastDates: allowPastDateEditing) else { return }
+        let key = day.storageValue
+        if DemoData.isEnabled {
+            if !demoStarredDays.insert(key).inserted { demoStarredDays.remove(key) }
+        } else {
+            storedStarredDays = StarredDayStore.toggling(day, in: storedStarredDays, allowPastDates: allowPastDateEditing)
+        }
+    }
+
     private var recordedDayKeys: Set<String> {
         Set(entries.filter { $0.choice != nil }.map(\.dayKey))
     }
@@ -86,7 +103,7 @@ struct CalendarScreen: View {
                 if isSearchPresented {
                     // Keep the notebook mounted while a result is open so returning
                     // restores both the search text and its place on the page.
-                    RecordSearchScreen(onClose: { isSearchPresented = false }) { result in
+                    RecordSearchScreen(starredDayKeys: starredDayKeys, onClose: { isSearchPresented = false }) { result in
                         searchPath.append(result.source == .day ? .day(result.date) : .month(result.date))
                     }
                     .opacity(searchPath.isEmpty ? 1 : 0)
@@ -118,6 +135,7 @@ struct CalendarScreen: View {
                         MonthGrid(
                             layout: MonthLayout(containing: displayedMonth),
                             entries: entriesByDay,
+                            starredDayKeys: starredDayKeys,
                             selectedDay: DayKey(selectedDay),
                             pendingRevealDayKey: pendingRevealDayKey,
                             animatingDayKey: animatedDayKey,
@@ -141,6 +159,8 @@ struct CalendarScreen: View {
                         SelectedDateDetail(
                             date: selectedDay,
                             entry: selectedEntry,
+                            isStarred: starredDayKeys.contains(DayKey(selectedDay).storageValue),
+                            onToggleStar: toggleSelectedDayStar,
                             onRecordMood: saveMood,
                             onEdit: {
                                 if DayKey(selectedDay).isEditable(allowPastDates: allowPastDateEditing) {

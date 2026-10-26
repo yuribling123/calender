@@ -116,6 +116,7 @@ struct PersonalizationScreen: View {
     @AppStorage("appLanguage") private var storedLanguage = AppLanguage.selection
     @EnvironmentObject private var membership: MembershipStore
     @AppStorage("appTheme") private var storedTheme = AppTheme.pink.rawValue
+    @AppStorage("calendarBookmarkStyle") private var storedBookmarkStyle = CalendarBookmarkStyle.dateColor.rawValue
     @AppStorage("selectionShape") private var storedSelectionShape = SelectionShape.circle.rawValue
     #if ICLOUD_SYNC_ENABLED
     @AppStorage("icloudSyncEnabled") private var isICloudSyncEnabled = false
@@ -414,6 +415,8 @@ struct PersonalizationScreen: View {
             .accessibilityLabel(localized("选中图形，%@", String(describing: selectionShape.title)))
             .accessibilityHint(localized("选择日期和月份的选中图形"))
 
+            bookmarkStyleControl
+
             calendarPreferences
 
             reminderControl
@@ -605,18 +608,72 @@ struct PersonalizationScreen: View {
         }
     }
 
+    private var bookmarkStyleControl: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(localized("标记样式"))
+                .font(settingsItemFont)
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: 10) {
+                    ForEach(CalendarBookmarkStyle.allCases) { style in
+                        bookmarkStyleOption(style)
+                    }
+                }
+                VStack(spacing: 10) {
+                    ForEach(CalendarBookmarkStyle.allCases) { style in
+                        bookmarkStyleOption(style)
+                    }
+                }
+            }
+        }
+        .padding(18)
+        .background(theme.palette.cardBackground, in: RoundedRectangle(cornerRadius: 20))
+    }
+
+    private func bookmarkStyleOption(_ style: CalendarBookmarkStyle) -> some View {
+        let isSelected = CalendarBookmarkStyle.resolve(storedBookmarkStyle) == style
+        return Button {
+            storedBookmarkStyle = style.rawValue
+        } label: {
+            HStack(spacing: 10) {
+                Text(verbatim: "23")
+                    .font(.system(size: 15, weight: .medium, design: .rounded))
+                    .foregroundStyle(style == .dateColor ? CalendarBookmarkStyle.ink : theme.palette.bookmarkHighlightInk)
+                    .background {
+                        if style == .highlighter { BookmarkHighlight() }
+                    }
+                    .frame(width: 32)
+                    .accessibilityHidden(true)
+                Text(style.title)
+                    .font(settingsDetailFont)
+                    .foregroundStyle(theme.palette.foreground)
+                    .fixedSize(horizontal: true, vertical: false)
+                Spacer(minLength: 0)
+                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                    .foregroundStyle(isSelected ? theme.palette.strongAccent : theme.palette.foreground.opacity(0.25))
+                    .accessibilityHidden(true)
+            }
+            .padding(.horizontal, 10)
+            .frame(minHeight: 48)
+            .background(isSelected ? theme.palette.bookmarkHighlight : theme.palette.softHighlight.opacity(0.35), in: RoundedRectangle(cornerRadius: 12))
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(style.title)
+        .accessibilityAddTraits(isSelected ? [.isSelected] : [])
+    }
+
     private var calendarPreferences: some View {
         VStack(alignment: .leading, spacing: 18) {
             VStack(alignment: .leading, spacing: 8) {
                 Toggle(localized("允许修改往日"), isOn: $allowPastDateEditing)
-                Text(localized("关闭后过往每日记录和月便签皮肤不可修改"))
+                Text(localized("关闭后往日不可修改和标记"))
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }
             Divider()
             VStack(alignment: .leading, spacing: 8) {
                 Toggle(localized("显示翻月箭头"), isOn: $showMonthArrows)
-                Text(localized("关闭后，仍可用手指左右滑动切换月份"))
+                Text(localized("关闭后仍可用手指左右滑动切换月份"))
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }
