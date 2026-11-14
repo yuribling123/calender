@@ -113,8 +113,11 @@ private struct OutsideTapMonitor: UIViewRepresentable {
 }
 
 struct PersonalizationScreen: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @AppStorage("appLanguage") private var storedLanguage = AppLanguage.selection
     @EnvironmentObject private var membership: MembershipStore
+//     @AppStorage("collectionVinylSkin") private var storedVinylSkin = CollectionVinylSkin.original.rawValue
+//     @AppStorage("collectionTapeSkin") private var storedTapeSkin = CollectionTapeSkin.original.rawValue
     @AppStorage("appTheme") private var storedTheme = AppTheme.pink.rawValue
     @AppStorage("calendarBookmarkStyle") private var storedBookmarkStyle = CalendarBookmarkStyle.dateColor.rawValue
     @AppStorage("selectionShape") private var storedSelectionShape = SelectionShape.circle.rawValue
@@ -179,39 +182,66 @@ struct PersonalizationScreen: View {
 
     #endif
 
-    @ScaledMetric(relativeTo: .title3) private var settingsHeadingSize: CGFloat = 20
+    @ScaledMetric(relativeTo: .body) private var settingsSectionHeadingSize: CGFloat = 17
+    private let settingsHeadingSize: CGFloat = 23
+    @ScaledMetric(relativeTo: .title3) private var settingsItemSize: CGFloat = 16
+    @ScaledMetric(relativeTo: .title3) private var settingsDetailSize: CGFloat = 14
+
+    private var settingsSectionHeadingFont: Font {
+        .system(size: settingsSectionHeadingSize, weight: .medium)
+    }
 
     private var settingsHeadingFont: Font {
         .system(size: settingsHeadingSize, weight: .medium)
     }
 
     private var settingsItemFont: Font {
-        .system(size: settingsHeadingSize * 0.8, weight: .regular)
+        .system(size: settingsItemSize, weight: .regular)
     }
 
     private var settingsDetailFont: Font {
-        .system(size: settingsHeadingSize * 0.7, weight: .regular)
+        .system(size: settingsDetailSize, weight: .regular)
     }
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 0) {
-                    personalizationSection
+            AdaptivePage { size in
+                ScrollView {
+                    if let size, size.width >= 760, !dynamicTypeSize.isAccessibilitySize {
+                        HStack(alignment: .top, spacing: 28) {
+                            personalizationSection
+                                .frame(maxWidth: .infinity, alignment: .topLeading)
+                            VStack(alignment: .leading, spacing: 0) {
+                                membershipSection(topPadding: 12)
+                                #if ICLOUD_SYNC_ENABLED
+                                syncSection
+                                #endif
+                                dataExportSection
+                                languageSection
+                                feedbackSection
+                            }
+                            .frame(maxWidth: .infinity, alignment: .topLeading)
+                        }
+                        .padding(32)
+                    } else {
+                        VStack(alignment: .leading, spacing: 0) {
+                            personalizationSection
 
-                    membershipSection
+                            membershipSection()
 
-                    #if ICLOUD_SYNC_ENABLED
-                    syncSection
-                    #endif
+                            #if ICLOUD_SYNC_ENABLED
+                            syncSection
+                            #endif
 
-                    dataExportSection
+                            dataExportSection
 
-                    languageSection
+                            languageSection
 
-                    feedbackSection
+                            feedbackSection
+                        }
+                        .padding(24)
+                    }
                 }
-                .padding(24)
             }
             .scrollDismissesKeyboard(.interactively)
             .font(settingsItemFont)
@@ -254,7 +284,7 @@ struct PersonalizationScreen: View {
                         importPlan.monthlyNotesToImport.count,
                         importPlan.existingEntryCount,
                         importPlan.existingMonthlyNoteCount
-                    ) + "\n" + localized("将恢复 %d 个月份的便签皮肤；本机已有选择会保留。", importPlan.monthlyNoteSkins.count))
+                    ) + "\n" + localized("将恢复 %d 个月份的便签皮肤；本机已有选择会保留。", importPlan.monthlyNoteSkins.count) + "\n" + localized("将合并 %d 个日期的标记状态；本机已有状态会保留。", importPlan.starredDays.count))
                 }
             }
             .alert(localized("数据备份"), isPresented: Binding(
@@ -274,7 +304,8 @@ struct PersonalizationScreen: View {
             }
             .sheet(isPresented: $isShapePickerPresented) {
                 shapePicker
-                    .presentationDetents([.medium])
+                    .iPadScrollable(background: theme.palette.resolved(for: colorScheme).background)
+                    .presentationDetents(UIDevice.current.userInterfaceIdiom == .pad ? [.large] : [.medium])
             }
             .sheet(isPresented: $isMembershipPresented) {
                 MembershipScreen()
@@ -293,9 +324,10 @@ struct PersonalizationScreen: View {
     }
 
     private var personalizationSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 10) {
             Text(localized("个性化"))
-                .font(settingsHeadingFont)
+                .font(settingsSectionHeadingFont)
+                .padding(.leading, 18)
                 .padding(.top, 12)
 
             VStack(alignment: .leading, spacing: 8) {
@@ -415,6 +447,8 @@ struct PersonalizationScreen: View {
             .accessibilityLabel(localized("选中图形，%@", String(describing: selectionShape.title)))
             .accessibilityHint(localized("选择日期和月份的选中图形"))
 
+            // collectionSkinControl
+
             bookmarkStyleControl
 
             calendarPreferences
@@ -425,10 +459,115 @@ struct PersonalizationScreen: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    private var membershipSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
+// Collection skin customization is temporarily disabled.
+//     private var collectionSkinControl: some View {
+//         VStack(spacing: 10) {
+//             NavigationLink {
+//                 collectionSkinDetails(isVinyl: true)
+//             } label: {
+//                 collectionSkinRow(title: localized("黑胶皮肤"),
+//                                   selection: CollectionVinylSkin.resolve(storedVinylSkin).title) {
+//                     CollectionVinylArtwork(title: "", artist: "", diameter: 33,
+//                                            skin: .resolve(storedVinylSkin))
+//                 }
+//             }
+//             NavigationLink {
+//                 collectionSkinDetails(isVinyl: false)
+//             } label: {
+//                 collectionSkinRow(title: localized("录像带皮肤"),
+//                                   selection: CollectionTapeSkin.resolve(storedTapeSkin).title) {
+//                     CollectionWatchTape(title: "", kind: "", width: 33,
+//                                         skin: .resolve(storedTapeSkin))
+//                 }
+//             }
+//         }
+//         .buttonStyle(.plain)
+//     }
+//
+//     private func collectionSkinRow<Artwork: View>(title: String, selection: String,
+//                                                  @ViewBuilder artwork: () -> Artwork) -> some View {
+//         HStack(spacing: 14) {
+//             artwork().frame(width: 33, height: 33).accessibilityHidden(true)
+//             VStack(alignment: .leading, spacing: 4) {
+//                 Text(title).font(settingsItemFont).foregroundStyle(.primary)
+//                 Text(selection).font(settingsDetailFont).foregroundStyle(.secondary)
+//             }
+//             Spacer(minLength: 8)
+//             Image(systemName: "chevron.right")
+//                 .font(.subheadline.weight(.medium)).foregroundStyle(.secondary)
+//                 .accessibilityHidden(true)
+//         }
+//         .padding(18)
+//         .background(theme.palette.resolved(for: colorScheme).cardBackground, in: RoundedRectangle(cornerRadius: 20))
+//         .contentShape(Rectangle())
+//     }
+//
+//     private func collectionSkinDetails(isVinyl: Bool) -> some View {
+//         ScrollView {
+//             LazyVGrid(columns: [GridItem(.adaptive(minimum: 124), spacing: 12)], spacing: 12) {
+//                 if isVinyl {
+//                     vinylSkinChoices
+//                 } else {
+//                     tapeSkinChoices
+//                 }
+//             }
+//             .padding(24)
+//         }
+//         .background(theme.palette.collectionBackground)
+//         .navigationTitle(localized(isVinyl ? "黑胶皮肤" : "录像带皮肤"))
+//         .navigationBarTitleDisplayMode(.inline)
+//     }
+//
+//     private var vinylSkinChoices: some View {
+//         ForEach(CollectionVinylSkin.allCases) { skin in
+//             skinChoice(title: skin.title, selected: CollectionVinylSkin.resolve(storedVinylSkin) == skin,
+//                        action: { storedVinylSkin = skin.rawValue }) {
+//                 CollectionVinylArtwork(title: localized("晴天"), artist: "", diameter: 76, skin: skin)
+//             }
+//         }
+//     }
+//
+//     private var tapeSkinChoices: some View {
+//         ForEach(CollectionTapeSkin.allCases) { skin in
+//             skinChoice(title: skin.title, selected: CollectionTapeSkin.resolve(storedTapeSkin) == skin,
+//                        action: { storedTapeSkin = skin.rawValue }) {
+//                 CollectionWatchTape(title: localized("六个字的电影"), kind: "movie", width: 108, skin: skin)
+//             }
+//         }
+//     }
+//
+//     private func skinChoice<Artwork: View>(title: String, selected: Bool, action: @escaping () -> Void,
+//                                           @ViewBuilder artwork: () -> Artwork) -> some View {
+//         Button(action: action) {
+//             VStack(spacing: 10) {
+//                 artwork().frame(height: 80).accessibilityHidden(true)
+//                 HStack(spacing: 5) {
+//                     Image(systemName: selected ? "checkmark.circle.fill" : "circle")
+//                         .foregroundStyle(selected ? theme.swatchColor : .secondary)
+//                     Text(title).foregroundStyle(.primary)
+//                 }
+//                 .font(.footnote)
+//             }
+//             .padding(.vertical, 12)
+//             .padding(.horizontal, 8)
+//             .frame(minWidth: 124, maxWidth: .infinity)
+//             .background(theme.palette.collectionBackground, in: RoundedRectangle(cornerRadius: 12))
+//             .overlay {
+//                 RoundedRectangle(cornerRadius: 12)
+//                     .strokeBorder(selected ? theme.swatchColor.opacity(0.65) : .clear, lineWidth: 1)
+//             }
+//             .contentShape(Rectangle())
+//         }
+//         .buttonStyle(.plain)
+//         .accessibilityLabel(title)
+//         .accessibilityAddTraits(selected ? .isSelected : [])
+//     }
+//
+    private func membershipSection(topPadding: CGFloat = 40) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
             Text(localized("会员"))
-                .font(settingsHeadingFont)
+                .font(settingsSectionHeadingFont)
+                .padding(.leading, 18)
 
             Button {
                 isMembershipPresented = true
@@ -457,13 +596,14 @@ struct PersonalizationScreen: View {
             .buttonStyle(.plain)
             .accessibilityLabel(membership.hasMembershipAccess ? localized("会员，已永久解锁") : localized("会员，永久解锁全部表情包和自定义"))
         }
-        .padding(.top, 40)
+        .padding(.top, topPadding)
     }
 
     private var dataExportSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 10) {
             Text(localized("数据管理"))
-                .font(settingsHeadingFont)
+                .font(settingsSectionHeadingFont)
+                .padding(.leading, 18)
 
             Button(action: prepareDataBackup) {
                 HStack(spacing: 14) {
@@ -538,7 +678,7 @@ struct PersonalizationScreen: View {
             let monthlyNotes = try modelContext.fetch(FetchDescriptor<MonthlyNote>())
             let skins = try MonthlyNoteSkinStore(context: modelContext).backupSelections()
             backupDocument = DataBackupDocument(
-                data: try DataBackupExporter.makeArchive(entries: entries, monthlyNotes: monthlyNotes, monthlyNoteSkins: skins)
+                data: try DataBackupExporter.makeArchive(entries: entries, monthlyNotes: monthlyNotes, monthlyNoteSkins: skins, starredDays: try StarredDayPersistence(context: modelContext).backupSelections())
             )
             isShowingBackupExporter = true
         } catch {
@@ -586,7 +726,7 @@ struct PersonalizationScreen: View {
                         existingMonthKeys: existingMonthKeys
                     )
                 }.value
-                guard !plan.entriesToImport.isEmpty || !plan.monthlyNotesToImport.isEmpty || !plan.monthlyNoteSkins.isEmpty else {
+                guard !plan.entriesToImport.isEmpty || !plan.monthlyNotesToImport.isEmpty || !plan.monthlyNoteSkins.isEmpty || !plan.starredDays.isEmpty else {
                     backupMessage = localized("备份中的记录都已存在，没有需要补入的内容。")
                     return
                 }
@@ -602,7 +742,7 @@ struct PersonalizationScreen: View {
         self.importPlan = nil
         do {
             let result = try DataBackupImporter.restore(importPlan, into: modelContext)
-            backupMessage = localized("导入完成：新增 %d 条每日记录和 %d 条月便签。", result.entries, result.monthlyNotes) + "\n" + localized("月便签皮肤已合并，本机已有选择会保留。")
+            backupMessage = localized("导入完成：新增 %d 条每日记录和 %d 条月便签。", result.entries, result.monthlyNotes) + "\n" + localized("月便签皮肤已合并，本机已有选择会保留。") + "\n" + localized("日期标记已合并，本机已有状态会保留。")
         } catch {
             backupMessage = localized("导入失败：%@", error.localizedDescription)
         }
@@ -684,9 +824,10 @@ struct PersonalizationScreen: View {
     }
 
     private var languageSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 10) {
             Text(localized("语言"))
-                .font(settingsHeadingFont)
+                .font(settingsSectionHeadingFont)
+                .padding(.leading, 18)
                 .foregroundStyle(theme.palette.resolved(for: colorScheme).foreground)
             HStack {
                 Text(localized("App 语言"))
@@ -704,13 +845,14 @@ struct PersonalizationScreen: View {
             .padding(20)
             .background(theme.palette.resolved(for: colorScheme).cardBackground, in: RoundedRectangle(cornerRadius: 24))
         }
-        .padding(.top, 28)
+        .padding(.top, 32)
     }
 
     private var feedbackSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 10) {
             Text(localized("反馈"))
-                .font(settingsHeadingFont)
+                .font(settingsSectionHeadingFont)
+                .padding(.leading, 18)
 
             Button {
                 openURL(feedbackEmailURL)
@@ -814,9 +956,10 @@ struct PersonalizationScreen: View {
     // Temporarily excluded for Personal Team device testing.
     #if ICLOUD_SYNC_ENABLED
     private var syncSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 10) {
             Text(localized("数据同步"))
-                .font(settingsHeadingFont)
+                .font(settingsSectionHeadingFont)
+                .padding(.leading, 18)
 
             HStack(spacing: 16) {
                 VStack(alignment: .leading, spacing: 4) {

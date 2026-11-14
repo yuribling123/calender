@@ -10,6 +10,7 @@ struct MonthGrid: View {
     let selectedDay: DayKey
     let pendingRevealDayKey: String?
     let animatingDayKey: String?
+    var rowHeight: CGFloat = 72
     let onSelect: (Date) -> Void
 
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 2), count: 7)
@@ -19,7 +20,7 @@ struct MonthGrid: View {
             LazyVGrid(columns: columns, spacing: 0) {
                 ForEach(0..<7, id: \.self) { index in
                     Text(weekdayNames[index])
-                        .font(.system(size: min(scaledWeekdaySize, 19), weight: .medium))
+                        .font(.system(size: min(scaledWeekdaySize + (rowHeight > 72 ? 2 : 0), rowHeight > 72 ? 21 : 19), weight: .medium))
                         .foregroundStyle(theme.palette.calendarWeekdayText.opacity(0.85))
                         .frame(maxWidth: .infinity, alignment: .center)
                 }
@@ -39,13 +40,14 @@ struct MonthGrid: View {
                                     isSelected: key == selectedDay,
                                     isFuture: relation == .future,
                                     isRevealPending: key.storageValue == pendingRevealDayKey,
-                                    isAnimating: key.storageValue == animatingDayKey)
+                                    isAnimating: key.storageValue == animatingDayKey,
+                                    rowHeight: rowHeight)
                         }
                         .buttonStyle(.plain)
                         .accessibilityLabel(accessibilityText(for: date, relation: relation, choice: choice, hasNote: hasNote))
                         .accessibilityAddTraits(key == selectedDay ? .isSelected : [])
                     } else {
-                        Color.clear.frame(height: 72)
+                        Color.clear.frame(height: rowHeight)
                     }
                 }
             }

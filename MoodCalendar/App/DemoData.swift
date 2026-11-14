@@ -142,9 +142,8 @@ enum DemoData {
             let dayKey = DayKey(date).storageValue
             guard !existingDayKeys.contains(dayKey) else { continue }
             let entry = MoodEntry(dayKey: dayKey, choice: choice, note: note)
-            if month == 9, [1, 12, 24].contains(day),
-               let choiceImage = UIImage(named: choice.imageName) {
-                entry.photoData = demoPhotoData(from: choiceImage)
+            if month == 9, [1, 12, 24].contains(day), let image = UIImage(named: choice.imageName) {
+                entry.photoData = demoPhotoData(from: image)
             }
             context.insert(entry)
         }
@@ -152,16 +151,64 @@ enum DemoData {
             context.insert(MoodEntry(dayKey: "2022-02-14", choice: .heart,
                                      note: "翻到 2022 年，看看月便签里还能不能找到这个月。"))
         }
+        try seedCollectionExamples(into: context)
         try context.save()
     }
 
-    private static func demoPhotoData(from image: UIImage) -> Data? {
+    /// Seed daily records once; both the shelf and full lists derive from these same records.
+    @MainActor
+    private static func seedCollectionExamples(into context: ModelContext) throws {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: .now)
+        var entriesByDay = Dictionary(grouping: try context.fetch(FetchDescriptor<MoodEntry>()), by: \.dayKey)
+        let songs = [("晴天", "周杰伦"), ("遇见", "孙燕姿"), ("小情歌", "苏打绿"),
+                     ("慢慢喜欢你", "莫文蔚"), ("Dreams", "The Cranberries"), ("旅行的意义", "陈绮贞")]
+        let watches: [(String, WatchKind)] = [("海街日记", .movie), ("重启人生", .series),
+                                             ("小森林", .movie), ("千与千寻", .movie)]
+        let choices: [DailyChoice] = [.coffee, .cake, .clover, .guitar, .heart, .friends]
+        for offset in 0..<12 {
+            guard let date = calendar.date(byAdding: .day, value: -offset, to: today) else { continue }
+            let key = DayKey(date).storageValue
+            let entry: MoodEntry
+            if let saved = entriesByDay[key]?.first {
+                entry = saved
+            } else {
+                entry = MoodEntry(dayKey: key, choice: choices[offset % choices.count],
+                                  note: localized("平平常常，也有一点值得记住。"))
+                context.insert(entry)
+                entriesByDay[key] = [entry]
+            }
+            if offset.isMultiple(of: 2) {
+                let song = songs[offset / 2]
+                entry.songTitle = song.0
+                entry.songArtist = song.1
+                if let image = UIImage(named: choices[(offset / 2) % choices.count].imageName) {
+                    entry.photoData = demoPhotoData(from: image, isPortrait: offset.isMultiple(of: 4))
+                }
+            }
+            if offset.isMultiple(of: 3) {
+                let watch = watches[offset / 3]
+                entry.watchTitle = watch.0
+                entry.watchKind = watch.1.rawValue
+            }
+        }
+    }
+
+    private static func demoPhotoData(from image: UIImage, isPortrait: Bool = false) -> Data? {
         let format = UIGraphicsImageRendererFormat()
         format.scale = 1
-        return UIGraphicsImageRenderer(size: image.size, format: format)
+        let size = isPortrait ? CGSize(width: 480, height: 600) : CGSize(width: 600, height: 480)
+        return UIGraphicsImageRenderer(size: size, format: format)
             .jpegData(withCompressionQuality: 0.88) { _ in
-                image.draw(in: CGRect(origin: .zero, size: image.size))
+                UIColor(red: 0.97, green: 0.95, blue: 0.91, alpha: 1).setFill()
+                UIRectFill(CGRect(origin: .zero, size: size))
+                let scale = min(size.width * 0.7 / image.size.width, size.height * 0.7 / image.size.height)
+                let imageSize = CGSize(width: image.size.width * scale, height: image.size.height * scale)
+                image.draw(in: CGRect(x: (size.width - imageSize.width) / 2,
+                                      y: (size.height - imageSize.height) / 2,
+                                      width: imageSize.width, height: imageSize.height))
             }
     }
+
     #endif
 }

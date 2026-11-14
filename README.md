@@ -1,10 +1,18 @@
 # Mood Calendar
 
-A native iPhone mood calendar built with SwiftUI and SwiftData. You can create or edit one entry for today. Allow editing past days defaults to on in Personalization; past days show Edit for an existing entry and Add entry for an empty day. Turning it off makes past days read-only. Future dates are always read-only.
+A native iPhone and iPad mood calendar built with SwiftUI and SwiftData. You can create or edit one entry for today. Allow editing past days defaults to on in Personalization; past days show Edit for an existing entry and Add entry for an empty day. Turning it off makes past days read-only. Future dates are always read-only.
 
-The app has three tabs: Calendar, Monthly Note, and Settings. Settings lets you choose an accent color, a date and month selection marker, and a calendar title of up to ten characters. The title is a member feature; when left blank, the calendar shows “今日份”. Free users can use the circle and star markers. Other markers require the one-time unlock. Preferences are stored locally. Accent colors do not change the five fixed mood colors, saved entries, or supplied sticker artwork.
+iPad runs natively in portrait, landscape and resizable windows, with layouts measured from the current window or sheet (`Features/Shared/AdaptiveLayout.swift`). Calendar uses the available width and equal-height tablet date rows; windows at least 1000 points wide show the selected-day detail beside the calendar. From 760 points, monthly notes place the current month above a two-column history grouped by year; windows at least 1000 points wide show current and historical months side by side. Settings uses two content columns from 760 points. Collections use full-width shelves, larger tablet thumbnails, adaptive photo columns and two-column media pages when space permits; each media page still contains at most six items. Entry editing uses two columns in forms at least 700 points wide. Narrow windows and accessibility text fall back to one column where needed. Search occupies 90% of the tablet window up to 900 points and follows the keyboard safe area. Limited-task modals retain readable widths and scroll where needed. iPhone retains its existing layout values, spacing and orientation settings.
 
-日期详情右侧的「标记／已标记」可标记或取消标记今天及未来日期；过去日期仅在「允许修改往日」开启时可标记或取消标记。个性化可选择两种标记样式：「日期改色」默认使用固定玫瑰棕色（深色外观使用较亮版本）；「荧光笔」在日期数字后划一笔当前主题相关的柔和底色，数字使用清晰的中性色。切换样式立即应用到日历和「找一找」，不改变已标记的日期，并保存在本机。两种样式都保留原有选中底形。今天已标记时始终优先显示所选标记样式，不添加角标。「找一找」中已标记的每日记录也使用同款标记样式显示日期数字，星期、正文和月便签维持原样。标记不依赖心情记录，过去日期的标记操作遵循「允许修改往日」偏好，关闭时保留已有标记但不可更改，并隐藏过去日期的标记入口；仅保存在本机偏好中，目前不包含在 JSON 备份或 iCloud 同步内。Demo 标记只保留在当前界面内存中。
+The app has four tabs: Calendar, Monthly Note, Collection, and Settings. Settings lets you choose an accent color, a date and month selection marker, and a calendar title of up to ten characters. The title is a member feature; when left blank, the calendar shows “今日份”. Free users can use the circle and star markers. Other markers require the one-time unlock. Preferences are stored locally. Accent colors do not change the five fixed mood colors, saved entries, or supplied sticker artwork.
+
+日期详情右侧的「标记／已标记」可标记或取消标记今天及未来日期；过去日期仅在「允许修改往日」开启时可标记或取消标记。个性化可选择两种标记样式：「日期改色」默认使用固定玫瑰棕色（深色外观使用较亮版本）；「荧光笔」在日期数字后划一笔当前主题相关的柔和底色，数字使用清晰的中性色。切换样式立即应用到日历和「找一找」，不改变已标记的日期，并保存在本机。两种样式都保留原有选中底形。今天已标记时始终优先显示所选标记样式，不添加角标。「找一找」中已标记的每日记录也使用同款标记样式显示日期数字，星期、正文和月便签维持原样。标记不依赖心情记录，过去日期的标记操作遵循「允许修改往日」偏好，关闭时保留已有标记但不可更改，并隐藏过去日期的标记入口；标记作为独立 SwiftData 日期记录保存，开启 iCloud 后随现有容器同步；ZIP 备份内 data.json 的 starredDays 字段保留标记与取消标记状态，可读文本列出已标记日期。导入保留本机已有状态（包括取消标记），兼容缺少该字段的旧备份，也支持仅包含标记的备份。已有 starredDays.v1 本机偏好在启动时迁移，成功保存后移除旧偏好；取消标记以显式 false 状态保存，较新的操作优先于旧迁移记录。新增模型字段均有默认值，通过增量迁移保留原有记录。Demo 使用隔离的内存库，不读取正式偏好或连接 iCloud。
+
+## Collection / 收藏
+
+Collection uses a private-room display-shelf style: full black silver-star vinyl, miniature charcoal VHS cassettes, warm-white instant-photo mounts and matte walnut ledges. Song titles sit above the original discs' center holes; artists remain in VoiceOver and full lists. Film titles appear on narrow warm cream labels attached to low-profile horizontal charcoal VHS cassettes (124-point base width); the media type remains in VoiceOver. Compact reel windows, reduced casing margins and fine edges keep the shelf light. Two recessed reel windows, visible tape packs, a restrained blue-gray label stripe and subtle molded edges match the records’ physical weight; titles wrap and the cassette grows for long text. Materials adapt to light and dark appearances without posters or fabricated release metadata. Photos retain their original artwork, wider lower white margins and one gently tilted first print. The three shelf sections spread vertically to fill the available page height, retaining generous item spacing, independent horizontal scrolling and View All; compact screens and large text can still scroll vertically. Materials adapt to light and dark appearances; item widths scale with accessibility text, and film titles wrap. Collections derive from existing daily records without duplicate storage or changes to editing permissions. Full photos retain original proportions.
+
+「收藏」采用房间里的私人收藏架风格：完整黑底银星黑胶、磨砂影视薄封套、暖白拍立得与哑光胡桃木层板。唱片保留原有银星与唱纹，歌名印在中心孔上方，歌手保留在无障碍朗读和完整列表中。影视使用无黄调的珍珠灰白内页，深色外观对应中性烟灰，片名与已有类型清楚展示；内页从雾白半透明封套上沿露出，配轻微边缘反光和叠层留边，去掉票根撕线与图标，不伪造海报或年份。照片原图与较宽下白边保留，仅第一张轻微倾斜。三层架子按歌曲、照片、影视排列，各层之间保持相同留白，每层可独立左右滑动浏览全部收藏，「查看全部」保留；小屏或大字号下仍可纵向滚动。材质适配浅色与深色，物件宽度随字号放大，影视标题自然换行。内容来自已有每日记录，不新增存储或改变日期编辑权限；完整照片列表保留原比例。
 
 ## Design style / 设计风格
 
@@ -12,13 +20,15 @@ The app has three tabs: Calendar, Monthly Note, and Settings. Settings lets you 
 
 Soft colors, warm paper surfaces, nostalgic personal electronics, and intimate journal details shape the app's visual direction. The music editor's circular controls and tactile click are examples. Theme colors accent controls and selections; neutral text keeps content readable in both light and dark appearances. Preserve the existing layout and supplied artwork, refining proportions and spacing as needed.
 
+The music editor keeps a single player inside a persistent scroll view: centered when space allows, scrollable above the keyboard when space is limited. Showing the keyboard does not replace the song and artist fields.
+
 柔和配色、温暖色纸、怀旧随身电子产品与私人手账细节共同构成视觉方向，歌曲弹窗的圆盘按键和机械咔嗒声是其中的例子。少女感不限定粉色，Y2K 元素适量使用；主题色用于控件与选中状态，正文保留清晰的中性色层级。延续现有布局与原始插画，优先打磨比例、间距和触感，同时兼顾浅色与深色外观。
 
 ## Find a memory / 找一找
 
 The calendar’s magnifying glass opens “Find a memory” in a compact portrait notebook overlay. Its narrow cloth spine, plain paper and thin page edges adapt to light and dark appearances. Daily records appear directly on the paper, grouped by month and separated by faint rules, with saved paper accents beside their dates. Search only written daily notes; monthly notes are excluded from both browsing and keyword results. Songs, artists, sticker names and the calendar title are not searched. An empty query shows daily records with written text and a recorded-days count; a keyword shows the matching-memory count. Each day appears once, newest first, with matching words highlighted. Selecting a result waits for the keyboard to hide before opening that calendar day. Returning restores the search text and scroll position. Search covers saved history regardless of past-day editing permission.
 
-日历右上角的放大镜打开一本竖向、尺寸有边界的「找一找」手账弹窗。机身沿用随身听的中性色、灰色和极淡当前主题色；纸页保持简单，左侧使用窄布脊与轻微内凹纸面折痕形成胶装手账质感，结果在本子内部滚动。记录按月份分组，每日记录直接排在纸面上，以淡横线分隔，日期旁的小色条使用保存色纸对应的强调色；日期戳和原有表情放在一行留言前，留言超长显示省略号。原色纸及未保存色纸颜色的旧记录沿用现有主题色规则。搜索框采用细底线，不使用金属装订环，封皮仅在左侧和右下露出。只展示和搜索每日留言，月便签不出现在搜索本子中，不搜索歌曲、歌手、表情名称或日历标题，也不提供点选表情图片筛选。未输入关键词时，只展示写过文字的记录，右侧显示「共记录了 x 个日子」；输入关键词后显示「找到 x 条回忆」。同一天只出现一条结果，按日期从近到远排列并轻标命中词。点击结果后先等待键盘完全收起，再打开每日记录对应那天；返回手账时保留关键词和浏览位置。可查找全部已保存历史，不受往日编辑权限影响，机身、纸页、布脊和色纸均适配浅色与深色。
+日历右上角的放大镜打开一本竖向、尺寸有边界的「找一找」手账弹窗。机身沿用随身听的中性色、灰色和极淡当前主题色；纸页保持简单，左侧使用窄布脊与轻微内凹纸面折痕形成胶装手账质感，结果在本子内部滚动。记录按月份分组，每日记录直接排在纸面上，以淡横线分隔，日期旁的小色条使用保存色纸对应的强调色；日期戳和原有表情放在一行留言前，留言超长显示省略号。原色纸及未保存色纸颜色的旧记录沿用现有主题色规则。搜索框采用细底线，不使用金属装订环，封皮仅在左侧和右下露出。只展示和搜索每日留言，月便签不出现在搜索本子中，不搜索歌曲、歌手、表情名称或日历标题，也不提供点选表情图片筛选。未输入关键词时，只展示写过文字的记录，右侧显示「共记录了 x 个日子」；输入关键词后显示「找到 x 条回忆」。同一天只出现一条结果，按日期从近到远排列并轻标命中词。点击结果后先等待键盘完全收起，再关闭搜索并直接定位主日历对应日期；不创建新的日历页面或返回按钮，定位后可继续切换月份、选择日期及按权限编辑。可查找全部已保存历史，不受往日编辑权限影响，机身、纸页、布脊和色纸均适配浅色与深色。
 
 ## Screenshots
 
@@ -65,7 +75,7 @@ Current-month note and previous-month history:
 3. Choose a scheme and iPhone simulator, then click Run.
 
 - `MoodCalendar`: normal build with persistent local storage and no sample entries.
-- `MoodCalendar Demo`: Debug-only sample data in an isolated in-memory store. It includes five June entries, six August entries, thirty September entries covering all six sticker groups, monthly notes for August and September, a sample note for the current month, and a February 2022 entry and note for testing older history. It does not write to the normal store and does not support iCloud or App Store purchases.
+- `MoodCalendar Demo`: Debug-only sample data in an isolated in-memory store. It includes five June entries, six August entries, thirty September entries covering all six sticker groups, monthly notes for August and September, a sample note for the current month, and a February 2022 entry and note for testing older history. It also includes music, film/TV, and sample photos across the most recent 12 days for Collection previews. Sample photos use the supplied illustrations on neutral backgrounds. It does not write to the normal store and does not support iCloud or App Store purchases.
 
 The bundle ID is `com.qingqing.MoodCalendar`; the CloudKit container is `iCloud.com.qingqing.MoodCalendar`. Device sync requires the Apple Developer team to enable the container and use a provisioning profile with the iCloud entitlement.
 
@@ -73,6 +83,7 @@ The bundle ID is `com.qingqing.MoodCalendar`; the CloudKit container is `iCloud.
 
 - `App`: app startup and SwiftData container setup.
 - `Features/Calendar`: calendar screen, fixed-size date cells, and selected-date details.
+- `Features/Collection`: automatically collected music, film/TV, photos, and their daily memories.
 - `Features/Monthly`: current monthly note and historical summaries.
 - `Features/Settings`: theme color, selection marker, and permanent unlock screens.
 - `Features/Theme`: theme palettes, marker choices, and accent colors.
@@ -93,7 +104,7 @@ Calendar days are stored as the local year, month, and day when the entry is cre
 
 一款原生 iPhone 心情日历。每天最多一条记录；个性化中的「允许修改往日」默认开启，往日无论是否已有记录均显示「编辑」，关闭后只读。未来日期始终只能查看。
 
-底部有「日历」「月便签」和「我的」三个页面。「我的」可从八种主题色（含黑色）中选择界面强调色、在六种日期和月份选中图形之间切换，也可设置最多十个字的日历标题；标题留空时显示「今日份」。日历标题属于会员功能。免费用户可使用圆形和星星，图形列表中星星紧跟在圆形之后；其他图形需永久解锁。这些设置保存在本机，下次打开仍然生效。主题色只改变界面强调元素，不改变五档心情的固定颜色、已保存记录或表情原画。
+底部有「日历」「月便签」「收藏」和「我的」四个页面。「我的」可从八种主题色（含黑色）中选择界面强调色、在六种日期和月份选中图形之间切换，也可设置最多十个字的日历标题；标题留空时显示「今日份」。日历标题属于会员功能。免费用户可使用圆形和星星，图形列表中星星紧跟在圆形之后；其他图形需永久解锁。这些设置保存在本机，下次打开仍然生效。主题色只改变界面强调元素，不改变五档心情的固定颜色、已保存记录或表情原画。
 
 ## 第一版功能
 
@@ -219,11 +230,11 @@ The editor shows only the selected paper color; tap to open a rotatable, snappin
 
 The app follows the iPhone’s system appearance automatically. Switch it in **Settings → Display & Brightness → Light / Dark**; there is no separate in-app appearance switch. Page backgrounds, text, cards, selection markers, and all eight paper colors adapt together. Dark mode uses warm charcoal backgrounds and muted tinted paper colors.
 
-In dark mode, Mood, Daily Life, Company, and Little Joys render as white line artwork. Free Spirit and Rabbits keep their original colors. This applies to the editor, calendar cells, selected-date details, month picker, and monthly notes. Light mode keeps the original artwork colors; source image files remain intact. Changing appearance does not change saved records, mood IDs, or paper selections.
+In dark mode, Mood, Daily Life, Company, Little Joys, and Rabbits render as white line artwork. Free Spirit and Daily Life II keep their original colors. This applies to the editor, calendar cells, selected-date details, month picker, and monthly notes. Rabbit artwork keeps its original pixel outlines and uses a transparent fill in dark mode. Light mode keeps the original artwork colors. Changing appearance does not change saved records, mood IDs, or paper selections.
 
 应用自动跟随 iPhone 系统外观，可在 **设置 → 显示与亮度 → 浅色／深色** 中切换；App 内没有单独的外观开关。页面背景、文字、卡片、选中标记及八种色纸同步适配，深色模式采用暖深灰背景和低饱和深色色纸。
 
-深色模式下，「心情」「日常」「陪伴」「小幸」显示白色线条；「随性」「兔兔」保留原色。编辑页、日历格、选中日期详情、月份选择和月便签均采用这一规则。浅色模式保留原始表情颜色，原始素材文件不变。切换外观不改变已保存的记录、心情编号或色纸选择。
+深色模式下，「心情」「日常」「陪伴」「小幸」「兔兔」显示白色线条；「随性」「日常Ⅱ」保留原色。编辑页、日历格、选中日期详情、月份选择和月便签均采用这一规则。深色下，兔兔保留原有像素轮廓，脸部填充显示为透明。浅色模式保留原始表情颜色。切换外观不改变已保存的记录、心情编号或色纸选择。
 
 ### Retro date stamp / 复古日期印章
 
@@ -247,9 +258,11 @@ Run `zsh Tests/run-monthly-note-skin-checks.sh` with full Xcode to check additiv
 
 备份导出会按日期、月份保留更新时间最新的整条记录，避免同步产生的临时重复记录造成同名照片重复打包。导入兼容旧版重复记录备份：校验所有记录后按更新时间合并；同名 ZIP 成员仅在逐项 CRC 校验通过且内容完全一致时接受，不一致仍拒绝。导入不会覆盖本机已有日期或月份。运行 `zsh Tests/run-data-backup-checks.sh` 检查重复记录恢复、最新记录选择、导出往返、照片一致性及损坏文件拒绝。
 
-编辑页的附件入口统一为「记歌」「记影视」「留照片」，影视入口使用圆角小电视图标。随身听屏幕两侧各内收 12 点，机身与圆盘尺寸不变。弹窗是一台复古小电视，左侧为片名屏幕，右上两颗圆形实体按钮分别用于记下／保存和取消，右下为横向扬声器格栅；沿用随身听的主题机身、内凹屏幕和实体按压效果。只输入片名，不区分电影与电视剧，不提供感受或集数输入。支持取消、保存、移除并在当天详情展示，空白片名不可确认。窄屏或键盘出现时可滚动，支持浅色、深色与无障碍标签。影视信息随每日记录保存在本地，遵循日期编辑权限；ZIP 导出与导入保留这些信息，旧记录与旧备份缺少这些可选字段时不显示影视内容。保留此前可选字段以兼容已有数据，旧记录的附加文字不丢弃。
+编辑页的附件入口统一为「记歌」「记影视」「留照片」，影视入口使用圆角小电视图标。随身听屏幕两侧各内收 12 点，机身与圆盘尺寸不变。弹窗是一台复古小电视，左侧为片名屏幕，右上两颗圆形实体按钮分别用于记下／保存和取消，右下为横向扬声器格栅；沿用随身听的主题机身、内凹屏幕和实体按压效果。屏幕内提供「电影／剧集」选择与片名输入，不提供感受或集数输入；新记录默认电影，编辑时回填保存的类型，取消不改变原值。类型以稳定的 `movie`／`series` 字符串保存在现有 `MoodEntry.watchKind` 字段，界面按语言显示名称。支持取消、保存、移除并在当天详情展示，空白片名不可确认。窄屏或键盘出现时可滚动，支持浅色、深色与无障碍标签。影视信息随每日记录保存在本地，遵循日期编辑权限；ZIP 导出与导入保留这些信息，旧记录与旧备份缺少这些可选字段时不显示影视内容。保留此前可选字段以兼容已有数据，旧记录的附加文字不丢弃。
 
-影视记录的片名及兼容字段属于现有 MoodEntry 模型，开启 iCloud 后走同一 SwiftData/CloudKit 容器。ZIP 与可读文本导出包含影视记录；旧备份缺少字段时按空值读取，重复导入保留本机已有记录。`zsh Tests/run-data-backup-checks.sh` 覆盖影视字段往返、仅片名导入、实际磁盘恢复后重开、重复导入不覆盖本机片名。发布前需确认 CloudKit Production 中 MoodEntry 对应的新增字段已部署，并用同一 iCloud 账号的两台真机检查新增、修改与移除片名同步；本地备份检查不代表云端投递已实测。
+影视记录的片名及兼容字段属于现有 MoodEntry 模型，开启 iCloud 后走同一 SwiftData/CloudKit 容器。ZIP 导出、导入保留片名、电影／剧集类型与兼容观后感，可读文本显示保存的类型；旧备份缺少字段时按空值读取，重复导入保留本机已有记录。`zsh Tests/run-data-backup-checks.sh` 覆盖影视字段往返、仅片名导入、实际磁盘恢复后重开、重复导入不覆盖本机片名。发布前需确认 CloudKit Production 中 MoodEntry 对应的新增字段已部署，并用同一 iCloud 账号的两台真机检查新增、修改与移除片名同步；本地备份检查不代表云端投递已实测。
+
+应用清单声明 `UIBackgroundModes = remote-notification`，配合现有 CloudKit 与推送 entitlements 接收后台同步通知。iCloud 开关仍需重启 App 后生效，Debug 预览开关不执行真实同步。
 
 - 选择表情页面底部右侧提供「删除」，确认后删除该日的表情、文字、照片、歌曲和影视记录。仅已有记录且日期允许编辑时显示，持久化层同样校验日期权限；删除不影响月便签。
 
@@ -263,7 +276,7 @@ Run `zsh Tests/run-monthly-note-skin-checks.sh` with full Xcode to check additiv
 
 新增会员组「日常Ⅱ」，包含「做饭」（稳定编号 `31`，介绍「做顿热乎的」）、「打游戏」（`32`，介绍「上线玩一会」）、「吃好吃的」（`33`，介绍「这一口好满足」）、「看剧」（`34`，介绍「再看一集就休息」）和「逛街」（`36`，介绍「慢慢逛，随便看看」）。原「日常」组保持免费，原有编号不变。新组沿用已有会员锁标记、购买入口及持久化权限校验，备份支持新增编号 `31–36`。
 
-本组在选的五张原画按主体边界裁去透明留白并清理极低透明度杂点，等比缩放到最长边 420 像素，居中放入 1024×512 RGBA 透明画布；掌机屏幕的透明区域保留。彩色像素画与「随性」「兔兔」一样在深色下保留原色，原有四组白色线条规则不变。介绍与名称同时提供中、英、日、韩文。
+本组在选的五张原画按主体边界裁去透明留白并清理极低透明度杂点，等比缩放到最长边 420 像素，居中放入 1024×512 RGBA 透明画布；掌机屏幕的透明区域保留。彩色像素画与「随性」一样在深色下保留原色，其余线稿组（包括兔兔）采用白色线条。介绍与名称同时提供中、英、日、韩文。
 
 「吃好吃的」采用无蒸汽拉面，「看剧」采用碟片露出封套的图案，沿用同组的裁剪、透明底和深色原色规则；「小蛋糕」介绍调整为「给今天加一点甜」，避免与正餐表情重复。
 
@@ -274,3 +287,11 @@ Run `zsh Tests/run-monthly-note-skin-checks.sh` with full Xcode to check additiv
 「打游戏」使用用户选定的奶油黄掌机，屏幕保留透明；「吃好吃的」使用无蒸汽拉面。两项名称、介绍及保存编号不变。
 
 日常Ⅱ在选的五张表情按不透明主体边界面积统一视觉尺寸：以原「日常」五项的主体矩形面积中位数（112140 像素²）为基准，等比缩放、居中于 1024×512 透明画布。详情、日历、选择、搜索及月便签沿用日常组的同页面基础缩放，不按最长边硬统一，避免宽掌机与高帆布包视觉大小不均。
+
+日期标记验证：`zsh Tests/run-starred-day-checks.sh` 检查三模型旧库迁移、闰日与跨月跨年、旧偏好迁移、持久层往日权限、延迟重复记录、取消状态、独立进程重开和 Demo 隔离；`zsh Tests/run-data-backup-checks.sh` 检查标记独立导出、导入、重复导入保留本机状态及无效日期拒绝。发布前需在 CloudKit Production 部署新增 `StarredDaySelection` 记录类型，并用同一 iCloud 账号的两台真机验证标记与取消标记的同步。现有同步开关仍需重启 App 后生效；本地测试不代表跨设备云端投递已实测。
+
+收藏架按歌曲、照片、影视排列。黑胶与录像带换肤功能暂时停用：相关实现、偏好读取、皮肤预览及「我的 → 个性化」设置入口均已注释，收藏架与列表统一显示原版黑胶和录像带。已保存的本机皮肤偏好保留，恢复功能后可继续使用。歌曲、照片、影视记录不受影响。黑胶保留透明圆芯，照片摆正不旋转。
+
+歌曲和影视完整列表每页最多展示 6 条，使用上一页、下一页按钮与当前页／总页数翻页；分页控件固定在页面底部安全区域、位于标签栏上方，不随列表滚动或本页条数移动，内容可独立滚动且不会被分页控件遮挡；数据减少时自动回到有效页。歌曲和影视每项右侧为独立三点按钮，打开该歌曲或影视的全部历史日记录，按日期从新到旧展示日期、心情与文字（影视同时展示观后感）；点记录可回到日历对应日期，关闭记录弹层保留原列表页码与选中状态。收藏数量后为矢量小红心。歌单和影视默认选中当前页第一项，淡灰底跟随点选，分别配四柱图标与小播放三角；图标只表示选中状态，不接入音视频播放。列表歌名、片名采用约 15 pt 的系统普通字重，并随系统字号缩放。
+
+收藏页仅从当前 SwiftData 数据库查询歌曲、影视与照片，不填充固定作品列表。Debug Demo 在隔离的内存每日记录中提供歌曲、影视与照片示例，架子、「查看全部」和历史记录均从同一份 Demo 记录归集，界面不另造列表；电影与剧集使用稳定的类型值。正常方案读取用户持久化记录，Demo 不写入正常数据库。`zsh Tests/run-watch-recording-checks.sh` 验证类型保存、更改、闰日与月边界、同名不同类型归集、移除、日期权限及独立进程重开；`zsh Tests/run-data-backup-checks.sh` 同时验证电影与剧集字段备份往返。

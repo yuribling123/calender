@@ -100,6 +100,7 @@ struct MembershipScreen: View {
                     }
                     .padding(24)
                     .frame(minHeight: proxy.size.height)
+                    .iPadReadableWidth(520)
                 }
             }
             .background(theme.palette.resolved(for: colorScheme).background.ignoresSafeArea())

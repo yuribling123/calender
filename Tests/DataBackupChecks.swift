@@ -54,6 +54,8 @@ struct DataBackupChecks {
         rejects("conflicting-photos.zip")
         rejects("corrupt-crc.zip")
         rejects("invalid-date.zip")
+        rejects("invalid-bookmark.zip")
+        expect(imported.starredDays.isEmpty)
 
         func models(_ plan: DataBackupImportPlan) -> ([MoodEntry], [MonthlyNote]) {
             let entries = plan.entriesToImport.map { item in
@@ -116,6 +118,17 @@ struct DataBackupChecks {
         expect(watchedPlan.entriesToImport.first?.watchTitle == "测试电影")
         expect(watchedPlan.entriesToImport.first?.watchKind == "movie")
         expect(watchedPlan.entriesToImport.first?.watchNote == "想再看一次")
+        expect(DataBackupExporter.readableText(entries: entries, monthlyNotes: []).contains("电影 · 测试电影"))
+        let seriesEntry = MoodEntry(dayKey: "2024-03-01", choice: .good, note: "追剧")
+        seriesEntry.watchTitle = "测试剧集"
+        seriesEntry.watchKind = WatchKind.series.rawValue
+        seriesEntry.watchNote = "下一集继续"
+        let seriesArchive = try DataBackupExporter.makeArchive(entries: [seriesEntry], monthlyNotes: [])
+        let seriesPlan = try DataBackupImporter.makePlan(from: seriesArchive, existingDayKeys: [], existingMonthKeys: [])
+        expect(seriesPlan.entriesToImport.first?.watchTitle == "测试剧集")
+        expect(seriesPlan.entriesToImport.first?.watchKind == "series")
+        expect(seriesPlan.entriesToImport.first?.watchNote == "下一集继续")
+        expect(DataBackupExporter.readableText(entries: [seriesEntry], monthlyNotes: []).contains("剧集 · 测试剧集"))
         expect(DataBackupExporter.readableText(entries: entries, monthlyNotes: []).contains("测试电影"))
         entries[0].watchKind = nil
         entries[0].watchNote = nil
@@ -125,7 +138,30 @@ struct DataBackupChecks {
         expect(titleOnlyPlan.entriesToImport.first?.watchKind == nil)
         expect(titleOnlyPlan.entriesToImport.first?.watchNote == nil)
 
-        let schema = Schema([MoodEntry.self, MonthlyNote.self, MonthlyNoteSkinSelection.self])
+        let schema = Schema([MoodEntry.self, MonthlyNote.self, MonthlyNoteSkinSelection.self, StarredDaySelection.self])
+        let bookmarkArchive = try DataBackupExporter.makeArchive(entries: [], monthlyNotes: [],
+            starredDays: ["2024-02-29": true, "2025-12-31": false, "2027-01-01": true])
+        let bookmarkPlan = try DataBackupImporter.makePlan(from: bookmarkArchive, existingDayKeys: [], existingMonthKeys: [])
+        expect(bookmarkPlan.starredDays.count == 3 && bookmarkPlan.entriesToImport.isEmpty)
+        let bookmarkURL = directory.appendingPathComponent("bookmarks.store")
+        do {
+            let store = try ModelContainer(for: schema, configurations:
+                ModelConfiguration(schema: schema, url: bookmarkURL, cloudKitDatabase: .none))
+            let context = ModelContext(store)
+            context.insert(StarredDaySelection(dayKey: "2024-02-29", isStarred: false))
+            try context.save()
+            _ = try DataBackupImporter.restore(bookmarkPlan, into: context)
+            _ = try DataBackupImporter.restore(bookmarkPlan, into: context)
+            let bookmarkCount = try context.fetchCount(FetchDescriptor<StarredDaySelection>())
+            expect(bookmarkCount == 3)
+        }
+        do {
+            let store = try ModelContainer(for: schema, configurations:
+                ModelConfiguration(schema: schema, url: bookmarkURL, cloudKitDatabase: .none))
+            let restored = try StarredDayPersistence(context: ModelContext(store)).backupSelections()
+            expect(restored == ["2024-02-29": false, "2025-12-31": false, "2027-01-01": true])
+        }
+        expect(DataBackupExporter.readableText(entries: [], monthlyNotes: [], starredDays: ["2024-02-29": true]).contains("2024-02-29"))
         let watchStoreURL = directory.appendingPathComponent("watch-restore.store")
         func restoreWatchToDisk() throws {
             let store = try ModelContainer(for: schema, configurations:

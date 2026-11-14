@@ -11,6 +11,7 @@ private struct NoteCardFramePreferenceKey: PreferenceKey {
 }
 
 struct EntryEditorScreen: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @EnvironmentObject private var membership: MembershipStore
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
@@ -57,42 +58,50 @@ struct EntryEditorScreen: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
-                    editorHeading
-
-                    groupPicker
-
-                    choicePicker
-
-                    noteCard
-
-                    songAttachment
-
-                    watchAttachment
-
-                    photoAttachment
-
-                    paperPicker
-
-                    if entry != nil && DayKey(day).isEditable(allowPastDates: allowPastDateEditing) {
-                        HStack {
-                            Spacer(minLength: 0)
-                            Button(role: .destructive) {
-                                isNoteFocused = false
-                                showsDeleteConfirmation = true
-                            } label: {
-                                Text(localized("删除"))
-                                    .font(.footnote)
-                                    .foregroundStyle(theme.palette.destructiveAction)
-                                    .frame(minHeight: 44)
-                                    .contentShape(Rectangle())
+            AdaptivePage { size in
+                ScrollView {
+                    if let size, size.width >= 700, !dynamicTypeSize.isAccessibilitySize {
+                        HStack(alignment: .top, spacing: 28) {
+                            VStack(alignment: .leading, spacing: 20) {
+                                editorHeading
+                                groupPicker
+                                choicePicker
                             }
-                            .buttonStyle(.plain)
+                            .frame(maxWidth: .infinity, alignment: .topLeading)
+                            VStack(alignment: .leading, spacing: 20) {
+                                noteCard
+                                songAttachment
+                                watchAttachment
+                                photoAttachment
+                                paperPicker
+                                deleteEntryAction
+                            }
+                            .frame(maxWidth: .infinity, alignment: .topLeading)
                         }
+                        .padding(28)
+                    } else {
+                        VStack(alignment: .leading, spacing: 20) {
+                            editorHeading
+
+                            groupPicker
+
+                            choicePicker
+
+                            noteCard
+
+                            songAttachment
+
+                            watchAttachment
+
+                            photoAttachment
+
+                            paperPicker
+
+                            deleteEntryAction
+                        }
+                        .padding(24)
                     }
                 }
-                .padding(24)
             }
             .background(theme.palette.resolved(for: colorScheme).background)
             .coordinateSpace(name: "EntryEditor")
@@ -186,10 +195,11 @@ struct EntryEditorScreen: View {
             if showsDeleteConfirmation {
                 deleteConfirmation
             } else if isWatchEditorPresented {
-                WatchEditorOverlay(title: watchTitle, onClose: {
+                WatchEditorOverlay(title: watchTitle, kind: WatchKind(rawValue: watchKind) ?? .movie, onClose: {
                     isWatchEditorPresented = false
-                }) { title in
+                }) { title, kind in
                     watchTitle = title
+                    watchKind = kind.rawValue
                     if title.isEmpty {
                         watchKind = ""
                         watchNote = ""
@@ -205,6 +215,26 @@ struct EntryEditorScreen: View {
                     showsSong = !title.isEmpty
                     isSongEditorPresented = false
                 }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var deleteEntryAction: some View {
+        if entry != nil && DayKey(day).isEditable(allowPastDates: allowPastDateEditing) {
+            HStack {
+                Spacer(minLength: 0)
+                Button(role: .destructive) {
+                    isNoteFocused = false
+                    showsDeleteConfirmation = true
+                } label: {
+                    Text(localized("删除"))
+                        .font(.footnote)
+                        .foregroundStyle(theme.palette.destructiveAction)
+                        .frame(minHeight: 44)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
             }
         }
     }
@@ -633,9 +663,14 @@ private struct SongEditorOverlay: View {
                 .ignoresSafeArea()
                 .onTapGesture { focusedField = nil }
                 .accessibilityHidden(true)
-            ViewThatFits(in: .vertical) {
-                player.padding(24)
-                ScrollView { player.padding(24) }
+            GeometryReader { geometry in
+                ScrollView {
+                    player
+                        .padding(24)
+                        .frame(maxWidth: .infinity)
+                        .frame(minHeight: geometry.size.height)
+                }
+                .scrollIndicators(.hidden)
             }
         }
         .tint(theme.palette.strongAccent)
@@ -911,6 +946,7 @@ private struct PaperDialPicker: View {
                     .overlay { Text(selectedPaper.title).font(.subheadline) }
                     .padding(.horizontal, 28)
             }
+            .iPadScrollable()
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(theme.palette.resolved(for: colorScheme).background)
             .navigationTitle(localized("色纸"))
@@ -922,7 +958,7 @@ private struct PaperDialPicker: View {
             }
             .tint(theme.palette.strongAccent)
         }
-        .presentationDetents([.height(470)])
+        .presentationDetents(UIDevice.current.userInterfaceIdiom == .pad ? [.large] : [.height(470)])
         .presentationDragIndicator(.visible)
         .onAppear { rotation = -Double(papers.firstIndex(of: selectedPaper) ?? 0) * 45 }
     }
@@ -992,13 +1028,15 @@ private struct WatchEditorOverlay: View {
     @Environment(\.appTheme) private var theme
     @Environment(\.colorScheme) private var colorScheme
     @State var title: String
+    @State var kind: WatchKind
     @FocusState private var isTitleFocused: Bool
     private let hasRecord: Bool
     let onClose: () -> Void
-    let onSave: (String) -> Void
+    let onSave: (String, WatchKind) -> Void
 
-    init(title: String, onClose: @escaping () -> Void, onSave: @escaping (String) -> Void) {
+    init(title: String, kind: WatchKind, onClose: @escaping () -> Void, onSave: @escaping (String, WatchKind) -> Void) {
         _title = State(initialValue: title)
+        _kind = State(initialValue: kind)
         hasRecord = !title.isEmpty
         self.onClose = onClose
         self.onSave = onSave
@@ -1030,7 +1068,7 @@ private struct WatchEditorOverlay: View {
                 VStack(spacing: 10) {
                     Button {
                         PlayerButtonFeedback.play()
-                        onSave(trimmedTitle)
+                        onSave(trimmedTitle, kind)
                     } label: {
                         Text(localized(hasRecord ? "保存" : "记下"))
                             .font(.system(size: 12, weight: .medium))
@@ -1086,7 +1124,14 @@ private struct WatchEditorOverlay: View {
     }
 
     private var screen: some View {
-        VStack {
+        VStack(spacing: 20) {
+            Picker(localized("影视类型"), selection: $kind) {
+                ForEach(WatchKind.allCases) { kind in
+                    Text(kind.title).tag(kind)
+                }
+            }
+            .pickerStyle(.segmented)
+            .accessibilityLabel(localized("影视类型"))
             TextField(localized("片名"), text: $title,
                       prompt: Text(localized("片名"))
                         .foregroundColor(theme.palette.foreground.opacity(0.56)),
@@ -1098,10 +1143,12 @@ private struct WatchEditorOverlay: View {
                 .textInputAutocapitalization(.never)
                 .focused($isTitleFocused)
                 .accessibilityLabel(localized("片名"))
+                .frame(minHeight: 100)
         }
         .padding(.horizontal, 16)
-        .padding(.vertical, hasRecord ? 50 : 28)
-        .frame(maxWidth: .infinity, minHeight: 204)
+        .padding(.top, 12)
+        .padding(.bottom, hasRecord ? 50 : 16)
+        .frame(maxWidth: .infinity, minHeight: 204, alignment: .top)
         .background {
             RoundedRectangle(cornerRadius: 30)
                 .fill(theme.palette.televisionScreenBackground.shadow(
@@ -1116,14 +1163,14 @@ private struct WatchEditorOverlay: View {
                         ), lineWidth: 0.75)
                 }
         }
-        .overlay(alignment: .topLeading) {
+        .overlay(alignment: .bottomLeading) {
             if hasRecord {
-                Button(localized("移除影视记录")) { onSave("") }
+                Button(localized("移除影视记录")) { onSave("", kind) }
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .frame(minHeight: 44)
                     .padding(.leading, 16)
-                    .padding(.top, 6)
+                    .padding(.bottom, 6)
             }
         }
         .padding(4)

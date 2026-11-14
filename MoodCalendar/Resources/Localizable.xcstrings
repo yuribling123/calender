@@ -1,6 +1,1248 @@
 {
   "sourceLanguage" : "zh-Hans",
   "strings" : {
+      "玫瑰压胶": {
+        "extractionState": "manual",
+        "localizations": {
+          "en": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "Rose Marbled Vinyl"
+            }
+          },
+          "ja": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "ローズマーブル"
+            }
+          },
+          "ko": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "로즈 마블 바이닐"
+            }
+          }
+        }
+      },
+      "黑胶皮肤": {
+        "extractionState": "manual",
+        "localizations": {
+          "en": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "Vinyl Styles"
+            }
+          },
+          "ja": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "レコードスタイル"
+            }
+          },
+          "ko": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "바이닐 스타일"
+            }
+          }
+        }
+      },
+      "录像带皮肤": {
+        "extractionState": "manual",
+        "localizations": {
+          "en": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "Videotape Styles"
+            }
+          },
+          "ja": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "ビデオテープスタイル"
+            }
+          },
+          "ko": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "비디오테이프 스타일"
+            }
+          }
+        }
+      },
+      "玫瑰纸标": {
+        "extractionState": "manual",
+        "localizations": {
+          "en": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "Rose Label"
+            }
+          },
+          "ja": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "ローズラベル"
+            }
+          },
+          "ko": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "로즈 라벨"
+            }
+          }
+        }
+      },
+      "烟紫透胶": {
+        "extractionState": "manual",
+        "localizations": {
+          "en": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "Smoky Violet"
+            }
+          },
+          "ja": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "スモーキーバイオレット"
+            }
+          },
+          "ko": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "스모키 바이올렛"
+            }
+          }
+        }
+      },
+      "家庭放映": {
+        "extractionState": "manual",
+        "localizations": {
+          "en": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "Home Cinema"
+            }
+          },
+          "ja": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "ホームシネマ"
+            }
+          },
+          "ko": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "홈 시네마"
+            }
+          }
+        }
+      },
+      "奶油档案": {
+        "extractionState": "manual",
+        "localizations": {
+          "en": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "Cream Archive"
+            }
+          },
+          "ja": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "クリームアーカイブ"
+            }
+          },
+          "ko": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "크림 아카이브"
+            }
+          }
+        }
+      },
+      "收藏皮肤": {
+        "extractionState": "manual",
+        "localizations": {
+          "en": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "Collection Styles"
+            }
+          },
+          "ja": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "コレクションスタイル"
+            }
+          },
+          "ko": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "컬렉션 스타일"
+            }
+          }
+        }
+      },
+      "黑胶": {
+        "extractionState": "manual",
+        "localizations": {
+          "en": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "Vinyl"
+            }
+          },
+          "ja": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "レコード"
+            }
+          },
+          "ko": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "바이닐"
+            }
+          }
+        }
+      },
+      "录像带": {
+        "extractionState": "manual",
+        "localizations": {
+          "en": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "Videotape"
+            }
+          },
+          "ja": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "ビデオテープ"
+            }
+          },
+          "ko": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "비디오테이프"
+            }
+          }
+        }
+      },
+      "六个字的电影": {
+        "extractionState": "manual",
+        "localizations": {
+          "en": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "A Little Film"
+            }
+          },
+          "ja": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "小さな映画"
+            }
+          },
+          "ko": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "작은 영화"
+            }
+          }
+        }
+      },
+    "剧集": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Series"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ドラマ"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "드라마"
+          }
+        }
+      }
+    },
+    "影视类型": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Movie or series"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "作品の種類"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "작품 유형"
+          }
+        }
+      }
+    },
+      "上一页": {
+        "extractionState": "manual",
+        "localizations": {
+          "en": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "Previous page"
+            }
+          },
+          "ja": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "前のページ"
+            }
+          },
+          "ko": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "이전 페이지"
+            }
+          }
+        }
+      },
+      "下一页": {
+        "extractionState": "manual",
+        "localizations": {
+          "en": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "Next page"
+            }
+          },
+          "ja": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "次のページ"
+            }
+          },
+          "ko": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "다음 페이지"
+            }
+          }
+        }
+      },
+      "第 %lld 页，共 %lld 页": {
+        "extractionState": "manual",
+        "localizations": {
+          "en": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "Page %1$lld of %2$lld"
+            }
+          },
+          "ja": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "%2$lldページ中%1$lldページ"
+            }
+          },
+          "ko": {
+            "stringUnit": {
+              "state": "translated",
+              "value": "전체 %2$lld페이지 중 %1$lld페이지"
+            }
+          }
+        }
+      },
+    "我的片单": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "My watchlist"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "マイ鑑賞リスト"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "나의 감상 목록"
+          }
+        }
+      }
+    },
+    "%lld 部收藏": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld saved titles"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "保存した作品 %lld 本"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "저장한 작품 %lld편"
+          }
+        }
+      }
+    },
+    "我的歌单": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "My playlist"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "マイプレイリスト"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "나의 플레이리스트"
+          }
+        }
+      }
+    },
+    "%lld 首收藏": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld saved songs"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "保存した曲 %lld 曲"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "저장한 노래 %lld곡"
+          }
+        }
+      }
+    },
+    "日期标记已合并，本机已有状态会保留。" : {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Date bookmarks merged. Existing local states were kept."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "日付のマークを統合しました。この端末の既存の状態は保持されました。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "날짜 표시를 병합했습니다. 기기의 기존 상태는 유지됩니다."
+          }
+        }
+      }
+    },
+    "将合并 %d 个日期的标记状态；本机已有状态会保留。" : {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Merge bookmark states for %d dates. Existing local states will be kept."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%d 日分のマーク状態を統合します。この端末の既存の状態は保持されます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%d개 날짜의 표시 상태를 병합합니다. 기기의 기존 상태는 유지됩니다."
+          }
+        }
+      }
+    },
+    "标记日子" : {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Marked dates"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "マークした日"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "표시한 날짜"
+          }
+        }
+      }
+    },
+    "全部曲目": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All tracks"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "すべての曲"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "전체 곡"
+          }
+        }
+      }
+    },
+    "首次记录": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "First recorded"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "最初の記録"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "처음 기록한 날"
+          }
+        }
+      }
+    },
+    "查看歌曲的记录": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "View memories of this song"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "この曲の記録を見る"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이 노래의 기록 보기"
+          }
+        }
+      }
+    },
+    "%lld TRACKS": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld TRACKS"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld 曲"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld곡"
+          }
+        }
+      }
+    },
+    "生活里慢慢积攒的片段": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Little pieces of your life"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "日々、少しずつ集めたかけら"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "일상에서 차곡차곡 모은 조각"
+          }
+        }
+      }
+    },
+    "从每天的一点记录开始": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start with a little each day"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "毎日の小さな記録から"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "매일의 작은 기록부터"
+          }
+        }
+      }
+    },
+    "记下的歌曲、影视和照片，会自动汇集在这里。": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Songs, films, shows and photos from your daily entries gather here."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "記録した曲や映画・ドラマ、写真がここに集まります。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "기록한 노래, 영화·드라마와 사진이 여기에 모여요."
+          }
+        }
+      }
+    },
+    "记下的歌": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Songs you recorded"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "記録した曲"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "기록한 노래"
+          }
+        }
+      }
+    },
+    "看过的故事": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stories you watched"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "観た物語"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "보았던 이야기"
+          }
+        }
+      }
+    },
+    "留下的画面": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Moments you kept"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "残した風景"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "남겨 둔 장면"
+          }
+        }
+      }
+    },
+    "查看全部": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "View all"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "すべて見る"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "전체 보기"
+          }
+        }
+      }
+    },
+    "喜欢过的，留下来": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keep what you loved"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "好きだったものを、ここに"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "좋아했던 것들을 여기에"
+          }
+        }
+      }
+    },
+    "影视": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Film & TV"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "映画・ドラマ"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "영화·드라마"
+          }
+        }
+      }
+    },
+    "%lld 部": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld titles"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld 作品"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld편"
+          }
+        }
+      }
+    },
+    "%lld 张": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld photos"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld 枚"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld장"
+          }
+        }
+      }
+    },
+    "这条收藏已不在记录中": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This item is no longer in your entries"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "このアイテムは記録にありません"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "기록에 이 항목이 없어요"
+          }
+        }
+      }
+    },
+    "慢慢攒起喜欢的日常": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Collect the everyday things you love"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "好きな日常を少しずつ"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "좋아하는 일상을 차곡차곡"
+          }
+        }
+      }
+    },
+    "在每日记录里添加影视，它们会出现在这里。": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add films or shows to your daily entries. They will appear here."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "毎日の記録に映画やドラマを追加すると、ここに並びます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "하루 기록에 영화나 드라마를 추가하면 여기에 모여요."
+          }
+        }
+      }
+    },
+    "在每日记录里留下照片，它们会出现在这里。": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add photos to your daily entries. They will appear here."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "毎日の記録に写真を追加すると、ここに並びます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "하루 기록에 사진을 남기면 여기에 모여요."
+          }
+        }
+      }
+    },
+    "收藏": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Collection"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "コレクション"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "모음"
+          }
+        }
+      }
+    },
+    "那些日子，听过的歌": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Songs from those days"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "あの日々に聴いた曲"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "그날들에 들었던 노래"
+          }
+        }
+      }
+    },
+    "音乐": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Music"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "音楽"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "음악"
+          }
+        }
+      }
+    },
+    "%lld 首": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld songs"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld 曲"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld곡"
+          }
+        }
+      }
+    },
+    "%lld 个日子": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld days"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld 日"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld일"
+          }
+        }
+      }
+    },
+    "这首歌已不在记录中": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This song is no longer in your entries"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "この曲は記録にありません"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "기록에 이 노래가 없어요"
+          }
+        }
+      }
+    },
+    "喜欢的旋律，慢慢攒起来": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keep the melodies you love"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "好きなメロディーを少しずつ"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "좋아하는 멜로디를 차곡차곡"
+          }
+        }
+      }
+    },
+    "在每日记录里添加歌曲，它们会出现在这里。": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add songs to your daily entries. They will appear here."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "毎日の記録に曲を追加すると、ここに並びます。"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "하루 기록에 노래를 추가하면 여기에 모여요."
+          }
+        }
+      }
+    },
+    "未填写歌手": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Artist not added"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "アーティスト未入力"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "가수 미입력"
+          }
+        }
+      }
+    },
+    "留在 %lld 个日子里": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Part of %lld days"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld 日の思い出に"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld일의 추억 속에"
+          }
+        }
+      }
+    },
+    "这一天没有写下文字": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No words written that day"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "この日のメモはありません"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이날은 글을 남기지 않았어요"
+          }
+        }
+      }
+    },
+    "查看这一天的记录": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open this day in the calendar"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "カレンダーでこの日の記録を見る"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "달력에서 이날의 기록 보기"
+          }
+        }
+      }
+    },
     "上线玩一会": {
       "extractionState": "manual",
       "localizations": {

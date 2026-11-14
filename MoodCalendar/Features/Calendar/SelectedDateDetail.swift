@@ -197,11 +197,6 @@ struct SelectedDateDetail: View {
                             .padding(.leading, 12)
                     }
 
-                    if let note = entry?.watchNote, !note.isEmpty {
-                        Text(note)
-                            .font(.system(size: 13))
-                            .foregroundStyle(.secondary)
-                    }
                 }
                 .foregroundStyle(.primary)
                 .padding(.top, 7)
@@ -261,21 +256,6 @@ struct DailySongCard: View {
             .font(.system(size: 13))
             .foregroundStyle(theme.palette.resolved(for: colorScheme).foreground.opacity(0.72))
             .layoutPriority(1)
-
-            HStack(spacing: 14) {
-                Image(systemName: "backward.fill")
-                    .frame(width: 11)
-                Image(systemName: "play.fill")
-                    .font(.system(size: 9))
-                    .frame(width: 11)
-                Image(systemName: "forward.fill")
-                    .frame(width: 11)
-            }
-            .font(.system(size: 8))
-            .foregroundStyle(theme.palette.resolved(for: colorScheme).foreground.opacity(0.64))
-            .fixedSize()
-            .padding(.leading, 20)
-            .accessibilityHidden(true)
 
             Spacer(minLength: 0)
             Text(verbatim: "NOW PLAYING")

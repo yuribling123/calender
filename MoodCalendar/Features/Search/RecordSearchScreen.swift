@@ -31,7 +31,9 @@ struct RecordSearchScreen: View {
 
     var body: some View {
         GeometryReader { geometry in
-            let width = min(390, max(0, geometry.size.width - 28))
+            let maximumWidth: CGFloat = UIDevice.current.userInterfaceIdiom == .pad
+                ? min(900, geometry.size.width * 0.9) : 390
+            let width = min(maximumWidth, max(0, geometry.size.width - 28))
             let height = min(width / 0.70, max(0, geometry.size.height - 24))
 
             ZStack {
@@ -47,7 +49,7 @@ struct RecordSearchScreen: View {
         }
         // Measure to the same bottom edge before and after the tab bar hides.
         // Keyboard and tab bar safe-area changes must not recenter the notebook.
-        .ignoresSafeArea(.all, edges: .bottom)
+        .modifier(SearchBottomSafeArea())
         .foregroundStyle(theme.palette.foreground)
         .tint(theme.palette.strongAccent)
         .accessibilityAddTraits(.isModal)
@@ -57,7 +59,7 @@ struct RecordSearchScreen: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: UIResponder.keyboardDidHideNotification)) { _ in
             isKeyboardVisible = false
-            // Let the restored keyboard safe area settle before pushing a destination.
+            // Let the restored keyboard safe area settle before locating the date in the main calendar.
             DispatchQueue.main.async { openPendingResult() }
         }
         .onDisappear {
@@ -425,19 +427,7 @@ private struct SearchResultRow: View {
 
     private var noteLine: some View {
         HStack(spacing: 8) {
-            if let choice = result.choice {
-                // Balance visible subjects rather than their transparent canvases.
-                let canvasWidth: CGFloat = switch choice.group {
-                case .mood: 42
-                case .daily: 50
-                case .rabbit: 52
-                default: 60
-                }
-                ChoiceArtwork(choice: choice)
-                    .frame(width: canvasWidth, height: canvasWidth / 2)
-                    .frame(width: 40, height: 30)
-                    .accessibilityLabel(choice.title)
-            } else if result.source == .month {
+            if result.source == .month {
                 Image(systemName: "note.text")
                     .font(.system(size: 21, weight: .light))
                     .foregroundStyle(theme.palette.foreground.opacity(0.63))
@@ -447,7 +437,7 @@ private struct SearchResultRow: View {
             VStack(alignment: .leading, spacing: 3) {
                 highlighted(result.preview)
                     .font(.system(size: noteFontSize))
-                    .lineLimit(1)
+                    .lineLimit(2)
                     .truncationMode(.tail)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
@@ -496,3 +486,15 @@ private struct SearchResultRow: View {
     }
 }
 
+
+/// Keep the original phone notebook anchoring; let iPad follow the keyboard.
+private struct SearchBottomSafeArea: ViewModifier {
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if UIDevice.current.userInterfaceIdiom == .pad {
+            content.ignoresSafeArea(.container, edges: .bottom)
+        } else {
+            content.ignoresSafeArea(.all, edges: .bottom)
+        }
+    }
+}

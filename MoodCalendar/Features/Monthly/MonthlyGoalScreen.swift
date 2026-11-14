@@ -9,6 +9,7 @@ struct MonthlyGoalScreen: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.appTheme) private var theme
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Query private var entries: [MoodEntry]
     @Query private var monthlyNotes: [MonthlyNote]
     @EnvironmentObject private var membership: MembershipStore
@@ -54,47 +55,53 @@ struct MonthlyGoalScreen: View {
                     SearchReturnButton()
                         .padding(.horizontal, 24)
                 }
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 0) {
-                        HStack {
-                            Text(localized("月便签"))
-                                .font(.system(size: 23, weight: .medium))
-                                .foregroundStyle(theme.palette.foreground)
-                            Spacer()
-                            Button { isAddingNote = true } label: {
-                                Image(systemName: "plus")
-                                    .font(.system(size: 19, weight: .regular))
-                                    .foregroundStyle(theme.palette.strongAccent)
-                                    .frame(width: 44, height: 44)
-                            }
-                            .buttonStyle(.plain)
-                            .accessibilityLabel(localized("添加月便签"))
-                        }
-                        .padding(.top, 4)
-                        .padding(.bottom, 20)
-
-                        LazyVStack(alignment: .leading, spacing: 0) {
-                            ForEach(Array(visibleMonthDates.enumerated()), id: \.element) { index, date in
-                                if index == 1 { historyDivider }
-                                if index > 0 && calendar.component(.year, from: date) != calendar.component(.year, from: visibleMonthDates[index - 1]) {
-                                    yearHeader(for: date)
+                AdaptivePage { size in
+                    if let size, size.width >= 760, !dynamicTypeSize.isAccessibilitySize {
+                        iPadMonthlyContent(usesColumns: size.width >= 1000)
+                    } else {
+                        ScrollView {
+                            VStack(alignment: .leading, spacing: 0) {
+                                HStack {
+                                    Text(localized("月便签"))
+                                        .font(.system(size: 23, weight: .medium))
+                                        .foregroundStyle(theme.palette.foreground)
+                                    Spacer()
+                                    Button { isAddingNote = true } label: {
+                                        Image(systemName: "plus")
+                                            .font(.system(size: 19, weight: .regular))
+                                            .foregroundStyle(theme.palette.strongAccent)
+                                            .frame(width: 44, height: 44)
+                                    }
+                                    .buttonStyle(.plain)
+                                    .accessibilityLabel(localized("添加月便签"))
                                 }
-                                monthSection(
-                                    for: date,
-                                    isFirstHistoricalMonth: index == 1,
-                                    isLastHistoricalMonth: index == visibleMonthDates.count - 1
-                                )
-                                .id(monthKey(for: date))
-                            }
+                                .padding(.top, 4)
+                                .padding(.bottom, 20)
 
-                            if visibleMonthDates.count == 1 {
-                                historyDivider
-                                historyEmptyState
+                                LazyVStack(alignment: .leading, spacing: 0) {
+                                    ForEach(Array(visibleMonthDates.enumerated()), id: \.element) { index, date in
+                                        if index == 1 { historyDivider }
+                                        if index > 0 && calendar.component(.year, from: date) != calendar.component(.year, from: visibleMonthDates[index - 1]) {
+                                            yearHeader(for: date)
+                                        }
+                                        monthSection(
+                                            for: date,
+                                            isFirstHistoricalMonth: index == 1,
+                                            isLastHistoricalMonth: index == visibleMonthDates.count - 1
+                                        )
+                                        .id(monthKey(for: date))
+                                    }
+
+                                    if visibleMonthDates.count == 1 {
+                                        historyDivider
+                                        historyEmptyState
+                                    }
+                                }
+                                .padding(.bottom, 120)
                             }
+                            .padding(24)
                         }
-                        .padding(.bottom, 120)
                     }
-                    .padding(24)
                 }
             }
             .background(theme.palette.resolved(for: colorScheme).background)
@@ -170,6 +177,96 @@ struct MonthlyGoalScreen: View {
         }
     }
 
+    private func iPadMonthlyContent(usesColumns: Bool) -> some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 28) {
+                monthlyHeading
+                if usesColumns {
+                    HStack(alignment: .top, spacing: 32) {
+                        monthSection(for: startOfCurrentMonth,
+                                     isFirstHistoricalMonth: false,
+                                     isLastHistoricalMonth: false)
+                            .frame(maxWidth: .infinity, alignment: .topLeading)
+                            .id(monthKey(for: startOfCurrentMonth))
+                        VStack(alignment: .leading, spacing: 0) {
+                            Text(localized("往月记录"))
+                                .font(.subheadline.weight(.medium))
+                                .foregroundStyle(.secondary)
+                                .padding(.bottom, 24)
+                            if visibleMonthDates.count == 1 {
+                                historyEmptyState
+                            }
+                            ForEach(Array(visibleMonthDates.dropFirst().enumerated()), id: \.element) { index, date in
+                                if index == 0 || calendar.component(.year, from: date) != calendar.component(.year, from: visibleMonthDates[index]) {
+                                    yearHeader(for: date)
+                                }
+                                monthSection(for: date,
+                                             isFirstHistoricalMonth: index == 0,
+                                             isLastHistoricalMonth: index == visibleMonthDates.count - 2)
+                                    .id(monthKey(for: date))
+                            }
+                        }
+                        .frame(maxWidth: .infinity, alignment: .topLeading)
+                    }
+                } else {
+                    monthSection(for: startOfCurrentMonth,
+                                 isFirstHistoricalMonth: false,
+                                 isLastHistoricalMonth: false)
+                        .id(monthKey(for: startOfCurrentMonth))
+                    historyDivider
+                    iPadHistoricalCards
+                }
+            }
+            .padding(32)
+            .padding(.bottom, 48)
+        }
+    }
+
+    private var iPadHistoricalCards: some View {
+        let dates = Array(visibleMonthDates.dropFirst())
+        let years = Array(Set(dates.map { calendar.component(.year, from: $0) })).sorted(by: >)
+        return VStack(alignment: .leading, spacing: 16) {
+            if dates.isEmpty {
+                historyEmptyState
+            }
+            ForEach(years, id: \.self) { year in
+                let yearDates = dates.filter { calendar.component(.year, from: $0) == year }
+                if let firstDate = yearDates.first {
+                    yearHeader(for: firstDate)
+                }
+                LazyVGrid(columns: [GridItem(.flexible(), spacing: 28, alignment: .top),
+                                    GridItem(.flexible(), alignment: .top)], spacing: 24) {
+                    ForEach(yearDates, id: \.self) { date in
+                        monthSection(for: date,
+                                     isFirstHistoricalMonth: false,
+                                     isLastHistoricalMonth: false,
+                                     showsTimeline: false)
+                            .id(monthKey(for: date))
+                    }
+                }
+            }
+        }
+    }
+
+    private var monthlyHeading: some View {
+        HStack {
+            Text(localized("月便签"))
+                .font(.system(size: 23, weight: .medium))
+                .foregroundStyle(theme.palette.foreground)
+            Spacer()
+            Button { isAddingNote = true } label: {
+                Image(systemName: "plus")
+                    .font(.system(size: 19, weight: .regular))
+                    .foregroundStyle(theme.palette.strongAccent)
+                    .frame(width: 44, height: 44)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(localized("添加月便签"))
+        }
+        .padding(.top, 4)
+        .padding(.bottom, 20)
+    }
+
     private func yearHeader(for date: Date) -> some View {
         Text(String(calendar.component(.year, from: date)))
             .font(.subheadline)
@@ -216,12 +313,13 @@ struct MonthlyGoalScreen: View {
     private func monthSection(
         for date: Date,
         isFirstHistoricalMonth: Bool,
-        isLastHistoricalMonth: Bool
+        isLastHistoricalMonth: Bool,
+        showsTimeline: Bool = true
     ) -> some View {
         let isCurrent = calendar.isDate(date, equalTo: startOfCurrentMonth, toGranularity: .month)
         let data = monthData(for: date)
         return HStack(alignment: .top, spacing: 14) {
-            if !isCurrent {
+            if !isCurrent && showsTimeline {
                 historyTimelineNode(
                     startsLine: isFirstHistoricalMonth,
                     endsLine: isLastHistoricalMonth
@@ -249,6 +347,7 @@ struct MonthlyGoalScreen: View {
                             } else if let note = data.note {
                                 Text(DemoData.displayText(note))
                                     .font(.system(size: noteFontSize, weight: .regular))
+                                    .fixedSize(horizontal: false, vertical: UIDevice.current.userInterfaceIdiom == .pad)
                                     .foregroundStyle(displayedSkin(for: date) == .player2 ? theme.palette.monthlyPlayer2Ink : displayedSkin(for: date) == .player ? theme.palette.monthlyPlayerInk : theme.palette.foreground)
                                     .lineSpacing(noteLineSpacing)
                                     .frame(maxWidth: .infinity, alignment: .leading)

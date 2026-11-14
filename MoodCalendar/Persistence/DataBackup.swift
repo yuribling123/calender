@@ -22,7 +22,7 @@ struct DataBackupDocument: FileDocument {
 }
 
 enum DataBackupExporter {
-    static func makeArchive(entries: [MoodEntry], monthlyNotes: [MonthlyNote], monthlyNoteSkins: [String: String] = [:]) throws -> Data {
+    static func makeArchive(entries: [MoodEntry], monthlyNotes: [MonthlyNote], monthlyNoteSkins: [String: String] = [:], starredDays: [String: Bool] = [:]) throws -> Data {
         // CloudKit can deliver duplicate records before the normal reconciliation
         // runs. Export one whole, latest record per day/month, including its photo.
         let entries = Dictionary(grouping: entries, by: \.dayKey).values.compactMap {
@@ -59,6 +59,7 @@ enum DataBackupExporter {
                 )
             },
             monthlyNoteSkins: monthlyNoteSkins,
+            starredDays: starredDays,
             monthlyNotes: monthlyNotes.sorted { $0.monthKey < $1.monthKey }.map {
                 BackupMonthlyNote(
                     monthKey: $0.monthKey,
@@ -75,7 +76,7 @@ enum DataBackupExporter {
         var files: [(name: String, contents: Data)] = [
             (name: "manifest.json", contents: manifestData),
             (name: "data.json", contents: payloadData),
-            (name: localized("记录.txt"), contents: Data(readableText(entries: entries, monthlyNotes: monthlyNotes).utf8))
+            (name: localized("记录.txt"), contents: Data(readableText(entries: entries, monthlyNotes: monthlyNotes, starredDays: starredDays).utf8))
         ]
         files += entries.compactMap { entry in
             guard let data = entry.photoData else { return nil }
@@ -83,13 +84,13 @@ enum DataBackupExporter {
         }
         return try ZipArchive.make(files: files)
     }
-    static func readableText(entries: [MoodEntry], monthlyNotes: [MonthlyNote]) -> String {
+    static func readableText(entries: [MoodEntry], monthlyNotes: [MonthlyNote], starredDays: [String: Bool] = [:]) -> String {
         var lines = [localized("今日份 · 记录导出"), "", localized("每日记录"), ""]
         for entry in entries.sorted(by: { $0.dayKey < $1.dayKey }) {
             lines.append("\(entry.dayKey) · \(entry.choice?.title ?? localized("Unknown sticker (%@)", String(entry.moodValue)))")
             if !entry.note.isEmpty { lines.append(entry.note) }
             if let title = entry.watchTitle, !title.isEmpty {
-                lines.append("\(localized("看了什么")) · \(title)")
+                lines.append("\(WatchKind.title(for: entry.watchKind)) · \(title)")
                 if let note = entry.watchNote, !note.isEmpty { lines.append(note) }
             }
             if let title = entry.songTitle, !title.isEmpty {
@@ -106,6 +107,8 @@ enum DataBackupExporter {
             lines.append("")
         }
         if monthlyNotes.isEmpty { lines.append(localized("暂无月便签")) }
+        lines.append(contentsOf: ["", localized("标记日子")])
+        lines.append(contentsOf: starredDays.filter { $0.value }.keys.sorted())
         return lines.joined(separator: "\n") + "\n"
     }
 }
@@ -120,6 +123,7 @@ private struct Manifest: Codable {
 private struct BackupPayload: Codable {
     let entries: [BackupEntry]
     let monthlyNoteSkins: [String: String]?
+    let starredDays: [String: Bool]?
     let monthlyNotes: [BackupMonthlyNote]
 }
 
@@ -164,6 +168,7 @@ struct DataBackupImportPlan: Sendable {
         let updatedAt: Date
     }
 
+    let starredDays: [String: Bool]
     let monthlyNoteSkins: [String: String]
     let entriesToImport: [Entry]
     let monthlyNotesToImport: [MonthlyNote]
@@ -218,6 +223,10 @@ enum DataBackupImporter {
         guard payload.entries.count <= maximumFileCount,
               payload.monthlyNotes.count <= maximumFileCount else { throw ImportError.invalidBackup }
 
+        let starredDays = payload.starredDays ?? [:]
+        guard starredDays.count <= 100_000, starredDays.keys.allSatisfy(isValidDayKey) else {
+            throw ImportError.invalidBackup
+        }
         let importedSkins = payload.monthlyNoteSkins ?? [:]
         guard importedSkins.count <= maximumFileCount,
               importedSkins.allSatisfy({ isValidMonthKey($0.key) && $0.value.utf8.count <= 100 }) else {
@@ -303,6 +312,7 @@ enum DataBackupImporter {
         let newEntries = latestEntries.values.filter { !existingDayKeys.contains($0.dayKey) }.sorted { $0.dayKey < $1.dayKey }
         let newNotes = latestNotes.values.filter { !existingMonthKeys.contains($0.monthKey) }.sorted { $0.monthKey < $1.monthKey }
         return DataBackupImportPlan(
+            starredDays: starredDays,
             monthlyNoteSkins: skins.filter { !existingMonthKeys.contains($0.key) },
             entriesToImport: newEntries,
             monthlyNotesToImport: newNotes,
@@ -341,6 +351,7 @@ enum DataBackupImporter {
         }
 
         do {
+            try StarredDayPersistence(context: context).restore(plan.starredDays)
             try MonthlyNoteSkinStore(context: context).restore(plan.monthlyNoteSkins, excluding: existingMonthKeys)
             try context.save()
         } catch {

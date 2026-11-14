@@ -13,6 +13,10 @@ struct DayCell: View {
     let isFuture: Bool
     let isRevealPending: Bool
     let isAnimating: Bool
+    var rowHeight: CGFloat = 72
+
+    private var usesLargeCell: Bool { rowHeight > 72 }
+    private var artworkHeight: CGFloat { usesLargeCell ? 36 : 26 }
 
     @AppStorage("calendarBookmarkStyle") private var storedBookmarkStyle = CalendarBookmarkStyle.dateColor.rawValue
 
@@ -27,7 +31,7 @@ struct DayCell: View {
                 Text("\(Calendar.current.component(.day, from: date))")
                     .font(
                         .system(
-                            size: min(scaledDateSize, 20),
+                            size: min(scaledDateSize + (usesLargeCell ? 3 : 0), usesLargeCell ? 23 : 20),
                             weight: isSelected ? .semibold : .medium,
                             design: .rounded
                         )
@@ -70,8 +74,8 @@ struct DayCell: View {
                             ChoiceArtwork(choice: choice)
                                 .scaledToFit()
                                 .frame(
-                                    width: min(50, geometry.size.width),
-                                    height: 26
+                                    width: min(usesLargeCell ? 64 : 50, geometry.size.width),
+                                    height: artworkHeight
                                 )
                                 .scaleEffect(artworkScale(for: choice) * 1.10)
                                 .scaleEffect(revealScale)
@@ -91,18 +95,18 @@ struct DayCell: View {
                                 }
                         }
                     }
-                    .frame(height: 26)
+                    .frame(height: artworkHeight)
                 }
                 .padding(.top, 6)
                 .padding(.bottom, 4)
             }
             .frame(
                 width: geometry.size.width,
-                height: 72,
+                height: rowHeight,
                 alignment: .center
             )
         }
-        .frame(height: 72)
+        .frame(height: rowHeight)
         .onAppear {
             if isRevealPending { prepareReveal() }
         }

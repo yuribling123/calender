@@ -1,6 +1,33 @@
 import SwiftUI
 import UIKit
 
+// Collection skin customization is temporarily disabled.
+// enum CollectionVinylSkin: String, CaseIterable, Identifiable {
+//     case original, rose, smoked
+//     var id: String { rawValue }
+//     var title: String {
+//         switch self {
+//         case .original: localized("原版")
+//         case .rose: localized("玫瑰压胶")
+//         case .smoked: localized("烟紫透胶")
+//         }
+//     }
+//     static func resolve(_ value: String) -> Self { Self(rawValue: value) ?? .original }
+// }
+//
+// enum CollectionTapeSkin: String, CaseIterable, Identifiable {
+//     case original, home, archive
+//     var id: String { rawValue }
+//     var title: String {
+//         switch self {
+//         case .original: localized("原版")
+//         case .home: localized("家庭放映")
+//         case .archive: localized("奶油档案")
+//         }
+//     }
+//     static func resolve(_ value: String) -> Self { Self(rawValue: value) ?? .original }
+// }
+//
 /// Display preferences for existing date bookmarks; saved dates remain unchanged.
 enum CalendarBookmarkStyle: String, CaseIterable, Identifiable {
     case dateColor, highlighter
@@ -15,7 +42,7 @@ enum CalendarBookmarkStyle: String, CaseIterable, Identifiable {
 
     static func resolve(_ value: String) -> Self { Self(rawValue: value) ?? .dateColor }
 
-    static let ink = adaptive(light: rgb(151, 84, 100), dark: rgb(221, 164, 180))
+    static let ink = adaptive(light: rgb(151, 84, 100), dark: rgb(185, 129, 145))
 }
 
 /// A short, slightly uneven stroke behind the date; never changes its layout.
@@ -208,16 +235,79 @@ struct ThemePalette {
 }
 
 extension ThemePalette {
+    // Warm wood and neutral paper keep the retro collection understated.
+    var collectionBackground: Color { adaptive(light: rgb(247, 245, 243), dark: rgb(29, 28, 31)) }
+    var collectionWoodTop: Color { adaptive(light: rgb(137, 111, 92), dark: rgb(99, 80, 66)) }
+    var collectionWoodHighlight: Color { adaptive(light: rgb(145, 119, 100), dark: rgb(106, 86, 71)) }
+    var collectionWoodFace: Color { adaptive(light: rgb(120, 94, 77), dark: rgb(85, 67, 55)) }
+    var collectionWoodEdge: Color { adaptive(light: rgb(113, 89, 73), dark: rgb(78, 62, 51)) }
+    var collectionWoodGrain: Color { adaptive(light: rgb(66, 47, 36).opacity(0.24), dark: rgb(40, 29, 23).opacity(0.3)) }
+    var collectionInk: Color { adaptive(light: rgb(53, 52, 58), dark: rgb(238, 233, 236)) }
+    var collectionSecondaryInk: Color { adaptive(light: rgb(98, 96, 102), dark: rgb(194, 189, 194)) }
+    var collectionTrackNumberInk: Color { adaptive(light: rgb(139, 101, 119), dark: rgb(207, 170, 188)) }
+    var collectionWatchNumberInk: Color { adaptive(light: rgb(87, 114, 128), dark: rgb(159, 186, 198)) }
+    var collectionNoteInk: Color { adaptive(light: rgb(77, 75, 81), dark: rgb(211, 206, 211)) }
+    var collectionPaper: Color { adaptive(light: rgb(252, 252, 251), dark: rgb(39, 39, 40)) }
+    var collectionSleeveTint: Color { adaptive(light: .white.opacity(0.08), dark: .white.opacity(0.025)) }
+    var collectionShelfEdge: Color { collectionPaperEdge.opacity(0.65) }
+    var collectionCaseBody: Color { adaptive(light: rgb(235, 236, 236), dark: rgb(48, 49, 50)) }
+    var collectionCaseEdge: Color { adaptive(light: rgb(198, 200, 201), dark: rgb(105, 107, 109)) }
+    var collectionCaseHighlight: Color { adaptive(light: .white.opacity(0.9), dark: rgb(201, 202, 204).opacity(0.4)) }
+    var collectionPlayerScreen: Color { adaptive(light: rgb(239, 240, 237), dark: rgb(34, 36, 35)) }
+    var collectionPlayerBar: Color { adaptive(light: rgb(226, 228, 225), dark: rgb(44, 47, 45)) }
+    var collectionPlayerHighlight: Color { adaptive(light: rgb(212, 216, 212), dark: rgb(66, 71, 67)) }
+    var collectionDiscBase: Color { adaptive(light: rgb(211, 213, 215), dark: rgb(97, 99, 102)) }
+    var collectionBlackDisc: Color { adaptive(light: rgb(41, 39, 46), dark: rgb(36, 34, 41)) }
+    var collectionFavoriteHeart: Color { adaptive(light: rgb(190, 70, 79), dark: rgb(225, 116, 124)) }
+    var collectionSelectedRow: Color { adaptive(light: rgb(232, 231, 231), dark: rgb(56, 55, 58)) }
+    var collectionDiscLabelInk: Color { adaptive(light: rgb(239, 234, 225), dark: rgb(239, 234, 225)) }
+    var collectionDiscPrint: Color { adaptive(light: rgb(166, 165, 171), dark: rgb(180, 179, 185)) }
+    var collectionDiscGleam: Color { adaptive(light: rgb(248, 249, 250), dark: rgb(164, 167, 170)) }
+    var collectionDiscShade: Color { adaptive(light: rgb(175, 179, 183), dark: rgb(65, 68, 71)) }
+    var collectionDiscReflection: Color { adaptive(light: rgb(227, 228, 229), dark: rgb(126, 128, 131)) }
+    var collectionRecordLabelPaper: Color { adaptive(light: rgb(216, 200, 206), dark: rgb(185, 167, 175)) }
+    var collectionRecordLabelInk: Color { adaptive(light: rgb(57, 48, 55), dark: rgb(43, 35, 41)) }
+    var collectionRecordLabelEdge: Color { adaptive(light: rgb(121, 101, 112).opacity(0.18), dark: rgb(84, 67, 78).opacity(0.22)) }
+    var collectionProgrammePaper: Color { adaptive(light: rgb(240, 241, 242), dark: rgb(51, 53, 56)) }
+    var collectionFilmSleeveSurface: Color { adaptive(light: rgb(222, 226, 230).opacity(0.42), dark: rgb(119, 127, 138).opacity(0.2)) }
+    var collectionProgrammeHighlight: Color { adaptive(light: .white.opacity(0.72), dark: rgb(155, 162, 172).opacity(0.22)) }
+    var collectionProgrammeEdge: Color { adaptive(light: rgb(142, 149, 158).opacity(0.18), dark: rgb(202, 208, 218).opacity(0.16)) }
+    // Classic VHS materials: charcoal shell, smoky windows, ivory paper and a blue-gray label band.
+// Collection skin customization is temporarily disabled.
+//     var collectionRoseVinylBase: Color { adaptive(light: rgb(185, 128, 139), dark: rgb(176, 131, 144)) }
+//     var collectionRoseVinylLight: Color { adaptive(light: rgb(226, 186, 192), dark: rgb(209, 171, 183)) }
+//     var collectionRoseVinylDeep: Color { adaptive(light: rgb(135, 88, 99), dark: rgb(120, 85, 98)) }
+//     var collectionRoseVinylEdge: Color { adaptive(light: rgb(117, 77, 89), dark: rgb(224, 187, 200)) }
+//     var collectionSmokedVinyl: Color { adaptive(light: rgb(155, 143, 159), dark: rgb(142, 130, 149)) }
+//     var collectionVinylCreamPaper: Color { adaptive(light: rgb(238, 230, 217), dark: rgb(216, 208, 197)) }
+//     var collectionArchiveTapeShell: Color { adaptive(light: rgb(217, 210, 200), dark: rgb(170, 163, 156)) }
+//     var collectionRentalPaper: Color { adaptive(light: rgb(232, 201, 125), dark: rgb(210, 181, 113)) }
+//     var collectionRentalRed: Color { adaptive(light: rgb(142, 63, 54), dark: rgb(123, 52, 46)) }
+//     var collectionRentalReel: Color { adaptive(light: rgb(191, 187, 177), dark: rgb(174, 171, 163)) }
+    var collectionTapeShell: Color { adaptive(light: rgb(23, 23, 26), dark: rgb(25, 25, 29)) }
+    var collectionTapeBevel: Color { adaptive(light: rgb(43, 42, 46), dark: rgb(50, 49, 54)) }
+    var collectionTapeEdge: Color { adaptive(light: rgb(125, 121, 127), dark: rgb(146, 141, 148)) }
+    var collectionTapeWindow: Color { adaptive(light: rgb(66, 63, 70), dark: rgb(60, 57, 64)) }
+    var collectionTapePack: Color { adaptive(light: rgb(29, 28, 32), dark: rgb(26, 25, 29)) }
+    var collectionTapeHub: Color { adaptive(light: rgb(174, 167, 166), dark: rgb(151, 145, 146)) }
+    var collectionTapeLabel: Color { adaptive(light: rgb(233, 226, 223), dark: rgb(206, 199, 197)) }
+    var collectionTapeLabelInk: Color { adaptive(light: rgb(34, 31, 34), dark: rgb(36, 33, 36)) }
+    var collectionPhotoMount: Color { adaptive(light: rgb(248, 248, 247), dark: rgb(54, 54, 55)) }
+    var collectionPaperEdge: Color { adaptive(light: rgb(116, 112, 120).opacity(0.22), dark: rgb(179, 170, 178).opacity(0.24)) }
+    var collectionAlbumCover: Color { adaptive(light: rgb(211, 211, 209), dark: rgb(77, 77, 78)) }
+    var collectionAlbumBinding: Color { adaptive(light: rgb(185, 188, 190), dark: rgb(153, 156, 158)) }
+    var collectionShadow: Color { adaptive(light: rgb(53, 52, 58).opacity(0.08), dark: .black.opacity(0.16)) }
+
     var bookmarkHighlight: Color {
         if isObsidian {
             return adaptive(light: rgb(219, 217, 212), dark: rgb(177, 174, 167))
         }
-        return tintedSurface(tint: accent, lightBase: (255, 253, 248), darkBase: (35, 33, 31),
-                             lightWeight: 0.45, darkWeight: 0.40)
+        return tintedSurface(tint: accent, lightBase: (255, 253, 248), darkBase: (203, 198, 186),
+                             lightWeight: 0.45, darkWeight: 0.45)
     }
 
     var bookmarkHighlightInk: Color {
-        isObsidian ? rgb(49, 44, 42) : foreground
+        isObsidian ? rgb(49, 44, 42) : adaptive(light: foreground, dark: rgb(49, 44, 42))
     }
 
     var searchFieldBackground: Color {
@@ -590,11 +680,27 @@ struct ChoiceArtwork: View {
     }
 
     var body: some View {
-        let usesWhiteLines = colorScheme == .dark && group != .playful && group != .rabbit && group != .everyday
-        Image(imageName)
-            .renderingMode(usesWhiteLines ? .template : .original)
-            .resizable()
-            .scaledToFit()
-            .foregroundStyle(.white)
+        let artwork = Image(imageName)
+        if colorScheme == .dark && group == .rabbit {
+            // Preserve the dark strokes as white and drop the light fill from the mask.
+            artwork
+                .renderingMode(.original)
+                .resizable()
+                .scaledToFit()
+                .colorInvert()
+                .contrast(2)
+                .background(.black)
+                .compositingGroup()
+                .luminanceToAlpha()
+                .colorInvert()
+        } else {
+            let usesWhiteLines = colorScheme == .dark && group != .playful && group != .everyday
+            artwork
+                .renderingMode(usesWhiteLines ? .template : .original)
+                .resizable()
+                .scaledToFit()
+                .foregroundStyle(.white)
+        }
     }
+
 }

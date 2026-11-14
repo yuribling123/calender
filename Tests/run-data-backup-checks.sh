@@ -15,8 +15,9 @@ new = dict(old, note='new', updatedAt='2024-03-02T00:00:00Z')
 notes = [{'monthKey':'2024-02','text':'old month','updatedAt':old['updatedAt']}, {'monthKey':'2024-02','text':'new month','updatedAt':new['updatedAt']}]
 payload = {'entries':[new,old],'monthlyNotes':notes,'monthlyNoteSkins':{'2024-02':'grid'}}
 photo = b'\xff\xd8TEST\xff\xd9'
-for name in ['legacy-duplicates.zip','conflicting-photos.zip','corrupt-crc.zip','invalid-date.zip']:
+for name in ['legacy-duplicates.zip','conflicting-photos.zip','corrupt-crc.zip','invalid-date.zip','invalid-bookmark.zip']:
     data = dict(payload)
+    if name == 'invalid-bookmark.zip': data['starredDays'] = {'2023-02-29': True}
     if name == 'invalid-date.zip': data['entries'] = [dict(new,dayKey='2023-02-29'),old]
     with zipfile.ZipFile(root/name,'w',compression=zipfile.ZIP_STORED) as z:
         z.writestr('manifest.json',json.dumps(manifest))
@@ -31,10 +32,12 @@ sources=(
     MoodCalendar/Domain/Mood.swift
     MoodCalendar/Domain/DayKey.swift
     MoodCalendar/Domain/DailyChoice.swift
+    MoodCalendar/Domain/WatchKind.swift
     MoodCalendar/Domain/MonthLayout.swift
     MoodCalendar/Domain/MonthlyNoteSkin.swift
     MoodCalendar/Persistence/MoodEntry.swift
     MoodCalendar/Persistence/EntryStore.swift
+    MoodCalendar/Persistence/StarredDayStore.swift
     MoodCalendar/Persistence/MonthlyNoteSkinStore.swift
     Tests/DataBackupChecks.swift
 )

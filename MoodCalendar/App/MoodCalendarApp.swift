@@ -28,7 +28,7 @@ struct MoodCalendarApp: App {
     }
 
     private let container: ModelContainer = {
-        let schema = Schema([MoodEntry.self, MonthlyNote.self, MonthlyNoteSkinSelection.self])
+        let schema = Schema([MoodEntry.self, MonthlyNote.self, MonthlyNoteSkinSelection.self, StarredDaySelection.self])
         #if ICLOUD_SYNC_ENABLED
         let cloudSyncWasRequested = !DemoData.isEnabled
             && UserDefaults.standard.bool(forKey: "icloudSyncEnabled")
@@ -89,8 +89,14 @@ struct MoodCalendarApp: App {
                 })
                     .tag(1)
                     .tabItem { Label(localized("月便签"), systemImage: "note.text") }
-                PersonalizationScreen()
+                CollectionScreen(onOpenDay: { date in
+                    requestedCalendarMonth = date
+                    selectedTab = 0
+                })
                     .tag(2)
+                    .tabItem { Label(localized("收藏"), systemImage: "square.grid.2x2") }
+                PersonalizationScreen()
+                    .tag(3)
                     .tabItem {
                         Label(localized("我的"), systemImage: "person.crop.circle")
                             .environment(\.symbolVariants, .none)
@@ -103,16 +109,38 @@ struct MoodCalendarApp: App {
                 .environment(\.selectionShape, SelectionShape(rawValue: storedSelectionShape) ?? .circle)
                 .tint((AppTheme(rawValue: storedTheme) ?? .pink).palette.strongAccent)
                 .foregroundStyle(.primary)
-                .alert(localized("这样翻翻日历"), isPresented: $isGuidePresented) {
-                    Button(localized("知道了")) {
-                        UserDefaults.standard.set(true, forKey: guideKey)
+                .accessibilityHidden(isGuidePresented)
+                .overlay {
+                    if isGuidePresented {
+                        ZStack {
+                            Color.black.opacity(0.3)
+                                .ignoresSafeArea()
+                            VStack(spacing: 20) {
+                                Text(localized("这样翻翻日历"))
+                                    .font(.headline)
+                                    .accessibilityAddTraits(.isHeader)
+
+                                VStack(alignment: .leading, spacing: 16) {
+                                    guideRow("Ⅰ", text: localized("用手指在日历上左右滑动，切换月份"))
+                                    guideRow("Ⅱ", text: localized("点顶部年份，可切换年份"))
+                                    guideRow("Ⅲ", text: localized("点日历中今天的日期，记录今日份"))
+                                }
+                                .font(.subheadline)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+
+                                Button(localized("知道了")) {
+                                    UserDefaults.standard.set(true, forKey: guideKey)
+                                    isGuidePresented = false
+                                }
+                                .frame(maxWidth: .infinity, minHeight: 44)
+                            }
+                            .padding(24)
+                            .frame(maxWidth: 340)
+                            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 20))
+                            .padding(.horizontal, 24)
+                            .accessibilityAddTraits(.isModal)
+                        }
                     }
-                } message: {
-                    Text([
-                        "Ⅰ　" + localized("用手指在日历上左右滑动，切换月份"),
-                        "Ⅱ　" + localized("点顶部年份，可切换年份"),
-                        "Ⅲ　" + localized("点日历中今天的日期，记录今日份")
-                    ].joined(separator: "\n\n"))
                 }
                 .alert(localized("未能开启 iCloud 同步"), isPresented: $isICloudFailurePending) {
                     Button(localized("确定"), role: .cancel) { isICloudFailurePending = false }
@@ -142,6 +170,18 @@ struct MoodCalendarApp: App {
         .modelContainer(container)
     }
 
+    private func guideRow(_ number: String, text: String) -> some View {
+        HStack(alignment: .top, spacing: 8) {
+            Text(number)
+                .frame(width: 20, alignment: .leading)
+                .accessibilityHidden(true)
+            Text(text)
+                .multilineTextAlignment(.leading)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+
     @MainActor
     private func prepareStore() throws {
         let context = container.mainContext
@@ -151,6 +191,7 @@ struct MoodCalendarApp: App {
             return
         }
         #endif
+        try StarredDayPersistence(context: context).migrateLegacySelections()
         try MonthlyNoteStore(context: context).migrateLegacyNotes()
         try EntryStore(context: context).reconcileDuplicates()
         try MonthlyNoteStore(context: context).reconcileDuplicates()

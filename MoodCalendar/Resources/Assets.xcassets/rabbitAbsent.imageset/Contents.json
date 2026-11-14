@@ -3,6 +3,16 @@
     {
       "filename": "rabbitAbsent.png",
       "idiom": "universal"
+    },
+    {
+      "appearances": [
+        {
+          "appearance": "luminosity",
+          "value": "dark"
+        }
+      ],
+      "filename": "rabbitAbsentDark.png",
+      "idiom": "universal"
     }
   ],
   "info": {

@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		F30A20260000000000000002 /* AdaptiveLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = F30A20260000000000000001; };
+		F29C20260000000000000002 /* MoodCalendar/Domain/WatchKind.swift in Sources */ = {isa = PBXBuildFile; fileRef = F29C20260000000000000001; };
+		F26C20260000000000000004 /* MoodCalendar/Features/Collection/CollectionScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = F26C20260000000000000003; };
+		F26C20260000000000000002 /* MoodCalendar/Domain/EntryCollection.swift in Sources */ = {isa = PBXBuildFile; fileRef = F26C20260000000000000001; };
 		F19A20260000000000000005 /* Features/Monthly/MonthlyNoteSkinView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F19A20260000000000000006; };
 		F19A20260000000000000003 /* Persistence/MonthlyNoteSkinStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F19A20260000000000000004; };
 		F19A20260000000000000007 /* Persistence/StarredDayStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F19A20260000000000000008; };
@@ -46,6 +50,10 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		F30A20260000000000000001 /* AdaptiveLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Features/Shared/AdaptiveLayout.swift; sourceTree = "<group>"; };
+		F29C20260000000000000001 /* MoodCalendar/Domain/WatchKind.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Domain/WatchKind.swift; sourceTree = "<group>"; };
+		F26C20260000000000000003 /* MoodCalendar/Features/Collection/CollectionScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Features/Collection/CollectionScreen.swift; sourceTree = "<group>"; };
+		F26C20260000000000000001 /* MoodCalendar/Domain/EntryCollection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Domain/EntryCollection.swift; sourceTree = "<group>"; };
 		F19A20260000000000000006 /* Features/Monthly/MonthlyNoteSkinView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Features/Monthly/MonthlyNoteSkinView.swift; sourceTree = "<group>"; };
 		F19A20260000000000000004 /* Persistence/MonthlyNoteSkinStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Persistence/MonthlyNoteSkinStore.swift; sourceTree = "<group>"; };
 		F19A20260000000000000008 /* Persistence/StarredDayStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Persistence/StarredDayStore.swift; sourceTree = "<group>"; };
@@ -90,7 +98,11 @@
 		B28B7AF69320201D1CF206EB = {
 			isa = PBXGroup;
 			children = (
+				F30A20260000000000000001 /* AdaptiveLayout.swift */,
 				F18D20260000000000000006 /* MoodCalendar/Features/Search/NotebookDecorations.swift */,
+				F26C20260000000000000001 /* MoodCalendar/Domain/EntryCollection.swift */,
+				F29C20260000000000000001 /* MoodCalendar/Domain/WatchKind.swift */,
+				F26C20260000000000000003 /* MoodCalendar/Features/Collection/CollectionScreen.swift */,
 				F18D20260000000000000004 /* MoodCalendar/Features/Search/RecordSearchScreen.swift */,
 				F18D20260000000000000002 /* MoodCalendar/Domain/RecordSearch.swift */,
 				1D9F4BD6307F721500C157D8 /* MoodCalendarDebug.entitlements */,
@@ -224,7 +236,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F30A20260000000000000002 /* AdaptiveLayout.swift in Sources */,
 				F18D20260000000000000005 /* MoodCalendar/Features/Search/NotebookDecorations.swift in Sources */,
+				F26C20260000000000000002 /* MoodCalendar/Domain/EntryCollection.swift in Sources */,
+				F29C20260000000000000002 /* MoodCalendar/Domain/WatchKind.swift in Sources */,
+				F26C20260000000000000004 /* MoodCalendar/Features/Collection/CollectionScreen.swift in Sources */,
 				F18D20260000000000000003 /* MoodCalendar/Features/Search/RecordSearchScreen.swift in Sources */,
 				F18D20260000000000000001 /* MoodCalendar/Domain/RecordSearch.swift in Sources */,
 				1562EBB728B9E65040A47063 /* MoodCalendar/App/MoodCalendarApp.swift in Sources */,
@@ -265,7 +281,7 @@
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CODE_SIGN_ENTITLEMENTS = MoodCalendar/MoodCalendar.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 2A2N95V422;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = MoodCalendar/Info.plist;
@@ -273,13 +289,13 @@
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.0.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.qingqing.MoodCalendar;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "ICLOUD_SYNC_ENABLED APP_STORE_RELEASE";
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 1;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
 		};
@@ -291,7 +307,7 @@
 				SDKROOT = iphoneos;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 1;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
 		};
@@ -303,7 +319,7 @@
 				SDKROOT = iphoneos;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 1;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
 		};
@@ -314,7 +330,7 @@
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CODE_SIGN_ENTITLEMENTS = MoodCalendar/MoodCalendarDebug.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 2A2N95V422;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = MoodCalendar/Info.plist;
@@ -322,13 +338,13 @@
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.0.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.qingqing.MoodCalendar;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG ICLOUD_SYNC_ENABLED";
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 1;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
 		};

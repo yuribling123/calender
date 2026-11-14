@@ -3,9 +3,8 @@ import SwiftData
 import UIKit
 
 struct CalendarScreen: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Binding var requestedMonth: Date?
-    var initialDate: Date? = nil
-    var isSearchDestination = false
     @Environment(\.modelContext) private var modelContext
     @Environment(\.appTheme) private var theme
     @Environment(\.colorScheme) private var colorScheme
@@ -15,8 +14,7 @@ struct CalendarScreen: View {
     @AppStorage("dailyReminderEnabled") private var isDailyReminderEnabled = true
     @AppStorage("allowPastDateEditing") private var allowPastDateEditing = true
     @AppStorage("showMonthArrows") private var showMonthArrows = true
-    @AppStorage("starredDays.v1") private var storedStarredDays = "[]"
-    @State private var demoStarredDays: Set<String> = []
+    @Query private var starredDaySelections: [StarredDaySelection]
     @Query private var entries: [MoodEntry]
     @GestureState private var isHorizontalMonthSwipe = false
     @State private var displayedMonth = MonthLayout(containing: Date()).monthStart
@@ -34,14 +32,7 @@ struct CalendarScreen: View {
     @State private var pendingRevealDayKey: String?
     @State private var animatedDayKey: String?
     @State private var saveError: String?
-    @State private var searchPath: [SearchRoute] = []
     @State private var isSearchPresented = false
-    @State private var didOpenInitialDate = false
-
-    private enum SearchRoute: Hashable {
-        case day(Date)
-        case month(Date)
-    }
 
     private var calendar: Calendar { .autoupdatingCurrent }
 
@@ -57,17 +48,16 @@ struct CalendarScreen: View {
     }
 
     private var starredDayKeys: Set<String> {
-        DemoData.isEnabled ? demoStarredDays : StarredDayStore.decode(storedStarredDays)
+        Set(StarredDayPersistence.selections(in: starredDaySelections).filter { $0.value }.keys)
     }
 
     private func toggleSelectedDayStar() {
         let day = DayKey(selectedDay)
         guard StarredDayStore.canToggle(day, allowPastDates: allowPastDateEditing) else { return }
-        let key = day.storageValue
-        if DemoData.isEnabled {
-            if !demoStarredDays.insert(key).inserted { demoStarredDays.remove(key) }
-        } else {
-            storedStarredDays = StarredDayStore.toggling(day, in: storedStarredDays, allowPastDates: allowPastDateEditing)
+        do {
+            try StarredDayPersistence(context: modelContext).toggle(day)
+        } catch {
+            saveError = error.localizedDescription
         }
     }
 
@@ -76,101 +66,28 @@ struct CalendarScreen: View {
     }
 
     var body: some View {
-        if isSearchDestination {
+        NavigationStack {
             calendarContent
-        } else {
-            NavigationStack(path: $searchPath) {
-                calendarContent
-                    .navigationDestination(for: SearchRoute.self) { route in
-                        switch route {
-                        case .day(let date):
-                            CalendarScreen(requestedMonth: .constant(nil), initialDate: date, isSearchDestination: true)
-                        case .month(let date):
-                            MonthlyGoalScreen(
-                                onOpenMonth: { date in
-                                    if !searchPath.isEmpty { searchPath.removeLast() }
-                                    searchPath.append(.day(date))
-                                },
-                                initialMonth: date,
-                                isSearchDestination: true
-                            )
-                        }
-                    }
-            }
-            .allowsHitTesting(!isSearchPresented || !searchPath.isEmpty)
-            .accessibilityHidden(isSearchPresented && searchPath.isEmpty)
-            .overlay {
-                if isSearchPresented {
-                    // Keep the notebook mounted while a result is open so returning
-                    // restores both the search text and its place on the page.
-                    RecordSearchScreen(starredDayKeys: starredDayKeys, onClose: { isSearchPresented = false }) { result in
-                        searchPath.append(result.source == .day ? .day(result.date) : .month(result.date))
-                    }
-                    .opacity(searchPath.isEmpty ? 1 : 0)
-                    .allowsHitTesting(searchPath.isEmpty)
-                    .accessibilityHidden(!searchPath.isEmpty)
+        }
+        .allowsHitTesting(!isSearchPresented)
+        .accessibilityHidden(isSearchPresented)
+        .overlay {
+            if isSearchPresented {
+                RecordSearchScreen(starredDayKeys: starredDayKeys, onClose: { isSearchPresented = false }) { result in
+                    openDay(result.date)
+                    isSearchPresented = false
                 }
             }
-            .toolbar(isSearchPresented ? .hidden : .visible, for: .tabBar)
         }
+        .toolbar(isSearchPresented ? .hidden : .visible, for: .tabBar)
     }
 
     private var calendarContent: some View {
-        VStack(spacing: 0) {
-            if isSearchDestination {
-                SearchReturnButton()
-                    .padding(.horizontal, 24)
-            }
-            ScrollView {
-                VStack(alignment: .leading, spacing: 0) {
-                    intro
-                        .padding(.bottom, 4)
-                    if isChoosingMonth {
-                        monthChooser
-                    } else {
-                        monthHeader
-                            .padding(.bottom, 22)
-                            .contentShape(Rectangle())
-                            .simultaneousGesture(monthSwipeGesture)
-                        MonthGrid(
-                            layout: MonthLayout(containing: displayedMonth),
-                            entries: entriesByDay,
-                            starredDayKeys: starredDayKeys,
-                            selectedDay: DayKey(selectedDay),
-                            pendingRevealDayKey: pendingRevealDayKey,
-                            animatingDayKey: animatedDayKey,
-                            onSelect: { date in
-                                guard calendar.isDate(date, equalTo: displayedMonth, toGranularity: .month) else {
-                                    return
-                                }
-                                selectedDay = date
-                                if DayKey(date).relationToToday == .today {
-                                    let key = DayKey(date).storageValue
-                                    guard entriesByDay[key]?.choice == nil else { return }
-                                    presentEditor(for: date, group: .mood)
-                                }
-                            }
-                        )
-                        .padding(.horizontal, -12)
-                        .offset(y: -8)
-                        .padding(.bottom, 8)
-                        .contentShape(Rectangle())
-                        .simultaneousGesture(monthSwipeGesture)
-                        SelectedDateDetail(
-                            date: selectedDay,
-                            entry: selectedEntry,
-                            isStarred: starredDayKeys.contains(DayKey(selectedDay).storageValue),
-                            onToggleStar: toggleSelectedDayStar,
-                            onRecordMood: saveMood,
-                            onEdit: {
-                                if DayKey(selectedDay).isEditable(allowPastDates: allowPastDateEditing) {
-                                    presentEditor(for: selectedDay, group: selectedEntry?.choice?.group ?? .mood)
-                                }
-                            }
-                        )
-                    }
-                }
-                .padding(24)
+        AdaptivePage { size in
+            if let size {
+                iPadCalendar(size: size)
+            } else {
+                phoneCalendarContent
             }
         }
         .scrollDisabled(isHorizontalMonthSwipe)
@@ -197,11 +114,6 @@ struct CalendarScreen: View {
         }
         .onAppear {
             refreshSelectedDayIfNeeded()
-            if !didOpenInitialDate, let date = initialDate {
-                displayedMonth = MonthLayout(containing: date, calendar: calendar).monthStart
-                selectedDay = calendar.startOfDay(for: date)
-                didOpenInitialDate = true
-            }
             openRequestedMonth()
             scheduleMidnightCheck()
         }
@@ -251,12 +163,121 @@ struct CalendarScreen: View {
         }
     }
 
+    private var phoneCalendarContent: some View {
+        VStack(spacing: 0) {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 0) {
+                    intro
+                        .padding(.bottom, isChoosingMonth ? 4 : -8)
+                    if isChoosingMonth {
+                        monthChooser()
+                    } else {
+                        monthHeader
+                            .padding(.bottom, 22)
+                            .contentShape(Rectangle())
+                            .simultaneousGesture(monthSwipeGesture)
+                        calendarGrid()
+                            .padding(.horizontal, -12)
+                            .offset(y: -8)
+                            .padding(.bottom, 24)
+                            .contentShape(Rectangle())
+                            .simultaneousGesture(monthSwipeGesture)
+                        selectedDateDetail
+                    }
+                }
+                .padding(24)
+            }
+        }
+    }
+
+    private func calendarGrid(rowHeight: CGFloat = 72) -> some View {
+        MonthGrid(
+            layout: MonthLayout(containing: displayedMonth),
+            entries: entriesByDay,
+            starredDayKeys: starredDayKeys,
+            selectedDay: DayKey(selectedDay),
+            pendingRevealDayKey: pendingRevealDayKey,
+            animatingDayKey: animatedDayKey,
+            rowHeight: rowHeight,
+            onSelect: { date in
+                guard calendar.isDate(date, equalTo: displayedMonth, toGranularity: .month) else {
+                    return
+                }
+                selectedDay = date
+                if DayKey(date).relationToToday == .today {
+                    let key = DayKey(date).storageValue
+                    guard entriesByDay[key]?.choice == nil else { return }
+                    presentEditor(for: date, group: .mood)
+                }
+            }
+        )
+    }
+
+    private var selectedDateDetail: some View {
+        SelectedDateDetail(
+            date: selectedDay,
+            entry: selectedEntry,
+            isStarred: starredDayKeys.contains(DayKey(selectedDay).storageValue),
+            onToggleStar: toggleSelectedDayStar,
+            onRecordMood: saveMood,
+            onEdit: {
+                if DayKey(selectedDay).isEditable(allowPastDates: allowPastDateEditing) {
+                    presentEditor(for: selectedDay, group: selectedEntry?.choice?.group ?? .mood)
+                }
+            }
+        )
+    }
+
+    private func iPadCalendar(size: CGSize) -> some View {
+        let usesColumns = size.width >= 1000 && !dynamicTypeSize.isAccessibilitySize
+        let rows = CGFloat(max(1, (MonthLayout(containing: displayedMonth).days.count + 6) / 7))
+        let reservedHeight: CGFloat = usesColumns ? 190 : 420
+        let rowHeight = min(128, max(88, (size.height - reservedHeight) / rows))
+        let inset: CGFloat = size.width < 600 ? 24 : 32
+
+        return ScrollView {
+            VStack(alignment: .leading, spacing: 24) {
+                intro
+                if isChoosingMonth {
+                    monthChooser(columnCount: size.width >= 700 ? 4 : 3,
+                                 minimumCellHeight: min(200, max(112, (size.height - 240) / 3)))
+                } else if usesColumns {
+                    HStack(alignment: .top, spacing: 32) {
+                        iPadMonth(rowHeight: rowHeight)
+                            .frame(maxWidth: .infinity)
+                        selectedDateDetail
+                            .frame(width: min(420, max(340, (size.width - inset * 2 - 32) * 0.34)))
+                    }
+                } else {
+                    iPadMonth(rowHeight: rowHeight)
+                    selectedDateDetail
+                }
+            }
+            .padding(inset)
+        }
+    }
+
+    private func iPadMonth(rowHeight: CGFloat) -> some View {
+        VStack(spacing: 22) {
+            monthHeader
+                .contentShape(Rectangle())
+                .simultaneousGesture(monthSwipeGesture)
+            calendarGrid(rowHeight: rowHeight)
+                .contentShape(Rectangle())
+                .simultaneousGesture(monthSwipeGesture)
+        }
+    }
+
     private func openRequestedMonth() {
         guard let date = requestedMonth else { return }
+        openDay(date)
+        requestedMonth = nil
+    }
+
+    private func openDay(_ date: Date) {
         displayedMonth = MonthLayout(containing: date, calendar: calendar).monthStart
         selectedDay = calendar.startOfDay(for: date)
         isChoosingMonth = false
-        requestedMonth = nil
     }
 
     private var intro: some View {
@@ -285,16 +306,14 @@ struct CalendarScreen: View {
                 }
                 Spacer()
 
-                if !isSearchDestination {
-                    Button { isSearchPresented = true } label: {
-                        Image(systemName: "magnifyingglass")
-                            .font(.system(size: 18, weight: .regular))
-                            .foregroundStyle(theme.palette.strongAccent)
-                            .frame(width: 44, height: 44)
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel(localized("搜索记录"))
+                Button { isSearchPresented = true } label: {
+                    Image(systemName: "magnifyingglass")
+                        .font(.system(size: 18, weight: .regular))
+                        .foregroundStyle(theme.palette.strongAccent)
+                        .frame(width: 44, height: 44)
                 }
+                .buttonStyle(.plain)
+                .accessibilityLabel(localized("搜索记录"))
 
                 if !isChoosingMonth && !isDisplayingCurrentMonth {
                     todayButton
@@ -340,9 +359,9 @@ struct CalendarScreen: View {
             .font(.system(size: size, weight: .regular)))
     }
 
-    private var monthChooser: some View {
+    private func monthChooser(columnCount: Int = 3, minimumCellHeight: CGFloat? = nil) -> some View {
         VStack(alignment: .trailing, spacing: 0) {
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: 3), spacing: 16) {
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: columnCount), spacing: 16) {
                 ForEach(1...12, id: \.self) { month in
                     Button {
                         chooseMonth(month)
@@ -373,6 +392,7 @@ struct CalendarScreen: View {
                             .frame(height: 44)
                             .accessibilityHidden(true)
                         }
+                            .frame(minHeight: minimumCellHeight)
                             .contentShape(Rectangle())
                     }
                     .accessibilityLabel(Text(verbatim: localized("%@年%@月", String(describing: chooserYear), String(describing: month))))
@@ -662,6 +682,6 @@ struct CalendarScreen: View {
 
 #Preview {
     CalendarScreen(requestedMonth: .constant(nil))
-        .modelContainer(for: MoodEntry.self, inMemory: true)
+        .modelContainer(for: [MoodEntry.self, StarredDaySelection.self], inMemory: true)
 }
 
