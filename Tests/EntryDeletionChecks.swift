@@ -38,10 +38,16 @@ struct EntryDeletionChecks {
         let leapDay = day(2024, 2, 29)
         let nextMonth = day(2024, 3, 1)
         let choice = DailyChoice.allCases.first!
-        for memberChoice in [DailyChoice.cooking, .gaming, .tastyFood, .watchingShows, .walking, .shopping] {
+        for freeChoice in [DailyChoice.cooking, .gaming, .tastyFood, .watchingShows, .walking, .shopping] {
+            try store.save(day: leapDay, choice: freeChoice, note: "free")
+            let key = leapDay.storageValue
+            let saved = try context.fetch(FetchDescriptor<MoodEntry>(predicate: #Predicate { $0.dayKey == key }))
+            try expect(saved.count == 1 && saved.first?.choice == freeChoice)
+        }
+        for memberChoice in [DailyChoice.clover, .guitar, .starRabbit] {
             do {
                 try store.save(day: leapDay, choice: memberChoice, note: "locked")
-                fatalError("New everyday stickers must require membership")
+                fatalError("Premium sticker groups must still require membership")
             } catch {
                 try expect(error.localizedDescription == localized("解锁永久会员后才能使用这套表情。"))
             }

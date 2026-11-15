@@ -10,7 +10,7 @@ struct EntryStore {
         guard day.isEditable(allowPastDates: allowsPastDates) else {
             throw EntryStoreError.dateIsReadOnly
         }
-        var canUseChoice = choice.group == .mood || choice.group == .activity || choice.group == .company || isMember
+        var canUseChoice = !choice.group.requiresMembership || isMember
         #if DEBUG
         canUseChoice = canUseChoice || DemoData.isEnabled
         #endif

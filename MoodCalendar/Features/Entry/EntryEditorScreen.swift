@@ -25,6 +25,11 @@ struct EntryEditorScreen: View {
 
     @State private var selectedChoice: DailyChoice?
     @State private var selectedGroup: ChoiceGroup = .mood
+    @State private var groupPickerViewport: CGRect = .zero
+    @State private var groupContentFrame: CGRect = .zero
+    @State private var groupButtonFrames: [ChoiceGroup: CGRect] = [:]
+    @ScaledMetric(relativeTo: .subheadline) private var groupFontSize: CGFloat = 16
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var photoItem: PhotosPickerItem?
     @State private var photoData: Data?
     @State private var isLoadingPhoto = false
@@ -53,7 +58,7 @@ struct EntryEditorScreen: View {
     private var hasPremiumAccess: Bool { membership.hasMembershipAccess }
 
     private func canUse(_ choice: DailyChoice) -> Bool {
-        hasPremiumAccess || choice.group == .mood || choice.group == .activity || choice.group == .company
+        hasPremiumAccess || !choice.group.requiresMembership
     }
 
     var body: some View {
@@ -387,18 +392,91 @@ struct EntryEditorScreen: View {
         .buttonStyle(.plain)
     }
 
+    // Spread complete initial items evenly; the scroll view still moves freely by touch.
+    private var groupItemSpacing: CGFloat {
+        var usedWidth: CGFloat = 0
+        var count = 0
+        for group in ChoiceGroup.allCases {
+            let width = groupButtonWidth(group)
+            guard usedWidth + width + CGFloat(count) * 6 <= groupPickerViewport.width else { break }
+            usedWidth += width
+            count += 1
+        }
+        guard count > 1 else { return 6 }
+        return max(6, (groupPickerViewport.width - usedWidth) / CGFloat(count - 1))
+    }
+
+    private func groupButtonWidth(_ group: ChoiceGroup) -> CGFloat {
+        let font = UIFont.systemFont(ofSize: groupFontSize,
+                                     weight: selectedGroup == group ? .medium : .regular)
+        let titleWidth = (group.title as NSString).size(withAttributes: [.font: font]).width
+        return max(44, ceil(titleWidth) + 10)
+    }
+
     private var groupPicker: some View {
-        ViewThatFits(in: .horizontal) {
-            groupPickerRow
-            ScrollView(.horizontal) {
-                groupPickerRow
+        ScrollViewReader { proxy in
+            HStack(spacing: 6) {
+                groupScrollArrow(forward: false, proxy: proxy)
+                ScrollView(.horizontal) {
+                    groupPickerRow
+                        .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: {
+                            groupContentFrame = $0
+                        }
+                }
+                .scrollIndicators(.hidden)
+                .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: {
+                    groupPickerViewport = $0
+                }
+                groupScrollArrow(forward: true, proxy: proxy)
             }
-            .scrollIndicators(.hidden)
         }
     }
 
+    private func moveGroupPage(forward: Bool, proxy: ScrollViewProxy) {
+        let viewport = groupPickerViewport
+        guard !viewport.isEmpty, !groupContentFrame.isEmpty else { return }
+        guard forward ? groupContentFrame.maxX > viewport.maxX + 1
+                      : groupContentFrame.minX < viewport.minX - 1 else { return }
+        let groups = ChoiceGroup.allCases
+        let fullyVisible = groups.filter { group in
+            guard let frame = groupButtonFrames[group] else { return false }
+            return frame.minX >= viewport.minX - 1 && frame.maxX <= viewport.maxX + 1
+        }
+        let intersecting = groups.filter { group in
+            guard let frame = groupButtonFrames[group] else { return false }
+            return frame.maxX > viewport.minX && frame.minX < viewport.maxX
+        }
+        guard var target = forward ? (fullyVisible.last ?? intersecting.last)
+                                   : (fullyVisible.first ?? intersecting.first),
+              let frame = groupButtonFrames[target],
+              let index = groups.firstIndex(of: target) else { return }
+        // If only one item fits, advance instead of scrolling back to the same position.
+        if forward && frame.minX <= viewport.minX + 1 && index + 1 < groups.count {
+            target = groups[index + 1]
+        } else if !forward && frame.maxX >= viewport.maxX - 1 && index > 0 {
+            target = groups[index - 1]
+        }
+        withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.18)) {
+            proxy.scrollTo(target, anchor: forward ? .leading : .trailing)
+        }
+    }
+
+    private func groupScrollArrow(forward: Bool, proxy: ScrollViewProxy) -> some View {
+        Button {
+            moveGroupPage(forward: forward, proxy: proxy)
+        } label: {
+            Image(systemName: forward ? "chevron.right" : "chevron.left")
+                .font(.system(size: 12, weight: .regular))
+                .foregroundStyle(.secondary)
+                .frame(width: 44, height: 44)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(localized(forward ? "查看更多分类" : "查看前面的分类"))
+    }
+
     private var groupPickerRow: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: groupItemSpacing) {
             ForEach(ChoiceGroup.allCases) { group in
                 Button {
                     selectedGroup = group
@@ -406,80 +484,79 @@ struct EntryEditorScreen: View {
                     Text(group.title)
                         .lineLimit(1)
                         .fixedSize(horizontal: true, vertical: false)
-                        .font(.subheadline.weight(selectedGroup == group ? .semibold : .regular))
-                        .foregroundStyle(selectedGroup == group ? Color.primary : Color(white: 0.44))
-                        .background(alignment: .bottom) {
-                            if selectedGroup == group {
-                                GroupHighlightBrush()
-                                    .fill(theme.palette.accent.opacity(0.24))
-                                    .padding(.horizontal, -7)
-                                    .frame(height: 15)
-                                    .offset(y: 2)
-                                    .accessibilityHidden(true)
-                            }
-                        }
-                        .overlay(alignment: .trailing) {
-                            if !hasPremiumAccess && group != .mood && group != .activity && group != .company {
-                                Image(systemName: "lock.fill")
-                                    .font(.system(size: 9))
-                                    .offset(x: 13)
-                            }
-                        }
-                    .frame(maxWidth: .infinity, minHeight: 44)
-                    .padding(.horizontal, hasPremiumAccess ? 6 : 12)
-                    .contentShape(Rectangle())
+                        .font(.system(size: groupFontSize, weight: selectedGroup == group ? .medium : .regular))
+                        .foregroundStyle(selectedGroup == group ? .primary : .secondary)
+                        .padding(.horizontal, 5)
+                        .frame(width: groupButtonWidth(group), height: max(44, groupFontSize * 1.5))
+                        .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
                 .accessibilityAddTraits(selectedGroup == group ? .isSelected : [])
+                .id(group)
+                .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { frame in
+                    groupButtonFrames[group] = frame
+                }
             }
         }
-        .padding(4)
+        .padding(.vertical, 4)
     }
 
     private var choicePicker: some View {
-        HStack(alignment: .top, spacing: 4) {
-            ForEach(DailyChoice.choices(in: selectedGroup)) { choice in
-                let isAvailable = canUse(choice)
-                Button {
-                    if isAvailable {
-                        selectedChoice = choice
-                    } else {
-                        isMembershipPresented = true
-                    }
-                } label: {
-                    VStack(spacing: 6) {
-                        ZStack(alignment: .topTrailing) {
-                            ChoiceArtwork(choice: choice)
-                                .scaledToFit()
-                                .frame(height: 32)
-                                .scaleEffect(selectedGroup == .mood ? 1 : choice == .cake ? 1 : choice == .study ? 1.38 : selectedGroup == .company ? 1.32 : 1.22)
-                                .accessibilityHidden(true)
-
-
+        VStack(spacing: 0) {
+            HStack(alignment: .top, spacing: 4) {
+                ForEach(DailyChoice.choices(in: selectedGroup)) { choice in
+                    let isAvailable = canUse(choice)
+                    Button {
+                        if isAvailable {
+                            selectedChoice = choice
+                        } else {
+                            isMembershipPresented = true
                         }
-                        Text(choice.title)
-                            .font(.caption.weight(.medium))
-                            .foregroundStyle(.primary)
-                            .lineLimit(2)
-                            .minimumScaleFactor(0.9)
-                            .multilineTextAlignment(.center)
-                            .frame(minHeight: 30, alignment: .top)
-                        Circle()
-                            .fill(theme.palette.strongAccent)
-                            .frame(width: 6, height: 6)
-                            .opacity(selectedChoice == choice ? 1 : 0)
-                            .accessibilityHidden(true)
+                    } label: {
+                        VStack(spacing: 6) {
+                            ZStack(alignment: .topTrailing) {
+                                ChoiceArtwork(choice: choice)
+                                    .scaledToFit()
+                                    .frame(height: 32)
+                                    .scaleEffect(selectedGroup == .mood ? 1 : choice == .cake ? 1 : choice == .study ? 1.38 : selectedGroup == .company ? 1.32 : 1.22)
+                                    .accessibilityHidden(true)
+
+
+                            }
+                            Text(choice.title)
+                                .font(.caption.weight(.medium))
+                                .foregroundStyle(.primary)
+                                .lineLimit(2)
+                                .minimumScaleFactor(0.9)
+                                .multilineTextAlignment(.center)
+                            if isAvailable {
+                                Circle()
+                                    .fill(theme.palette.strongAccent)
+                                    .frame(width: 6, height: 6)
+                                    .opacity(selectedChoice == choice ? 1 : 0)
+                                    .accessibilityHidden(true)
+                            }
+                        }
+                        .frame(maxWidth: .infinity, minHeight: isAvailable ? 74 : 0, alignment: .top)
+                        .clipShape(RoundedRectangle(cornerRadius: 14))
+                        .contentShape(Rectangle())
                     }
-                    .frame(maxWidth: .infinity, minHeight: 74)
-                    .clipShape(RoundedRectangle(cornerRadius: 14))
-                    .contentShape(Rectangle())
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(isAvailable ? "\(choice.title)，\(choice.caption)" : localized("%@，%@，需要会员", String(describing: choice.title), String(describing: choice.caption)))
+                    .accessibilityAddTraits(selectedChoice == choice ? .isSelected : [])
                 }
-                .buttonStyle(.plain)
-                .accessibilityLabel(isAvailable ? "\(choice.title)，\(choice.caption)" : localized("%@，%@，需要会员", String(describing: choice.title), String(describing: choice.caption)))
-                .accessibilityAddTraits(selectedChoice == choice ? .isSelected : [])
+            }
+            if !hasPremiumAccess && selectedGroup.requiresMembership {
+                Text(localized("会员专享"))
+                    .font(.caption)
+                    .foregroundStyle(theme.palette.strongAccent)
+                    .multilineTextAlignment(.center)
+                    .padding(.vertical, 8)
             }
         }
-        .padding(10)
+        .padding(.horizontal, 10)
+        .padding(.top, 10)
+        .padding(.bottom, !hasPremiumAccess && selectedGroup.requiresMembership ? 0 : 10)
         .background(theme.palette.resolved(for: colorScheme).cardBackground, in: RoundedRectangle(cornerRadius: 22))
     }
 
@@ -509,7 +586,7 @@ struct EntryEditorScreen: View {
 
     private var editorTitle: some View {
         Text(DayKey(day).relationToToday == .today ? localized("今天想记什么？") : localized("这一天想记什么？"))
-            .font(.title2.weight(.semibold))
+            .font(.title3.weight(.semibold))
             .foregroundStyle(.primary)
     }
 
@@ -976,22 +1053,6 @@ private struct PaperDialPicker: View {
             rotation += delta
             selectedPaper = papers[index]
         }
-    }
-}
-
-private struct GroupHighlightBrush: Shape {
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        path.move(to: CGPoint(x: rect.minX + 2, y: rect.height * 0.18))
-        path.addCurve(to: CGPoint(x: rect.maxX - 1, y: rect.height * 0.10),
-                      control1: CGPoint(x: rect.width * 0.30, y: rect.height * 0.02),
-                      control2: CGPoint(x: rect.width * 0.72, y: rect.height * 0.22))
-        path.addLine(to: CGPoint(x: rect.maxX - 3, y: rect.height * 0.90))
-        path.addCurve(to: CGPoint(x: rect.minX, y: rect.height * 0.85),
-                      control1: CGPoint(x: rect.width * 0.65, y: rect.height * 0.78),
-                      control2: CGPoint(x: rect.width * 0.25, y: rect.height * 1.02))
-        path.closeSubpath()
-        return path
     }
 }
 

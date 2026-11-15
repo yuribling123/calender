@@ -4,7 +4,12 @@ enum MonthlyNoteSkin: String, CaseIterable, Identifiable {
     case plain, grid, tablecloth, lace, player, player2, ticket
     // case screen // 复古屏幕暂时停用，保留实现供参考。
 
-    var requiresMembership: Bool { self != .plain && self != .grid }
+    var requiresMembership: Bool {
+        switch self {
+        case .plain, .grid, .tablecloth, .lace: false
+        case .player, .player2, .ticket: true
+        }
+    }
 
     var id: String { rawValue }
     var title: String {

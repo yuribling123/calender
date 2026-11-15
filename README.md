@@ -4,7 +4,7 @@ A native iPhone and iPad mood calendar built with SwiftUI and SwiftData. You can
 
 iPad runs natively in portrait, landscape and resizable windows, with layouts measured from the current window or sheet (`Features/Shared/AdaptiveLayout.swift`). Calendar uses the available width and equal-height tablet date rows; windows at least 1000 points wide show the selected-day detail beside the calendar. From 760 points, monthly notes place the current month above a two-column history grouped by year; windows at least 1000 points wide show current and historical months side by side. Settings uses two content columns from 760 points. Collections use full-width shelves, larger tablet thumbnails, adaptive photo columns and two-column media pages when space permits; each media page still contains at most six items. Entry editing uses two columns in forms at least 700 points wide. Narrow windows and accessibility text fall back to one column where needed. Search occupies 90% of the tablet window up to 900 points and follows the keyboard safe area. Limited-task modals retain readable widths and scroll where needed. iPhone retains its existing layout values, spacing and orientation settings.
 
-The app has four tabs: Calendar, Monthly Note, Collection, and Settings. Settings lets you choose an accent color, a date and month selection marker, and a calendar title of up to ten characters. The title is a member feature; when left blank, the calendar shows “今日份”. Free users can use the circle and star markers. Other markers require the one-time unlock. Preferences are stored locally. Accent colors do not change the five fixed mood colors, saved entries, or supplied sticker artwork.
+The app has four tabs: Calendar, Monthly Note, Collection, and Settings. Settings lets you choose an accent color, a date and month selection marker, and a calendar title of up to ten characters. The title is a member feature; when left blank, the calendar shows “今日份”. Free users can use circle, star and sakura markers. Leaf, cat and heart markers require the one-time unlock. Preferences are stored locally. Accent colors do not change the five fixed mood colors, saved entries, or supplied sticker artwork.
 
 日期详情右侧的「标记／已标记」可标记或取消标记今天及未来日期；过去日期仅在「允许修改往日」开启时可标记或取消标记。个性化可选择两种标记样式：「日期改色」默认使用固定玫瑰棕色（深色外观使用较亮版本）；「荧光笔」在日期数字后划一笔当前主题相关的柔和底色，数字使用清晰的中性色。切换样式立即应用到日历和「找一找」，不改变已标记的日期，并保存在本机。两种样式都保留原有选中底形。今天已标记时始终优先显示所选标记样式，不添加角标。「找一找」中已标记的每日记录也使用同款标记样式显示日期数字，星期、正文和月便签维持原样。标记不依赖心情记录，过去日期的标记操作遵循「允许修改往日」偏好，关闭时保留已有标记但不可更改，并隐藏过去日期的标记入口；标记作为独立 SwiftData 日期记录保存，开启 iCloud 后随现有容器同步；ZIP 备份内 data.json 的 starredDays 字段保留标记与取消标记状态，可读文本列出已标记日期。导入保留本机已有状态（包括取消标记），兼容缺少该字段的旧备份，也支持仅包含标记的备份。已有 starredDays.v1 本机偏好在启动时迁移，成功保存后移除旧偏好；取消标记以显式 false 状态保存，较新的操作优先于旧迁移记录。新增模型字段均有默认值，通过增量迁移保留原有记录。Demo 使用隔离的内存库，不读取正式偏好或连接 iCloud。
 
@@ -23,6 +23,8 @@ Soft colors, warm paper surfaces, nostalgic personal electronics, and intimate j
 The music editor keeps a single player inside a persistent scroll view: centered when space allows, scrollable above the keyboard when space is limited. Showing the keyboard does not replace the song and artist fields.
 
 柔和配色、温暖色纸、怀旧随身电子产品与私人手账细节共同构成视觉方向，歌曲弹窗的圆盘按键和机械咔嗒声是其中的例子。少女感不限定粉色，Y2K 元素适量使用；主题色用于控件与选中状态，正文保留清晰的中性色层级。延续现有布局与原始插画，优先打磨比例、间距和触感，同时兼顾浅色与深色外观。
+
+会员页按「解锁所有表情包」「解锁所有月便签皮肤」「自定义日历」排列三项权益，仅列具体权益，不展示免费项目对照。说明中的表情包、月便签皮肤、主题色和选中图形名称直接读取选择器使用的 `requiresMembership` 定义，随权限配置同步更新。「我的」会员入口、无障碍说明与购买成功提示也包含月便签皮肤。
 
 ## Find a memory / 找一找
 
@@ -55,10 +57,10 @@ Current-month note and previous-month history:
 - Days with a text note show two short, light-gray lines beneath the illustration.
 - Saving a new selection plays a small entrance animation and an original, gentle paper-sticker sound.
 - Five fixed mood levels: Excellent `#F28DB2`, Good `#F3A58F`, Okay `#E8C982`, Bad `#91A9C5`, and Very bad `#A99AB9`.
-- Choose one of 30 items in six groups: Mood (`1–5`), Little Joys (`6–10`), Daily Life (`11–15`), Company (`16–20`), Free Spirit (`21–25`: electric guitar, wings, cocktail, lighter, and quill), and Rabbits (`26–30`). The picker order is Mood, Daily Life, Company, Little Joys, Free Spirit, and Rabbits. Free users can use Mood, Daily Life, and Company. The one-time unlock opens all six groups without changing the saved item IDs.
+- Choose one of 35 items in seven groups: Mood (`1–5`), Little Joys (`6–10`), Daily Life (`11–15`), Company (`16–20`), Free Spirit (`21–25`), Rabbits (`26–30`) and Daily Life II (`31–34`, `36`; legacy ID `35` remains readable). The picker order is Mood, Company, Daily Life, Daily Life II, Little Joys, Free Spirit and Rabbits. Mood, Company, Daily Life and Daily Life II are free; Little Joys, Free Spirit and Rabbits require the one-time unlock. Saved item IDs remain unchanged.
 - The selected day's mood detail includes a short phrase for each mood level.
 - The app selects today by default. If it stays open past local midnight, returns from the background on a new day, or the device time zone changes, the calendar updates to the new local date. When today has no entry, you can choose a mood from the calendar detail or add a Daily item in the editor. Today’s entry can be edited until the day ends. The empty daily view also offers “选其他表情” to open all sticker groups.
-- The editor uses the same warm background as the calendar. All seven sticker groups appear in one row, with a light marker stroke behind the selected label. VoiceOver announces the selected item and date; date text adapts to larger system text sizes.
+- The editor uses the same warm background as the calendar. All seven sticker groups appear in one row, with the selected label distinguished by its text weight and color. Category labels have gentle spacing without lock icons. Quiet arrows remain equally visible at both ends; tapping a direction with no more content has no effect and does not dim the arrow. The category row uses native free horizontal scrolling for touch, without snapping or a custom drag gesture. Initial spacing fits complete labels between symmetric arrow gaps. Arrow buttons alone page with one shared boundary item (the last fully visible category becomes the next page’s first, subject to the scroll view’s end boundary); after manual scrolling, they use the actual visible categories. Premium categories show a theme-colored “会员专享” label below their artwork with equal, compact vertical padding; tapping an unavailable sticker opens membership. VoiceOver announces the selected item and date; date text adapts to larger system text sizes.
 - Monthly Note lets you add or edit a note for any past or current month through ＋, up to 100 characters, and browse every month with a saved entry or note. Historical month headings open the corresponding calendar. Summaries use sticker names: fewer than three records show “那个月记下了”, otherwise “出现最多的是”; Among the most frequent stickers, prefer a record with a nonblank note, then the latest day. Show that note beside the sticker on one line with tail truncation; tapping the row opens its exact calendar day. If none has a note, show the latest sticker alone.
 - Past dates show the saved mood and note, or an appropriate empty-state message. Future dates show that the day has not arrived yet.
 - Daily entries and monthly notes are stored on-device with SwiftData. iCloud sync can be enabled in Settings and uses the user's private CloudKit database when available.
@@ -66,7 +68,7 @@ Current-month note and previous-month history:
 - Settings can enable iCloud sync. After changing the setting, fully quit and reopen the app. CloudKit syncs local entries and notes when the user is signed in to iCloud and sync is available. Turning sync off stops future syncing but does not delete existing cloud copies. The developer must configure the `iCloud.com.qingqing.MoodCalendar` container for `com.qingqing.MoodCalendar` in the Apple Developer account.
 - Debug builds include previews for “signed in, sync off” and “sync on” states. These previews only change what the screen shows; they do not enable CloudKit or alter the real sync setting.
 - The app requests notification permission on launch before showing the first-use guide and schedules a daily reminder while today has no entry. You can turn reminders off or on in Settings. Turning them off cancels pending reminders. If system notifications are denied, Settings offers a shortcut to iPhone Settings. The Debug demo also supports testing reminder controls.
-- A one-time permanent unlock is available through StoreKit 2, with purchase validation and Restore Purchases. Free access includes the Cherry Blossom and Black themes, circle and star markers, and the Mood, Daily Life, and Company sticker groups. The calendar title and other themes, markers, and groups require the unlock. App Store Connect must have the non-consumable product `com.qingqing.MoodCalendar.premium.lifetime` with pricing configured in App Store Connect; without it, purchase is unavailable.
+- A one-time permanent unlock is available through StoreKit 2, with purchase validation and Restore Purchases. Free access includes the Pink, Black, Apricot, and Sage themes, circle, star, and sakura markers, the Mood, Daily Life, Daily Life II, and Company sticker groups, and the Plain, Grid, Half a Cup of Milk Tea, and Lace Whisper monthly note skins. The calendar title and other themes, markers, and groups require the unlock. App Store Connect must have the non-consumable product `com.qingqing.MoodCalendar.premium.lifetime` with pricing configured in App Store Connect; without it, purchase is unavailable.
 
 ## Run
 
@@ -75,7 +77,7 @@ Current-month note and previous-month history:
 3. Choose a scheme and iPhone simulator, then click Run.
 
 - `MoodCalendar`: normal build with persistent local storage and no sample entries.
-- `MoodCalendar Demo`: Debug-only sample data in an isolated in-memory store. It includes five June entries, six August entries, thirty September entries covering all six sticker groups, monthly notes for August and September, a sample note for the current month, and a February 2022 entry and note for testing older history. It also includes music, film/TV, and sample photos across the most recent 12 days for Collection previews. Sample photos use the supplied illustrations on neutral backgrounds. It does not write to the normal store and does not support iCloud or App Store purchases.
+- `MoodCalendar Demo`: Debug-only sample data in an isolated in-memory store. It includes five June entries, six August entries, sixteen September entries, monthly notes for August and September, a sample note for the current month except November, and a February 2022 entry and note for testing older history. It also includes music, film/TV, and sample photos across the most recent 12 days for Collection previews, skipping November dates. November has no seeded daily records, attachments or monthly notes; relaunch the Demo scheme to recreate its empty November in-memory data. 11 月不再自动填充每日记录、歌曲、影视、照片或月便签；重新运行 Demo 后生效，正式存储不受影响。 Sample photos use the supplied illustrations on neutral backgrounds. It does not write to the normal store and does not support iCloud or App Store purchases.
 
 The bundle ID is `com.qingqing.MoodCalendar`; the CloudKit container is `iCloud.com.qingqing.MoodCalendar`. Device sync requires the Apple Developer team to enable the container and use a provisioning profile with the iCloud entitlement.
 
@@ -104,7 +106,7 @@ Calendar days are stored as the local year, month, and day when the entry is cre
 
 一款原生 iPhone 心情日历。每天最多一条记录；个性化中的「允许修改往日」默认开启，往日无论是否已有记录均显示「编辑」，关闭后只读。未来日期始终只能查看。
 
-底部有「日历」「月便签」「收藏」和「我的」四个页面。「我的」可从八种主题色（含黑色）中选择界面强调色、在六种日期和月份选中图形之间切换，也可设置最多十个字的日历标题；标题留空时显示「今日份」。日历标题属于会员功能。免费用户可使用圆形和星星，图形列表中星星紧跟在圆形之后；其他图形需永久解锁。这些设置保存在本机，下次打开仍然生效。主题色只改变界面强调元素，不改变五档心情的固定颜色、已保存记录或表情原画。
+底部有「日历」「月便签」「收藏」和「我的」四个页面。「我的」可从八种主题色（含黑色）中选择界面强调色、在六种日期和月份选中图形之间切换，也可设置最多十个字的日历标题；标题留空时显示「今日份」。日历标题属于会员功能。免费用户可使用圆形、星星和樱花；图形列表顺序为圆形、星星、樱花、叶子、猫猫、爱心，爱心位于最下面；叶子、猫猫和爱心需永久解锁。这些设置保存在本机，下次打开仍然生效。主题色只改变界面强调元素，不改变五档心情的固定颜色、已保存记录或表情原画。
 
 ## 第一版功能
 
@@ -123,7 +125,7 @@ Calendar days are stored as the local year, month, and day when the entry is cre
 - 有文字记录的日期会在表情下方显示两道浅灰色短线。
 - 成功保存新选择时，日期格会播放出现动画，并搭配一段轻柔的原创纸质贴纸轻贴提示。
 - 五档心情：极好 `#F28DB2`、好 `#F3A58F`、一般 `#E8C982`、不好 `#91A9C5`、很差 `#A99AB9`。
-- 每天从七组共三十五项中选择一项：「心情」五项（编号 `1–5`）、「小幸」五项（`6–10`）、「日常」五项（`11–15`）、「陪伴」五项（`16–20`）、「随性」五项（`21–25`：电吉他、翅膀、鸡尾酒、打火机、羽毛笔）和「兔兔」五项（`26–30`：星星兔、眼镜兔、委屈兔、笑晕兔无语兔）。选择页顺序为「心情」「陪伴」「日常」「日常Ⅱ」「小幸」「随性」「兔兔」。新图为 1024×512 透明 PNG，尺寸和留白对齐现有表情。免费用户可用「心情」「日常」和「陪伴」；永久解锁后可使用全部七组，原有编号保持不变。
+- 每天从七组共三十五项中选择一项：「心情」五项（编号 `1–5`）、「小幸」五项（`6–10`）、「日常」五项（`11–15`）、「陪伴」五项（`16–20`）、「随性」五项（`21–25`：电吉他、翅膀、鸡尾酒、打火机、羽毛笔）和「兔兔」五项（`26–30`：星星兔、眼镜兔、委屈兔、笑晕兔无语兔）。选择页顺序为「心情」「陪伴」「日常」「日常Ⅱ」「小幸」「随性」「兔兔」。新图为 1024×512 透明 PNG，尺寸和留白对齐现有表情。免费用户可用「心情」「日常」「日常Ⅱ」和「陪伴」；永久解锁后可使用全部七组，原有编号保持不变。
 - 所选日期的心情详情会在等级名称旁显示对应短句：幸福到融化、心里软乎乎、今天就这样、小小不开心或快要碎掉了。
 - 默认选中今天；若 App 跨过当地午夜后仍在前台，或第二天从后台打开，会自动切到新的一天。手机时区变化时也会按新的当地日期重新显示日历并校准午夜定时器。若尚未记录，可从首页详情区直接选心情，或点「选其他表情」进入完整选择页；今天始终可修改；往日能否修改由「允许修改往日」开关控制。
 - 编辑页使用与首页一致的暖色背景；七个表情分组在一行显示，空间不足时横向滚动，所选项目会高亮，并向 VoiceOver 说明选中状态。日历日期也会朗读选中状态，日期文字随系统字号适度放大。
@@ -134,7 +136,7 @@ Calendar days are stored as the local year, month, and day when the entry is cre
 - 「我的」可开启 iCloud 同步。启用后需完全退出并重新打开 App；CloudKit 会在用户登录 iCloud 且同步可用时自动同步本地每日记录和月便签。关闭开关只停止后续同步，不会删除云端已有副本。开发者需在 Apple Developer 账号中为 `com.qingqing.MoodCalendar` 配置 `iCloud.com.qingqing.MoodCalendar` CloudKit 容器。
 - Debug 构建提供“预览已登录、未开启”和“预览已开启”入口，只用于查看界面，不会开启 CloudKit 同步或更改实际同步设置。
 - 首次打开时，App 先请求通知权限，用户选择后再显示首次使用说明，并为尚未记录的日期安排当地时间每天下午 2 点的提醒。「我的」中可关闭或重新开启提醒；关闭会撤销尚未发送的提醒。系统通知被拒绝时，「我的」会提供打开 iPhone 设置的入口。Debug 演示模式也可测试提醒开关和通知。
-- 「我的」提供一次性永久解锁：免费状态可使用樱粉和黑色主题、圆形与星星选中图形、「心情」「日常」和「陪伴」三组表情；日历标题及其余表情组、主题色和选中图形需购买解锁。购买通过 StoreKit 2 校验，并支持恢复购买。App Store Connect 需创建非消耗型商品 `com.qingqing.MoodCalendar.premium.lifetime` 并在后台配置价格；未配置商品前，购买按钮不可用。
+- 「我的」提供一次性永久解锁：免费状态可使用薄樱、黑色、淡杏和若叶主题，圆形、星星和樱花选中图形，「心情」「日常」「日常Ⅱ」和「陪伴」四组表情，以及素笺小记、格子日记、半杯奶茶和裙边私语月便签皮肤；日历标题及其余表情组、主题色、选中图形和月便签皮肤需购买解锁。购买通过 StoreKit 2 校验，并支持恢复购买。App Store Connect 需创建非消耗型商品 `com.qingqing.MoodCalendar.premium.lifetime` 并在后台配置价格；未配置商品前，购买按钮不可用。
 
 ## 运行
 
@@ -250,7 +252,7 @@ For monthly notes, “Allow editing past days” only shows or hides historical 
 
 日历详情中的歌曲记录保持单行：长歌名优先占用可用空白，将播放装饰图标推至 NOW PLAYING 左侧，空间用尽后再尾部省略；图标与 NOW PLAYING 保持完整。
 
-月便签内容区支持按月份选择月便签样式：素笺（默认无装饰）、方格手账、奶白蕾丝（纱布纹、花边与布带纽扣）、电影票根（暖白票纸、左右齿孔、竖向撕线、编号与右侧「留作纪念」副券，预览及一、两行正文与格子、裙边采用相同高度，长正文随内容增高）、奶茶桌布（燕麦白底、浅卡其宽格与细缝线布边）、播放器（独立配色的银灰随身听：中性银灰半哑光面板、无内框的正文区域、右上角淡圆弧压纹及自绘印刷符号，深色使用中性暗灰及浅色文字、底部采用上方细进度条、下方居中的随机／上一首／圆形暂停／下一首／歌曲列表两层结构；预览与实际共用布局，正文采用与奶茶等皮肤相同的最小高度与总附加高度，一、两行同高，长文自然增高，位于电影票之前）。电影票根保留原有 ticket 标识，播放器使用独立 player 标识，已有电影票选择保持不变。本月调色盘位于月份缩写与「本月」一行的右侧，往月仅在已有非空月便签且允许修改往日时显示月份标题右侧的调色盘；只有状态摘要的月份隐藏调色盘，补上月便签后自动显示；关闭「允许修改往日」时隐藏所有往月调色盘，并禁止继续应用往月便签样式选择。复古屏幕暂时停用，代码以注释保留供参考。点击调色盘选择；月便签样式只包住月便签正文，不包含月份标题、时间线及「那个月记下了／出现最多的是」月度摘要；选择面板仅展示空白便签样式，素笺预览带细边框；此前选择花边便签或透明收纳袋的月份会回退为素笺。选择按月份保存在 SwiftData 中，开启 iCloud 后随记录同步，并通过 ZIP 备份内 data.json 的 monthlyNoteSkins 字段导出、导入（包括尚未写便签的月份）；旧备份缺少该字段时不改动本机皮肤，未知皮肤回退为素笺。导入保留已有月份内容与已有皮肤选择，不恢复会员资格。素笺与方格免费，半杯奶茶、裙边私语、电影票、播放器为会员皮肤；未解锁时仍按已保存或导入的皮肤显示，不降级为素笺；重新选择会员皮肤时检查会员资格，点击会员皮肤打开会员页。月便签文字仍可正常编辑保存（受日期编辑规则限制）。样式选择作为独立记录同步，即使该月份尚未写便签也会保留；切回素笺同样同步。已有本机 monthlyNoteSkins.v1 选择在启动时迁移，成功保存后移除旧偏好，保留已有记录并优先采用较新的同步选择。新增模型使用有默认值的字段，通过 SwiftData 轻量迁移扩展现有库；无需清空记录。发布前需在 CloudKit 容器中部署新增 MonthlyNoteSkinSelection 记录类型。Debug 演示模式仍使用独立的内存库，不读取或迁移正式偏好。
+月便签内容区支持按月份选择月便签样式：素笺（默认无装饰）、方格手账、奶白蕾丝（纱布纹、花边与布带纽扣）、电影票根（暖白票纸、左右齿孔、竖向撕线、编号与右侧「留作纪念」副券，预览及一、两行正文与格子、裙边采用相同高度，长正文随内容增高）、奶茶桌布（燕麦白底、浅卡其宽格与细缝线布边）、播放器（独立配色的银灰随身听：中性银灰半哑光面板、无内框的正文区域、右上角淡圆弧压纹及自绘印刷符号，深色使用中性暗灰及浅色文字、底部采用上方细进度条、下方居中的随机／上一首／圆形暂停／下一首／歌曲列表两层结构；预览与实际共用布局，正文采用与奶茶等皮肤相同的最小高度与总附加高度，一、两行同高，长文自然增高，位于电影票之前）。电影票根保留原有 ticket 标识，播放器使用独立 player 标识，已有电影票选择保持不变。本月调色盘位于月份缩写与「本月」一行的右侧，往月仅在已有非空月便签且允许修改往日时显示月份标题右侧的调色盘；只有状态摘要的月份隐藏调色盘，补上月便签后自动显示；关闭「允许修改往日」时隐藏所有往月调色盘，并禁止继续应用往月便签样式选择。复古屏幕暂时停用，代码以注释保留供参考。点击调色盘选择；月便签样式只包住月便签正文，不包含月份标题、时间线及「那个月记下了／出现最多的是」月度摘要；选择面板仅展示空白便签样式，素笺预览带细边框；此前选择花边便签或透明收纳袋的月份会回退为素笺。选择按月份保存在 SwiftData 中，开启 iCloud 后随记录同步，并通过 ZIP 备份内 data.json 的 monthlyNoteSkins 字段导出、导入（包括尚未写便签的月份）；旧备份缺少该字段时不改动本机皮肤，未知皮肤回退为素笺。导入保留已有月份内容与已有皮肤选择，不恢复会员资格。素笺小记、格子日记、半杯奶茶与裙边私语免费，月光电台、午夜电台和电影票为会员皮肤；未解锁时仍按已保存或导入的皮肤显示，不降级为素笺；重新选择会员皮肤时检查会员资格，点击会员皮肤打开会员页。月便签文字仍可正常编辑保存（受日期编辑规则限制）。样式选择作为独立记录同步，即使该月份尚未写便签也会保留；切回素笺同样同步。已有本机 monthlyNoteSkins.v1 选择在启动时迁移，成功保存后移除旧偏好，保留已有记录并优先采用较新的同步选择。新增模型使用有默认值的字段，通过 SwiftData 轻量迁移扩展现有库；无需清空记录。发布前需在 CloudKit 容器中部署新增 MonthlyNoteSkinSelection 记录类型。Debug 演示模式仍使用独立的内存库，不读取或迁移正式偏好。
 
 Monthly note styles are stored as per-month SwiftData records in the existing CloudKit container, including months without note text and explicit resets to plain. On upgrade, legacy local selections migrate after a successful save without replacing existing choices; dated user changes take precedence over legacy selections. The additive model uses defaulted fields for lightweight migration. Deploy the new MonthlyNoteSkinSelection CloudKit record type before distribution. Demo selections remain in the isolated in-memory store.
 
@@ -272,9 +274,9 @@ Run `zsh Tests/run-monthly-note-skin-checks.sh` with full Xcode to check additiv
 
 播放器2为独立月便签会员皮肤：黑色圆润机身、白色正文与爱心／上一首／播放／下一首／加号装饰，不提供真实播放功能；保留原播放器，支持按月份保存与备份。
 
-### 日常Ⅱ会员表情
+### 日常Ⅱ免费表情
 
-新增会员组「日常Ⅱ」，包含「做饭」（稳定编号 `31`，介绍「做顿热乎的」）、「打游戏」（`32`，介绍「上线玩一会」）、「吃好吃的」（`33`，介绍「这一口好满足」）、「看剧」（`34`，介绍「再看一集就休息」）和「逛街」（`36`，介绍「慢慢逛，随便看看」）。原「日常」组保持免费，原有编号不变。新组沿用已有会员锁标记、购买入口及持久化权限校验，备份支持新增编号 `31–36`。
+免费表情组「日常Ⅱ」，包含「做饭」（稳定编号 `31`，介绍「做顿热乎的」）、「打游戏」（`32`，介绍「上线玩一会」）、「吃好吃的」（`33`，介绍「这一口好满足」）、「看剧」（`34`，介绍「再看一集就休息」）和「逛街」（`36`，介绍「慢慢逛，随便看看」）。原「日常」组保持免费，原有编号不变。该组无需会员即可选择和保存，不显示会员锁标记或触发购买入口；兼容旧记录的「散步」（`35`）同样免费，备份支持编号 `31–36`。
 
 本组在选的五张原画按主体边界裁去透明留白并清理极低透明度杂点，等比缩放到最长边 420 像素，居中放入 1024×512 RGBA 透明画布；掌机屏幕的透明区域保留。彩色像素画与「随性」一样在深色下保留原色，其余线稿组（包括兔兔）采用白色线条。介绍与名称同时提供中、英、日、韩文。
 
@@ -282,7 +284,7 @@ Run `zsh Tests/run-monthly-note-skin-checks.sh` with full Xcode to check additiv
 
 「散步」已从选择列表移除，保留旧编号 `35` 和资源以兼容历史记录与备份。
 
-「逛街」采用奶白帆布包与小花，属于「日常Ⅱ」会员组，沿用透明画布和深色原色规则。
+「逛街」采用奶白帆布包与小花，属于「日常Ⅱ」免费组，沿用透明画布和深色原色规则。
 
 「打游戏」使用用户选定的奶油黄掌机，屏幕保留透明；「吃好吃的」使用无蒸汽拉面。两项名称、介绍及保存编号不变。
 

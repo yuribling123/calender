@@ -79,7 +79,8 @@ enum DemoData {
             context.insert(MonthlyNote(monthKey: "2022-02", text: localized("很久以前的一个月，也值得好好记住。")))
         }
         let currentMonthKey = String(format: "%04d-%02d", year, currentMonth)
-        if !seededMonthKeys.contains(currentMonthKey) {
+        // November stays empty in the demo so it can be used without sample records.
+        if currentMonth != 11 && !seededMonthKeys.contains(currentMonthKey) {
             context.insert(MonthlyNote(
                 monthKey: currentMonthKey,
                 text: localized("这个月，见了想见的人，也有认真听完的一首歌。\n把日子慢慢过好，平常的小事也值得记下来。")
@@ -126,7 +127,7 @@ enum DemoData {
         let hasVisibleCurrentMonthExample = examples.contains {
             $0.0 == currentMonth && $0.1 <= currentDay
         }
-        if !hasVisibleCurrentMonthExample {
+        if currentMonth != 11 && !hasVisibleCurrentMonthExample {
             if currentDay > 1 {
                 launchExamples.append((currentMonth, 1, .good, "给这个月留下一条演示记录。"))
             }
@@ -168,6 +169,7 @@ enum DemoData {
         let choices: [DailyChoice] = [.coffee, .cake, .clover, .guitar, .heart, .friends]
         for offset in 0..<12 {
             guard let date = calendar.date(byAdding: .day, value: -offset, to: today) else { continue }
+            guard calendar.component(.month, from: date) != 11 else { continue }
             let key = DayKey(date).storageValue
             let entry: MoodEntry
             if let saved = entriesByDay[key]?.first {

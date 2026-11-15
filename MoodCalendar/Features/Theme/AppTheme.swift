@@ -75,6 +75,13 @@ private struct BookmarkStroke: Shape {
 enum AppTheme: String, CaseIterable, Identifiable {
     case black, pink, apricot, sage, blue, lavender, caramel, creamYellow
 
+    var requiresMembership: Bool {
+        switch self {
+        case .black, .pink, .apricot, .sage: false
+        case .blue, .lavender, .caramel, .creamYellow: true
+        }
+    }
+
     var id: String { rawValue }
 
     var swatchColor: Color {
@@ -498,7 +505,14 @@ extension EnvironmentValues {
 }
 
 enum SelectionShape: String, CaseIterable, Identifiable {
-    case circle, star, heart, sakura, leaf, cat
+    case circle, star, sakura, leaf, cat, heart
+
+    var requiresMembership: Bool {
+        switch self {
+        case .circle, .star, .sakura: false
+        case .leaf, .cat, .heart: true
+        }
+    }
 
     var id: String { rawValue }
     var title: String {

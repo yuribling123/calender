@@ -1,6 +1,476 @@
 {
   "sourceLanguage" : "zh-Hans",
   "strings" : {
+  "解锁所有表情包": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Unlock all sticker packs"
+        }
+      },
+      "ja": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "すべてのスタンプをアンロック"
+        }
+      },
+      "ko": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "모든 스티커 팩 잠금 해제"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "解锁所有表情包"
+        }
+      }
+    }
+  },
+  "解锁所有月便签皮肤": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Unlock all monthly note styles"
+        }
+      },
+      "ja": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "月のメモの全デザインをアンロック"
+        }
+      },
+      "ko": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "모든 월별 메모 스타일 잠금 해제"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "解锁所有月便签皮肤"
+        }
+      }
+    }
+  },
+  "自定义日历": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Customize your calendar"
+        }
+      },
+      "ja": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "カレンダーをカスタマイズ"
+        }
+      },
+      "ko": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "캘린더 꾸미기"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "自定义日历"
+        }
+      }
+    }
+  },
+  "包括%@等全部表情包。": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Includes every sticker pack, such as %@."
+        }
+      },
+      "ja": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "%@など、すべてのスタンプが使えます。"
+        }
+      },
+      "ko": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "%@ 등 모든 스티커 팩이 포함됩니다."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "包括%@等全部表情包。"
+        }
+      }
+    }
+  },
+  "包括%@等皮肤。": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Includes styles such as %@."
+        }
+      },
+      "ja": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "%@などのデザインが使えます。"
+        }
+      },
+      "ko": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "%@ 등의 스타일이 포함됩니다."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "包括%@等皮肤。"
+        }
+      }
+    }
+  },
+  "设置日历标题，解锁%@主题，以及%@选中图形。": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Set your calendar title and unlock %@ themes and %@ selection markers."
+        }
+      },
+      "ja": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "カレンダー名を設定し、%@のテーマと%@の選択マークをアンロックできます。"
+        }
+      },
+      "ko": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "캘린더 제목을 설정하고 %@ 테마와 %@ 선택 표시를 잠금 해제합니다."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "设置日历标题，解锁%@主题，以及%@选中图形。"
+        }
+      }
+    }
+  },
+
+  "、": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": ", "
+        }
+      },
+      "ja": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "、"
+        }
+      },
+      "ko": {
+        "stringUnit": {
+          "state": "translated",
+          "value": ", "
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "、"
+        }
+      }
+    }
+  },
+  "会员表情包": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Premium sticker packs"
+        }
+      },
+      "ja": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "プレミアムスタンプ"
+        }
+      },
+      "ko": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "프리미엄 스티커 팩"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "会员表情包"
+        }
+      }
+    }
+  },
+  "日历标题、主题色和选中图形": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Calendar title, themes and selection markers"
+        }
+      },
+      "ja": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "カレンダー名・テーマ・選択マーク"
+        }
+      },
+      "ko": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "캘린더 제목, 테마 및 선택 표시"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "日历标题、主题色和选中图形"
+        }
+      }
+    }
+  },
+  "月便签皮肤": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Monthly note styles"
+        }
+      },
+      "ja": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "月のメモのデザイン"
+        }
+      },
+      "ko": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "월별 메모 스타일"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "月便签皮肤"
+        }
+      }
+    }
+  },
+
+
+
+  "表情包、日历外观和月便签皮肤": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Sticker packs, calendar themes and monthly note styles"
+        }
+      },
+      "ja": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "スタンプ・カレンダーテーマ・月のメモのデザイン"
+        }
+      },
+      "ko": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "스티커 팩, 캘린더 테마 및 월별 메모 스타일"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "表情包、日历外观和月便签皮肤"
+        }
+      }
+    }
+  },
+  "会员，永久解锁表情包、日历外观和月便签皮肤": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Premium: permanently unlock sticker packs, calendar themes and monthly note styles"
+        }
+      },
+      "ja": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "プレミアム：スタンプ・カレンダーテーマ・月のメモのデザインを永久アンロック"
+        }
+      },
+      "ko": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "프리미엄: 스티커 팩, 캘린더 테마 및 월별 메모 스타일 영구 잠금 해제"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "会员，永久解锁表情包、日历外观和月便签皮肤"
+        }
+      }
+    }
+  },
+  "已永久解锁会员表情包、日历标题、主题色、选中图形和月便签皮肤。": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Premium sticker packs, custom calendar titles, themes, selection markers and monthly note styles are permanently unlocked."
+        }
+      },
+      "ja": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "プレミアムスタンプ・カレンダー名の変更・テーマ・選択マーク・月のメモのデザインを永久アンロックしました。"
+        }
+      },
+      "ko": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "프리미엄 스티커 팩, 캘린더 제목 설정, 테마, 선택 표시 및 월별 메모 스타일이 영구 잠금 해제되었습니다."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "已永久解锁会员表情包、日历标题、主题色、选中图形和月便签皮肤。"
+        }
+      }
+    }
+  },
+
+  "查看更多分类": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "More categories"
+        }
+      },
+      "ja": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "他のカテゴリーを表示"
+        }
+      },
+      "ko": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "더 많은 카테고리 보기"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "查看更多分类"
+        }
+      }
+    }
+  },
+  "查看前面的分类": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Previous categories"
+        }
+      },
+      "ja": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "前のカテゴリーを表示"
+        }
+      },
+      "ko": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "이전 카테고리 보기"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "查看前面的分类"
+        }
+      }
+    }
+  },
+  "会员专享": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Premium only"
+        }
+      },
+      "ja": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "プレミアム限定"
+        }
+      },
+      "ko": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "프리미엄 전용"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "会员专享"
+        }
+      }
+    }
+  },
+
       "玫瑰压胶": {
         "extractionState": "manual",
         "localizations": {

@@ -1,0 +1,1115 @@
+--- a/MoodCalendar.xcodeproj/project.pbxproj
++++ b/MoodCalendar.xcodeproj/project.pbxproj
+@@ -7,6 +7,7 @@
+ 	objects = {
+ 
+ /* Begin PBXBuildFile section */
++		F30A20260000000000000002 /* AdaptiveLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = F30A20260000000000000001; };
+ 		F29C20260000000000000002 /* MoodCalendar/Domain/WatchKind.swift in Sources */ = {isa = PBXBuildFile; fileRef = F29C20260000000000000001; };
+ 		F26C20260000000000000004 /* MoodCalendar/Features/Collection/CollectionScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = F26C20260000000000000003; };
+ 		F26C20260000000000000002 /* MoodCalendar/Domain/EntryCollection.swift in Sources */ = {isa = PBXBuildFile; fileRef = F26C20260000000000000001; };
+@@ -49,6 +50,7 @@
+ /* End PBXBuildFile section */
+ 
+ /* Begin PBXFileReference section */
++		F30A20260000000000000001 /* AdaptiveLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Features/Shared/AdaptiveLayout.swift; sourceTree = "<group>"; };
+ 		F29C20260000000000000001 /* MoodCalendar/Domain/WatchKind.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Domain/WatchKind.swift; sourceTree = "<group>"; };
+ 		F26C20260000000000000003 /* MoodCalendar/Features/Collection/CollectionScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Features/Collection/CollectionScreen.swift; sourceTree = "<group>"; };
+ 		F26C20260000000000000001 /* MoodCalendar/Domain/EntryCollection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Domain/EntryCollection.swift; sourceTree = "<group>"; };
+@@ -96,6 +98,7 @@
+ 		B28B7AF69320201D1CF206EB = {
+ 			isa = PBXGroup;
+ 			children = (
++				F30A20260000000000000001 /* AdaptiveLayout.swift */,
+ 				F18D20260000000000000006 /* MoodCalendar/Features/Search/NotebookDecorations.swift */,
+ 				F26C20260000000000000001 /* MoodCalendar/Domain/EntryCollection.swift */,
+ 				F29C20260000000000000001 /* MoodCalendar/Domain/WatchKind.swift */,
+@@ -233,6 +236,7 @@
+ 			isa = PBXSourcesBuildPhase;
+ 			buildActionMask = 2147483647;
+ 			files = (
++				F30A20260000000000000002 /* AdaptiveLayout.swift in Sources */,
+ 				F18D20260000000000000005 /* MoodCalendar/Features/Search/NotebookDecorations.swift in Sources */,
+ 				F26C20260000000000000002 /* MoodCalendar/Domain/EntryCollection.swift in Sources */,
+ 				F29C20260000000000000002 /* MoodCalendar/Domain/WatchKind.swift in Sources */,
+@@ -291,7 +295,7 @@
+ 				SDKROOT = iphoneos;
+ 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "ICLOUD_SYNC_ENABLED APP_STORE_RELEASE";
+ 				SWIFT_VERSION = 5.0;
+-				TARGETED_DEVICE_FAMILY = 1;
++				TARGETED_DEVICE_FAMILY = "1,2";
+ 			};
+ 			name = Release;
+ 		};
+@@ -303,7 +307,7 @@
+ 				SDKROOT = iphoneos;
+ 				SWIFT_OPTIMIZATION_LEVEL = "-O";
+ 				SWIFT_VERSION = 5.0;
+-				TARGETED_DEVICE_FAMILY = 1;
++				TARGETED_DEVICE_FAMILY = "1,2";
+ 			};
+ 			name = Release;
+ 		};
+@@ -315,7 +319,7 @@
+ 				SDKROOT = iphoneos;
+ 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+ 				SWIFT_VERSION = 5.0;
+-				TARGETED_DEVICE_FAMILY = 1;
++				TARGETED_DEVICE_FAMILY = "1,2";
+ 			};
+ 			name = Debug;
+ 		};
+@@ -340,7 +344,7 @@
+ 				SDKROOT = iphoneos;
+ 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG ICLOUD_SYNC_ENABLED";
+ 				SWIFT_VERSION = 5.0;
+-				TARGETED_DEVICE_FAMILY = 1;
++				TARGETED_DEVICE_FAMILY = "1,2";
+ 			};
+ 			name = Debug;
+ 		};
+--- a/MoodCalendar/Info.plist
++++ b/MoodCalendar/Info.plist
+@@ -48,6 +48,9 @@
+ 	<key>UISupportedInterfaceOrientations~ipad</key>
+ 	<array>
+ 		<string>UIInterfaceOrientationPortrait</string>
++		<string>UIInterfaceOrientationPortraitUpsideDown</string>
++		<string>UIInterfaceOrientationLandscapeLeft</string>
++		<string>UIInterfaceOrientationLandscapeRight</string>
+ 	</array>
+ </dict>
+ </plist>
+--- a/README.md
++++ b/README.md
+@@ -1,6 +1,8 @@
+ # Mood Calendar
+ 
+-A native iPhone mood calendar built with SwiftUI and SwiftData. You can create or edit one entry for today. Allow editing past days defaults to on in Personalization; past days show Edit for an existing entry and Add entry for an empty day. Turning it off makes past days read-only. Future dates are always read-only.
++A native iPhone and iPad mood calendar built with SwiftUI and SwiftData. You can create or edit one entry for today. Allow editing past days defaults to on in Personalization; past days show Edit for an existing entry and Add entry for an empty day. Turning it off makes past days read-only. Future dates are always read-only.
++
++iPad runs natively in portrait, landscape and resizable windows, with layouts measured from the current window or sheet (`Features/Shared/AdaptiveLayout.swift`). Calendar uses the available width and equal-height tablet date rows; windows at least 1000 points wide show the selected-day detail beside the calendar. From 760 points, monthly notes place the current month above a two-column history grouped by year; windows at least 1000 points wide show current and historical months side by side. Settings uses two content columns from 760 points. Collections use full-width shelves, larger tablet thumbnails, adaptive photo columns and two-column media pages when space permits; each media page still contains at most six items. Entry editing uses two columns in forms at least 700 points wide. Narrow windows and accessibility text fall back to one column where needed. Search occupies 90% of the tablet window up to 900 points and follows the keyboard safe area. Limited-task modals retain readable widths and scroll where needed. iPhone retains its existing layout values, spacing and orientation settings.
+ 
+ The app has four tabs: Calendar, Monthly Note, Collection, and Settings. Settings lets you choose an accent color, a date and month selection marker, and a calendar title of up to ten characters. The title is a member feature; when left blank, the calendar shows “今日份”. Free users can use the circle and star markers. Other markers require the one-time unlock. Preferences are stored locally. Accent colors do not change the five fixed mood colors, saved entries, or supplied sticker artwork.
+ 
+--- a/MoodCalendar/Features/Calendar/CalendarScreen.swift
++++ b/MoodCalendar/Features/Calendar/CalendarScreen.swift
+@@ -3,6 +3,7 @@
+ import UIKit
+ 
+ struct CalendarScreen: View {
++    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+     @Binding var requestedMonth: Date?
+     @Environment(\.modelContext) private var modelContext
+     @Environment(\.appTheme) private var theme
+@@ -82,57 +83,11 @@
+     }
+ 
+     private var calendarContent: some View {
+-        VStack(spacing: 0) {
+-            ScrollView {
+-                VStack(alignment: .leading, spacing: 0) {
+-                    intro
+-                        .padding(.bottom, isChoosingMonth ? 4 : -8)
+-                    if isChoosingMonth {
+-                        monthChooser
+-                    } else {
+-                        monthHeader
+-                            .padding(.bottom, 22)
+-                            .contentShape(Rectangle())
+-                            .simultaneousGesture(monthSwipeGesture)
+-                        MonthGrid(
+-                            layout: MonthLayout(containing: displayedMonth),
+-                            entries: entriesByDay,
+-                            starredDayKeys: starredDayKeys,
+-                            selectedDay: DayKey(selectedDay),
+-                            pendingRevealDayKey: pendingRevealDayKey,
+-                            animatingDayKey: animatedDayKey,
+-                            onSelect: { date in
+-                                guard calendar.isDate(date, equalTo: displayedMonth, toGranularity: .month) else {
+-                                    return
+-                                }
+-                                selectedDay = date
+-                                if DayKey(date).relationToToday == .today {
+-                                    let key = DayKey(date).storageValue
+-                                    guard entriesByDay[key]?.choice == nil else { return }
+-                                    presentEditor(for: date, group: .mood)
+-                                }
+-                            }
+-                        )
+-                        .padding(.horizontal, -12)
+-                        .offset(y: -8)
+-                        .padding(.bottom, 24)
+-                        .contentShape(Rectangle())
+-                        .simultaneousGesture(monthSwipeGesture)
+-                        SelectedDateDetail(
+-                            date: selectedDay,
+-                            entry: selectedEntry,
+-                            isStarred: starredDayKeys.contains(DayKey(selectedDay).storageValue),
+-                            onToggleStar: toggleSelectedDayStar,
+-                            onRecordMood: saveMood,
+-                            onEdit: {
+-                                if DayKey(selectedDay).isEditable(allowPastDates: allowPastDateEditing) {
+-                                    presentEditor(for: selectedDay, group: selectedEntry?.choice?.group ?? .mood)
+-                                }
+-                            }
+-                        )
+-                    }
+-                }
+-                .padding(24)
++        AdaptivePage { size in
++            if let size {
++                iPadCalendar(size: size)
++            } else {
++                phoneCalendarContent
+             }
+         }
+         .scrollDisabled(isHorizontalMonthSwipe)
+@@ -205,6 +160,111 @@
+             Button(localized("确定"), role: .cancel) { saveError = nil }
+         } message: {
+             Text(saveError ?? localized("请稍后再试。"))
++        }
++    }
++
++    private var phoneCalendarContent: some View {
++        VStack(spacing: 0) {
++            ScrollView {
++                VStack(alignment: .leading, spacing: 0) {
++                    intro
++                        .padding(.bottom, isChoosingMonth ? 4 : -8)
++                    if isChoosingMonth {
++                        monthChooser()
++                    } else {
++                        monthHeader
++                            .padding(.bottom, 22)
++                            .contentShape(Rectangle())
++                            .simultaneousGesture(monthSwipeGesture)
++                        calendarGrid()
++                            .padding(.horizontal, -12)
++                            .offset(y: -8)
++                            .padding(.bottom, 24)
++                            .contentShape(Rectangle())
++                            .simultaneousGesture(monthSwipeGesture)
++                        selectedDateDetail
++                    }
++                }
++                .padding(24)
++            }
++        }
++    }
++
++    private func calendarGrid(rowHeight: CGFloat = 72) -> some View {
++        MonthGrid(
++            layout: MonthLayout(containing: displayedMonth),
++            entries: entriesByDay,
++            starredDayKeys: starredDayKeys,
++            selectedDay: DayKey(selectedDay),
++            pendingRevealDayKey: pendingRevealDayKey,
++            animatingDayKey: animatedDayKey,
++            rowHeight: rowHeight,
++            onSelect: { date in
++                guard calendar.isDate(date, equalTo: displayedMonth, toGranularity: .month) else {
++                    return
++                }
++                selectedDay = date
++                if DayKey(date).relationToToday == .today {
++                    let key = DayKey(date).storageValue
++                    guard entriesByDay[key]?.choice == nil else { return }
++                    presentEditor(for: date, group: .mood)
++                }
++            }
++        )
++    }
++
++    private var selectedDateDetail: some View {
++        SelectedDateDetail(
++            date: selectedDay,
++            entry: selectedEntry,
++            isStarred: starredDayKeys.contains(DayKey(selectedDay).storageValue),
++            onToggleStar: toggleSelectedDayStar,
++            onRecordMood: saveMood,
++            onEdit: {
++                if DayKey(selectedDay).isEditable(allowPastDates: allowPastDateEditing) {
++                    presentEditor(for: selectedDay, group: selectedEntry?.choice?.group ?? .mood)
++                }
++            }
++        )
++    }
++
++    private func iPadCalendar(size: CGSize) -> some View {
++        let usesColumns = size.width >= 1000 && !dynamicTypeSize.isAccessibilitySize
++        let rows = CGFloat(max(1, (MonthLayout(containing: displayedMonth).days.count + 6) / 7))
++        let reservedHeight: CGFloat = usesColumns ? 190 : 420
++        let rowHeight = min(128, max(88, (size.height - reservedHeight) / rows))
++        let inset: CGFloat = size.width < 600 ? 24 : 32
++
++        return ScrollView {
++            VStack(alignment: .leading, spacing: 24) {
++                intro
++                if isChoosingMonth {
++                    monthChooser(columnCount: size.width >= 700 ? 4 : 3,
++                                 minimumCellHeight: min(200, max(112, (size.height - 240) / 3)))
++                } else if usesColumns {
++                    HStack(alignment: .top, spacing: 32) {
++                        iPadMonth(rowHeight: rowHeight)
++                            .frame(maxWidth: .infinity)
++                        selectedDateDetail
++                            .frame(width: min(420, max(340, (size.width - inset * 2 - 32) * 0.34)))
++                    }
++                } else {
++                    iPadMonth(rowHeight: rowHeight)
++                    selectedDateDetail
++                }
++            }
++            .padding(inset)
++        }
++    }
++
++    private func iPadMonth(rowHeight: CGFloat) -> some View {
++        VStack(spacing: 22) {
++            monthHeader
++                .contentShape(Rectangle())
++                .simultaneousGesture(monthSwipeGesture)
++            calendarGrid(rowHeight: rowHeight)
++                .contentShape(Rectangle())
++                .simultaneousGesture(monthSwipeGesture)
+         }
+     }
+ 
+@@ -299,9 +359,9 @@
+             .font(.system(size: size, weight: .regular)))
+     }
+ 
+-    private var monthChooser: some View {
++    private func monthChooser(columnCount: Int = 3, minimumCellHeight: CGFloat? = nil) -> some View {
+         VStack(alignment: .trailing, spacing: 0) {
+-            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: 3), spacing: 16) {
++            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: columnCount), spacing: 16) {
+                 ForEach(1...12, id: \.self) { month in
+                     Button {
+                         chooseMonth(month)
+@@ -332,6 +392,7 @@
+                             .frame(height: 44)
+                             .accessibilityHidden(true)
+                         }
++                            .frame(minHeight: minimumCellHeight)
+                             .contentShape(Rectangle())
+                     }
+                     .accessibilityLabel(Text(verbatim: localized("%@年%@月", String(describing: chooserYear), String(describing: month))))
+--- a/MoodCalendar/Features/Calendar/DayCell.swift
++++ b/MoodCalendar/Features/Calendar/DayCell.swift
+@@ -13,6 +13,10 @@
+     let isFuture: Bool
+     let isRevealPending: Bool
+     let isAnimating: Bool
++    var rowHeight: CGFloat = 72
++
++    private var usesLargeCell: Bool { rowHeight > 72 }
++    private var artworkHeight: CGFloat { usesLargeCell ? 36 : 26 }
+ 
+     @AppStorage("calendarBookmarkStyle") private var storedBookmarkStyle = CalendarBookmarkStyle.dateColor.rawValue
+ 
+@@ -27,7 +31,7 @@
+                 Text("\(Calendar.current.component(.day, from: date))")
+                     .font(
+                         .system(
+-                            size: min(scaledDateSize, 20),
++                            size: min(scaledDateSize + (usesLargeCell ? 3 : 0), usesLargeCell ? 23 : 20),
+                             weight: isSelected ? .semibold : .medium,
+                             design: .rounded
+                         )
+@@ -70,8 +74,8 @@
+                             ChoiceArtwork(choice: choice)
+                                 .scaledToFit()
+                                 .frame(
+-                                    width: min(50, geometry.size.width),
+-                                    height: 26
++                                    width: min(usesLargeCell ? 64 : 50, geometry.size.width),
++                                    height: artworkHeight
+                                 )
+                                 .scaleEffect(artworkScale(for: choice) * 1.10)
+                                 .scaleEffect(revealScale)
+@@ -91,18 +95,18 @@
+                                 }
+                         }
+                     }
+-                    .frame(height: 26)
++                    .frame(height: artworkHeight)
+                 }
+                 .padding(.top, 6)
+                 .padding(.bottom, 4)
+             }
+             .frame(
+                 width: geometry.size.width,
+-                height: 72,
++                height: rowHeight,
+                 alignment: .center
+             )
+         }
+-        .frame(height: 72)
++        .frame(height: rowHeight)
+         .onAppear {
+             if isRevealPending { prepareReveal() }
+         }
+--- a/MoodCalendar/Features/Calendar/MonthGrid.swift
++++ b/MoodCalendar/Features/Calendar/MonthGrid.swift
+@@ -10,6 +10,7 @@
+     let selectedDay: DayKey
+     let pendingRevealDayKey: String?
+     let animatingDayKey: String?
++    var rowHeight: CGFloat = 72
+     let onSelect: (Date) -> Void
+ 
+     private let columns = Array(repeating: GridItem(.flexible(), spacing: 2), count: 7)
+@@ -19,7 +20,7 @@
+             LazyVGrid(columns: columns, spacing: 0) {
+                 ForEach(0..<7, id: \.self) { index in
+                     Text(weekdayNames[index])
+-                        .font(.system(size: min(scaledWeekdaySize, 19), weight: .medium))
++                        .font(.system(size: min(scaledWeekdaySize + (rowHeight > 72 ? 2 : 0), rowHeight > 72 ? 21 : 19), weight: .medium))
+                         .foregroundStyle(theme.palette.calendarWeekdayText.opacity(0.85))
+                         .frame(maxWidth: .infinity, alignment: .center)
+                 }
+@@ -39,13 +40,14 @@
+                                     isSelected: key == selectedDay,
+                                     isFuture: relation == .future,
+                                     isRevealPending: key.storageValue == pendingRevealDayKey,
+-                                    isAnimating: key.storageValue == animatingDayKey)
++                                    isAnimating: key.storageValue == animatingDayKey,
++                                    rowHeight: rowHeight)
+                         }
+                         .buttonStyle(.plain)
+                         .accessibilityLabel(accessibilityText(for: date, relation: relation, choice: choice, hasNote: hasNote))
+                         .accessibilityAddTraits(key == selectedDay ? .isSelected : [])
+                     } else {
+-                        Color.clear.frame(height: 72)
++                        Color.clear.frame(height: rowHeight)
+                     }
+                 }
+             }
+--- a/MoodCalendar/Features/Collection/CollectionScreen.swift
++++ b/MoodCalendar/Features/Collection/CollectionScreen.swift
+@@ -12,6 +12,11 @@
+     let onOpenDay: (Date) -> Void
+     var category: CollectionCategory? = nil
+ 
++    private var tabletItemScale: CGFloat { UIDevice.current.userInterfaceIdiom == .pad ? 4.0 / 3.0 : 1 }
++    private var photoItemSize: CGFloat { thumbnailSize * tabletItemScale }
++    private var songItemWidth: CGFloat { songShelfWidth * tabletItemScale }
++    private var watchItemWidth: CGFloat { watchShelfWidth * tabletItemScale }
++
+     private var songs: [CollectedSong] { EntryCollection.songs(from: entries) }
+     private var watches: [CollectedWatch] { EntryCollection.watches(from: entries) }
+     private var photos: [CollectedMemory] { EntryCollection.photos(from: entries) }
+@@ -26,12 +31,14 @@
+     }
+ 
+     private var page: some View {
+-        GeometryReader { _ in
++        GeometryReader { geometry in
+             Group {
+                 if category == .music, !songs.isEmpty {
+-                    SongCollectionList(songs: songs, onOpenDay: onOpenDay)
++                    SongCollectionList(songs: songs, onOpenDay: onOpenDay,
++                                       usesColumns: UIDevice.current.userInterfaceIdiom == .pad && geometry.size.width >= 1000)
+                 } else if category == .watch, !watches.isEmpty {
+-                    WatchCollectionList(watches: watches, onOpenDay: onOpenDay)
++                    WatchCollectionList(watches: watches, onOpenDay: onOpenDay,
++                                        usesColumns: UIDevice.current.userInterfaceIdiom == .pad && geometry.size.width >= 1000)
+                 } else {
+                     ScrollView {
+                         VStack(alignment: .leading, spacing: 14) {
+@@ -49,7 +56,8 @@
+                                         .foregroundStyle(theme.palette.collectionSecondaryInk)
+                                 }
+ 
+-                                collectionRack
++                                collectionRack(spacing: UIDevice.current.userInterfaceIdiom == .pad
++                                    ? max(48, min(100, (geometry.size.height - 600) / 2)) : 48)
+ 
+                                 if isEmpty {
+                                     Text(localized("记下的歌曲、影视和照片，会自动汇集在这里。").trimmingCharacters(in: CharacterSet(charactersIn: "。.!！")))
+@@ -75,6 +83,7 @@
+                     }
+                 }
+             }
++            .iPadFillPage()
+             .background(theme.palette.collectionBackground)
+             .foregroundStyle(theme.palette.collectionInk)
+             .navigationTitle(category.map { localized($0.rawValue) } ?? "")
+@@ -90,9 +99,9 @@
+         }
+     }
+ 
+-    private var collectionRack: some View {
++    private func collectionRack(spacing: CGFloat) -> some View {
+         // Keep the same gap from each shelf to the next heading, regardless of artwork height.
+-        VStack(spacing: 48) {
++        VStack(spacing: spacing) {
+             ForEach(CollectionCategory.allCases) { category in
+                 overviewSection(category)
+             }
+@@ -128,18 +137,18 @@
+                     switch category {
+                     case .music:
+                         ForEach(songs) { song in
+-                            CollectionSongRecord(song: song, diameter: songShelfWidth)
+-                                .frame(width: songShelfWidth)
++                            CollectionSongRecord(song: song, diameter: songItemWidth)
++                                .frame(width: songItemWidth)
+                         }
+                     case .watch:
+                         ForEach(watches) { watch in
+-                            CollectionWatchTape(watch: watch, width: watchShelfWidth)
+-                                .frame(width: watchShelfWidth)
++                            CollectionWatchTape(watch: watch, width: watchItemWidth)
++                                .frame(width: watchItemWidth)
+                         }
+                     case .photo:
+                         ForEach(Array(photos.enumerated()), id: \.element.id) { index, memory in
+                             photoItem(memory, thumbnail: true)
+-                                .frame(width: thumbnailSize + 8)
++                                .frame(width: photoItemSize + 8)
+                                 .rotationEffect(.degrees(dynamicTypeSize.isAccessibilitySize ? 0 : (index == 0 ? -1 : 0)))
+                         }
+                     }
+@@ -210,7 +219,9 @@
+             case .watch:
+                 WatchCollectionList(watches: watches, onOpenDay: onOpenDay)
+             case .photo:
+-                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], alignment: .leading, spacing: 26) {
++                LazyVGrid(columns: UIDevice.current.userInterfaceIdiom == .pad
++                          ? [GridItem(.adaptive(minimum: 180), spacing: 24, alignment: .top)]
++                          : [GridItem(.flexible()), GridItem(.flexible())], alignment: .leading, spacing: 26) {
+                     ForEach(photos) { memory in photoItem(memory, thumbnail: false) }
+                 }
+             }
+@@ -221,7 +232,7 @@
+         VStack(alignment: .leading, spacing: 8) {
+             CollectionPhoto(data: memory.entry.photoData, cropped: thumbnail)
+                 .aspectRatio(thumbnail ? 1 : photoRatio(memory.entry.photoData), contentMode: .fit)
+-                .frame(maxWidth: thumbnail ? thumbnailSize : .infinity)
++                .frame(maxWidth: thumbnail ? photoItemSize : .infinity)
+                 .padding(thumbnail ? 4 : 0)
+                 .padding(.bottom, thumbnail ? 12 : 0)
+                 .background(thumbnail ? theme.palette.collectionPhotoMount : .clear)
+@@ -571,6 +582,7 @@
+                 .padding(.horizontal, 24)
+                 .padding(.top, 12)
+                 .padding(.bottom, 24)
++                .iPadReadableWidth()
+                 .foregroundStyle(theme.palette.collectionInk)
+             }
+             .background(theme.palette.collectionBackground)
+@@ -667,6 +679,23 @@
+ }
+ 
+ /// A personal track list pairs each song with its artist and a quiet track number.
++private struct AdaptiveMediaGrid<Content: View>: View {
++    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
++    var usesColumns: Bool
++    @ViewBuilder var content: () -> Content
++
++    var body: some View {
++        if usesColumns && !dynamicTypeSize.isAccessibilitySize {
++            LazyVGrid(columns: [GridItem(.flexible(), spacing: 28), GridItem(.flexible())],
++                      alignment: .leading, spacing: 16) {
++                content()
++            }
++        } else {
++            LazyVStack(spacing: 16) { content() }
++        }
++    }
++}
++
+ private struct SongCollectionList: View {
+     @Environment(\.appTheme) private var theme
+     @ScaledMetric(relativeTo: .body) private var headerDiscSize: CGFloat = 34
+@@ -675,6 +704,7 @@
+     @State private var recordSong: CollectedSong?
+     let songs: [CollectedSong]
+     let onOpenDay: (Date) -> Void
++    var usesColumns = false
+     private var page: CollectionPage { CollectionPage(itemCount: songs.count, requestedIndex: pageIndex) }
+ 
+     var body: some View {
+@@ -698,7 +728,7 @@
+                 }
+                 .padding(.top, 12)
+ 
+-                LazyVStack(spacing: 16) {
++                AdaptiveMediaGrid(usesColumns: usesColumns) {
+                     ForEach(Array(songs.enumerated())[page.range], id: \.element.id) { index, song in
+                         let selected = selectedSongID.map { $0 == song.id } ?? (index == page.range.lowerBound)
+                         CollectionListRow(number: index + 1, title: song.title,
+@@ -856,6 +886,7 @@
+     @State private var recordWatch: CollectedWatch?
+     let watches: [CollectedWatch]
+     let onOpenDay: (Date) -> Void
++    var usesColumns = false
+     private var page: CollectionPage { CollectionPage(itemCount: watches.count, requestedIndex: pageIndex) }
+ 
+     var body: some View {
+@@ -884,7 +915,7 @@
+                 }
+                 .padding(.top, 12)
+ 
+-                LazyVStack(spacing: 16) {
++                AdaptiveMediaGrid(usesColumns: usesColumns) {
+                     ForEach(Array(watches.enumerated())[page.range], id: \.element.id) { index, watch in
+                         let selected = selectedWatchID.map { $0 == watch.id } ?? (index == page.range.lowerBound)
+                         CollectionListRow(number: index + 1, title: watch.title,
+--- a/MoodCalendar/Features/Entry/EntryEditorScreen.swift
++++ b/MoodCalendar/Features/Entry/EntryEditorScreen.swift
+@@ -11,6 +11,7 @@
+ }
+ 
+ struct EntryEditorScreen: View {
++    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+     @EnvironmentObject private var membership: MembershipStore
+     @Environment(\.dismiss) private var dismiss
+     @Environment(\.modelContext) private var modelContext
+@@ -57,42 +58,50 @@
+ 
+     var body: some View {
+         NavigationStack {
+-            ScrollView {
+-                VStack(alignment: .leading, spacing: 20) {
+-                    editorHeading
+-
+-                    groupPicker
+-
+-                    choicePicker
+-
+-                    noteCard
+-
+-                    songAttachment
+-
+-                    watchAttachment
+-
+-                    photoAttachment
+-
+-                    paperPicker
+-
+-                    if entry != nil && DayKey(day).isEditable(allowPastDates: allowPastDateEditing) {
+-                        HStack {
+-                            Spacer(minLength: 0)
+-                            Button(role: .destructive) {
+-                                isNoteFocused = false
+-                                showsDeleteConfirmation = true
+-                            } label: {
+-                                Text(localized("删除"))
+-                                    .font(.footnote)
+-                                    .foregroundStyle(theme.palette.destructiveAction)
+-                                    .frame(minHeight: 44)
+-                                    .contentShape(Rectangle())
++            AdaptivePage { size in
++                ScrollView {
++                    if let size, size.width >= 700, !dynamicTypeSize.isAccessibilitySize {
++                        HStack(alignment: .top, spacing: 28) {
++                            VStack(alignment: .leading, spacing: 20) {
++                                editorHeading
++                                groupPicker
++                                choicePicker
+                             }
+-                            .buttonStyle(.plain)
++                            .frame(maxWidth: .infinity, alignment: .topLeading)
++                            VStack(alignment: .leading, spacing: 20) {
++                                noteCard
++                                songAttachment
++                                watchAttachment
++                                photoAttachment
++                                paperPicker
++                                deleteEntryAction
++                            }
++                            .frame(maxWidth: .infinity, alignment: .topLeading)
+                         }
+-                    }
+-                }
+-                .padding(24)
++                        .padding(28)
++                    } else {
++                        VStack(alignment: .leading, spacing: 20) {
++                            editorHeading
++
++                            groupPicker
++
++                            choicePicker
++
++                            noteCard
++
++                            songAttachment
++
++                            watchAttachment
++
++                            photoAttachment
++
++                            paperPicker
++
++                            deleteEntryAction
++                        }
++                        .padding(24)
++                    }
++                }
+             }
+             .background(theme.palette.resolved(for: colorScheme).background)
+             .coordinateSpace(name: "EntryEditor")
+@@ -206,6 +215,26 @@
+                     showsSong = !title.isEmpty
+                     isSongEditorPresented = false
+                 }
++            }
++        }
++    }
++
++    @ViewBuilder
++    private var deleteEntryAction: some View {
++        if entry != nil && DayKey(day).isEditable(allowPastDates: allowPastDateEditing) {
++            HStack {
++                Spacer(minLength: 0)
++                Button(role: .destructive) {
++                    isNoteFocused = false
++                    showsDeleteConfirmation = true
++                } label: {
++                    Text(localized("删除"))
++                        .font(.footnote)
++                        .foregroundStyle(theme.palette.destructiveAction)
++                        .frame(minHeight: 44)
++                        .contentShape(Rectangle())
++                }
++                .buttonStyle(.plain)
+             }
+         }
+     }
+@@ -912,6 +941,7 @@
+                     .overlay { Text(selectedPaper.title).font(.subheadline) }
+                     .padding(.horizontal, 28)
+             }
++            .iPadScrollable()
+             .frame(maxWidth: .infinity, maxHeight: .infinity)
+             .background(theme.palette.resolved(for: colorScheme).background)
+             .navigationTitle(localized("色纸"))
+@@ -923,7 +953,7 @@
+             }
+             .tint(theme.palette.strongAccent)
+         }
+-        .presentationDetents([.height(470)])
++        .presentationDetents(UIDevice.current.userInterfaceIdiom == .pad ? [.large] : [.height(470)])
+         .presentationDragIndicator(.visible)
+         .onAppear { rotation = -Double(papers.firstIndex(of: selectedPaper) ?? 0) * 45 }
+     }
+--- a/MoodCalendar/Features/Monthly/MonthlyGoalScreen.swift
++++ b/MoodCalendar/Features/Monthly/MonthlyGoalScreen.swift
+@@ -9,6 +9,7 @@
+     @Environment(\.modelContext) private var modelContext
+     @Environment(\.appTheme) private var theme
+     @Environment(\.colorScheme) private var colorScheme
++    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+     @Query private var entries: [MoodEntry]
+     @Query private var monthlyNotes: [MonthlyNote]
+     @EnvironmentObject private var membership: MembershipStore
+@@ -54,47 +55,53 @@
+                     SearchReturnButton()
+                         .padding(.horizontal, 24)
+                 }
+-                ScrollView {
+-                    VStack(alignment: .leading, spacing: 0) {
+-                        HStack {
+-                            Text(localized("月便签"))
+-                                .font(.system(size: 23, weight: .medium))
+-                                .foregroundStyle(theme.palette.foreground)
+-                            Spacer()
+-                            Button { isAddingNote = true } label: {
+-                                Image(systemName: "plus")
+-                                    .font(.system(size: 19, weight: .regular))
+-                                    .foregroundStyle(theme.palette.strongAccent)
+-                                    .frame(width: 44, height: 44)
++                AdaptivePage { size in
++                    if let size, size.width >= 760, !dynamicTypeSize.isAccessibilitySize {
++                        iPadMonthlyContent(usesColumns: size.width >= 1000)
++                    } else {
++                        ScrollView {
++                            VStack(alignment: .leading, spacing: 0) {
++                                HStack {
++                                    Text(localized("月便签"))
++                                        .font(.system(size: 23, weight: .medium))
++                                        .foregroundStyle(theme.palette.foreground)
++                                    Spacer()
++                                    Button { isAddingNote = true } label: {
++                                        Image(systemName: "plus")
++                                            .font(.system(size: 19, weight: .regular))
++                                            .foregroundStyle(theme.palette.strongAccent)
++                                            .frame(width: 44, height: 44)
++                                    }
++                                    .buttonStyle(.plain)
++                                    .accessibilityLabel(localized("添加月便签"))
++                                }
++                                .padding(.top, 4)
++                                .padding(.bottom, 20)
++
++                                LazyVStack(alignment: .leading, spacing: 0) {
++                                    ForEach(Array(visibleMonthDates.enumerated()), id: \.element) { index, date in
++                                        if index == 1 { historyDivider }
++                                        if index > 0 && calendar.component(.year, from: date) != calendar.component(.year, from: visibleMonthDates[index - 1]) {
++                                            yearHeader(for: date)
++                                        }
++                                        monthSection(
++                                            for: date,
++                                            isFirstHistoricalMonth: index == 1,
++                                            isLastHistoricalMonth: index == visibleMonthDates.count - 1
++                                        )
++                                        .id(monthKey(for: date))
++                                    }
++
++                                    if visibleMonthDates.count == 1 {
++                                        historyDivider
++                                        historyEmptyState
++                                    }
++                                }
++                                .padding(.bottom, 120)
+                             }
+-                            .buttonStyle(.plain)
+-                            .accessibilityLabel(localized("添加月便签"))
++                            .padding(24)
+                         }
+-                        .padding(.top, 4)
+-                        .padding(.bottom, 20)
+-
+-                        LazyVStack(alignment: .leading, spacing: 0) {
+-                            ForEach(Array(visibleMonthDates.enumerated()), id: \.element) { index, date in
+-                                if index == 1 { historyDivider }
+-                                if index > 0 && calendar.component(.year, from: date) != calendar.component(.year, from: visibleMonthDates[index - 1]) {
+-                                    yearHeader(for: date)
+-                                }
+-                                monthSection(
+-                                    for: date,
+-                                    isFirstHistoricalMonth: index == 1,
+-                                    isLastHistoricalMonth: index == visibleMonthDates.count - 1
+-                                )
+-                                .id(monthKey(for: date))
+-                            }
+-
+-                            if visibleMonthDates.count == 1 {
+-                                historyDivider
+-                                historyEmptyState
+-                            }
+-                        }
+-                        .padding(.bottom, 120)
+-                    }
+-                    .padding(24)
++                    }
+                 }
+             }
+             .background(theme.palette.resolved(for: colorScheme).background)
+@@ -170,6 +177,96 @@
+         }
+     }
+ 
++    private func iPadMonthlyContent(usesColumns: Bool) -> some View {
++        ScrollView {
++            VStack(alignment: .leading, spacing: 28) {
++                monthlyHeading
++                if usesColumns {
++                    HStack(alignment: .top, spacing: 32) {
++                        monthSection(for: startOfCurrentMonth,
++                                     isFirstHistoricalMonth: false,
++                                     isLastHistoricalMonth: false)
++                            .frame(maxWidth: .infinity, alignment: .topLeading)
++                            .id(monthKey(for: startOfCurrentMonth))
++                        VStack(alignment: .leading, spacing: 0) {
++                            Text(localized("往月记录"))
++                                .font(.subheadline.weight(.medium))
++                                .foregroundStyle(.secondary)
++                                .padding(.bottom, 24)
++                            if visibleMonthDates.count == 1 {
++                                historyEmptyState
++                            }
++                            ForEach(Array(visibleMonthDates.dropFirst().enumerated()), id: \.element) { index, date in
++                                if index == 0 || calendar.component(.year, from: date) != calendar.component(.year, from: visibleMonthDates[index]) {
++                                    yearHeader(for: date)
++                                }
++                                monthSection(for: date,
++                                             isFirstHistoricalMonth: index == 0,
++                                             isLastHistoricalMonth: index == visibleMonthDates.count - 2)
++                                    .id(monthKey(for: date))
++                            }
++                        }
++                        .frame(maxWidth: .infinity, alignment: .topLeading)
++                    }
++                } else {
++                    monthSection(for: startOfCurrentMonth,
++                                 isFirstHistoricalMonth: false,
++                                 isLastHistoricalMonth: false)
++                        .id(monthKey(for: startOfCurrentMonth))
++                    historyDivider
++                    iPadHistoricalCards
++                }
++            }
++            .padding(32)
++            .padding(.bottom, 48)
++        }
++    }
++
++    private var iPadHistoricalCards: some View {
++        let dates = Array(visibleMonthDates.dropFirst())
++        let years = Array(Set(dates.map { calendar.component(.year, from: $0) })).sorted(by: >)
++        return VStack(alignment: .leading, spacing: 16) {
++            if dates.isEmpty {
++                historyEmptyState
++            }
++            ForEach(years, id: \.self) { year in
++                let yearDates = dates.filter { calendar.component(.year, from: $0) == year }
++                if let firstDate = yearDates.first {
++                    yearHeader(for: firstDate)
++                }
++                LazyVGrid(columns: [GridItem(.flexible(), spacing: 28, alignment: .top),
++                                    GridItem(.flexible(), alignment: .top)], spacing: 24) {
++                    ForEach(yearDates, id: \.self) { date in
++                        monthSection(for: date,
++                                     isFirstHistoricalMonth: false,
++                                     isLastHistoricalMonth: false,
++                                     showsTimeline: false)
++                            .id(monthKey(for: date))
++                    }
++                }
++            }
++        }
++    }
++
++    private var monthlyHeading: some View {
++        HStack {
++            Text(localized("月便签"))
++                .font(.system(size: 23, weight: .medium))
++                .foregroundStyle(theme.palette.foreground)
++            Spacer()
++            Button { isAddingNote = true } label: {
++                Image(systemName: "plus")
++                    .font(.system(size: 19, weight: .regular))
++                    .foregroundStyle(theme.palette.strongAccent)
++                    .frame(width: 44, height: 44)
++            }
++            .buttonStyle(.plain)
++            .accessibilityLabel(localized("添加月便签"))
++        }
++        .padding(.top, 4)
++        .padding(.bottom, 20)
++    }
++
+     private func yearHeader(for date: Date) -> some View {
+         Text(String(calendar.component(.year, from: date)))
+             .font(.subheadline)
+@@ -216,12 +313,13 @@
+     private func monthSection(
+         for date: Date,
+         isFirstHistoricalMonth: Bool,
+-        isLastHistoricalMonth: Bool
++        isLastHistoricalMonth: Bool,
++        showsTimeline: Bool = true
+     ) -> some View {
+         let isCurrent = calendar.isDate(date, equalTo: startOfCurrentMonth, toGranularity: .month)
+         let data = monthData(for: date)
+         return HStack(alignment: .top, spacing: 14) {
+-            if !isCurrent {
++            if !isCurrent && showsTimeline {
+                 historyTimelineNode(
+                     startsLine: isFirstHistoricalMonth,
+                     endsLine: isLastHistoricalMonth
+@@ -249,6 +347,7 @@
+                             } else if let note = data.note {
+                                 Text(DemoData.displayText(note))
+                                     .font(.system(size: noteFontSize, weight: .regular))
++                                    .fixedSize(horizontal: false, vertical: UIDevice.current.userInterfaceIdiom == .pad)
+                                     .foregroundStyle(displayedSkin(for: date) == .player2 ? theme.palette.monthlyPlayer2Ink : displayedSkin(for: date) == .player ? theme.palette.monthlyPlayerInk : theme.palette.foreground)
+                                     .lineSpacing(noteLineSpacing)
+                                     .frame(maxWidth: .infinity, alignment: .leading)
+--- a/MoodCalendar/Features/Search/RecordSearchScreen.swift
++++ b/MoodCalendar/Features/Search/RecordSearchScreen.swift
+@@ -31,7 +31,9 @@
+ 
+     var body: some View {
+         GeometryReader { geometry in
+-            let width = min(390, max(0, geometry.size.width - 28))
++            let maximumWidth: CGFloat = UIDevice.current.userInterfaceIdiom == .pad
++                ? min(900, geometry.size.width * 0.9) : 390
++            let width = min(maximumWidth, max(0, geometry.size.width - 28))
+             let height = min(width / 0.70, max(0, geometry.size.height - 24))
+ 
+             ZStack {
+@@ -47,7 +49,7 @@
+         }
+         // Measure to the same bottom edge before and after the tab bar hides.
+         // Keyboard and tab bar safe-area changes must not recenter the notebook.
+-        .ignoresSafeArea(.all, edges: .bottom)
++        .modifier(SearchBottomSafeArea())
+         .foregroundStyle(theme.palette.foreground)
+         .tint(theme.palette.strongAccent)
+         .accessibilityAddTraits(.isModal)
+@@ -484,3 +486,15 @@
+     }
+ }
+ 
++
++/// Keep the original phone notebook anchoring; let iPad follow the keyboard.
++private struct SearchBottomSafeArea: ViewModifier {
++    @ViewBuilder
++    func body(content: Content) -> some View {
++        if UIDevice.current.userInterfaceIdiom == .pad {
++            content.ignoresSafeArea(.container, edges: .bottom)
++        } else {
++            content.ignoresSafeArea(.all, edges: .bottom)
++        }
++    }
++}
+--- a/MoodCalendar/Features/Settings/MembershipScreen.swift
++++ b/MoodCalendar/Features/Settings/MembershipScreen.swift
+@@ -100,6 +100,7 @@
+                     }
+                     .padding(24)
+                     .frame(minHeight: proxy.size.height)
++                    .iPadReadableWidth(520)
+                 }
+             }
+             .background(theme.palette.resolved(for: colorScheme).background.ignoresSafeArea())
+--- a/MoodCalendar/Features/Settings/PersonalizationScreen.swift
++++ b/MoodCalendar/Features/Settings/PersonalizationScreen.swift
+@@ -113,6 +113,7 @@
+ }
+ 
+ struct PersonalizationScreen: View {
++    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+     @AppStorage("appLanguage") private var storedLanguage = AppLanguage.selection
+     @EnvironmentObject private var membership: MembershipStore
+     @AppStorage("appTheme") private var storedTheme = AppTheme.pink.rawValue
+@@ -197,23 +198,43 @@
+ 
+     var body: some View {
+         NavigationStack {
+-            ScrollView {
+-                VStack(alignment: .leading, spacing: 0) {
+-                    personalizationSection
+-
+-                    membershipSection
+-
+-                    #if ICLOUD_SYNC_ENABLED
+-                    syncSection
+-                    #endif
+-
+-                    dataExportSection
+-
+-                    languageSection
+-
+-                    feedbackSection
+-                }
+-                .padding(24)
++            AdaptivePage { size in
++                ScrollView {
++                    if let size, size.width >= 760, !dynamicTypeSize.isAccessibilitySize {
++                        HStack(alignment: .top, spacing: 28) {
++                            personalizationSection
++                                .frame(maxWidth: .infinity, alignment: .topLeading)
++                            VStack(alignment: .leading, spacing: 0) {
++                                membershipSection(topPadding: 12)
++                                #if ICLOUD_SYNC_ENABLED
++                                syncSection
++                                #endif
++                                dataExportSection
++                                languageSection
++                                feedbackSection
++                            }
++                            .frame(maxWidth: .infinity, alignment: .topLeading)
++                        }
++                        .padding(32)
++                    } else {
++                        VStack(alignment: .leading, spacing: 0) {
++                            personalizationSection
++
++                            membershipSection()
++
++                            #if ICLOUD_SYNC_ENABLED
++                            syncSection
++                            #endif
++
++                            dataExportSection
++
++                            languageSection
++
++                            feedbackSection
++                        }
++                        .padding(24)
++                    }
++                }
+             }
+             .scrollDismissesKeyboard(.interactively)
+             .font(settingsItemFont)
+@@ -276,7 +297,8 @@
+             }
+             .sheet(isPresented: $isShapePickerPresented) {
+                 shapePicker
+-                    .presentationDetents([.medium])
++                    .iPadScrollable(background: theme.palette.resolved(for: colorScheme).background)
++                    .presentationDetents(UIDevice.current.userInterfaceIdiom == .pad ? [.large] : [.medium])
+             }
+             .sheet(isPresented: $isMembershipPresented) {
+                 MembershipScreen()
+@@ -427,7 +449,7 @@
+         .frame(maxWidth: .infinity, alignment: .leading)
+     }
+ 
+-    private var membershipSection: some View {
++    private func membershipSection(topPadding: CGFloat = 40) -> some View {
+         VStack(alignment: .leading, spacing: 12) {
+             Text(localized("会员"))
+                 .font(settingsHeadingFont)
+@@ -459,7 +481,7 @@
+             .buttonStyle(.plain)
+             .accessibilityLabel(membership.hasMembershipAccess ? localized("会员，已永久解锁") : localized("会员，永久解锁全部表情包和自定义"))
+         }
+-        .padding(.top, 40)
++        .padding(.top, topPadding)
+     }
+ 
+     private var dataExportSection: some View {
+--- a/MoodCalendar/Features/Shared/AdaptiveLayout.swift
++++ b/MoodCalendar/Features/Shared/AdaptiveLayout.swift
+@@ -1,7 +1,40 @@
+ import SwiftUI
+ import UIKit
+ 
++/// Measures the actual iPad window or sheet. iPhone receives no new layout container.
++struct AdaptivePage<Content: View>: View {
++    @ViewBuilder var content: (CGSize?) -> Content
++
++    var body: some View {
++        if UIDevice.current.userInterfaceIdiom == .pad {
++            GeometryReader { geometry in
++                content(geometry.size)
++            }
++        } else {
++            content(nil)
++        }
++    }
++}
++
+ extension View {
++    @ViewBuilder
++    func iPadFillPage() -> some View {
++        if UIDevice.current.userInterfaceIdiom == .pad {
++            self.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
++        } else {
++            self
++        }
++    }
++
++    @ViewBuilder
++    func iPadScrollable(background: Color = .clear) -> some View {
++        if UIDevice.current.userInterfaceIdiom == .pad {
++            ScrollView { self }.background(background)
++        } else {
++            self
++        }
++    }
++
+     /// Keep iPhone layout untouched. On iPad, accept narrower window proposals
+     /// while capping wide content; apply inside a scroll view, after its padding.
+     @ViewBuilder

@@ -56,6 +56,13 @@ enum ChoiceGroup: String, CaseIterable, Identifiable {
 
     var id: String { rawValue }
     var title: String { localized(rawValue) }
+
+    var requiresMembership: Bool {
+        switch self {
+        case .mood, .company, .activity, .everyday: false
+        case .daily, .playful, .rabbit: true
+        }
+    }
 }
 
 /// Saved IDs 1–5 belong to the original moods and must stay unchanged.

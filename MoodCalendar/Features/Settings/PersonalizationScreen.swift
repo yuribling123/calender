@@ -338,7 +338,7 @@ struct PersonalizationScreen: View {
                             if !hasPremiumAccess {
                                 Image(systemName: "lock.fill")
                                     .font(.caption)
-                                    .foregroundStyle(.secondary)
+                                    .foregroundStyle(theme.palette.strongAccent)
                             }
                         }
                             .font(settingsItemFont)
@@ -578,7 +578,7 @@ struct PersonalizationScreen: View {
                         .foregroundStyle(theme.palette.accent)
                         .frame(width: 30)
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(membership.hasMembershipAccess ? localized("已永久解锁") : localized("解锁全部表情和自定义"))
+                        Text(membership.hasMembershipAccess ? localized("已永久解锁") : localized("表情包、日历外观和月便签皮肤"))
                             .font(settingsItemFont)
                             .foregroundStyle(.primary)
                         Text(membership.hasMembershipAccess ? localized("全部权益已开启") : membership.product.map { localized("一次购买，永久使用 · %@", $0.displayPrice) } ?? localized("一次购买，永久使用"))
@@ -594,7 +594,7 @@ struct PersonalizationScreen: View {
                 .background(theme.palette.resolved(for: colorScheme).cardBackground, in: RoundedRectangle(cornerRadius: 20))
             }
             .buttonStyle(.plain)
-            .accessibilityLabel(membership.hasMembershipAccess ? localized("会员，已永久解锁") : localized("会员，永久解锁全部表情包和自定义"))
+            .accessibilityLabel(membership.hasMembershipAccess ? localized("会员，已永久解锁") : localized("会员，永久解锁表情包、日历外观和月便签皮肤"))
         }
         .padding(.top, topPadding)
     }
@@ -991,7 +991,7 @@ struct PersonalizationScreen: View {
                 if !isICloudAccountAvailable && !isCheckingICloud && !isPreviewingICloudEnabled && !isPreviewingICloudAccountAvailable {
                     Image(systemName: "lock.fill")
                         .font(.system(size: 11, weight: .semibold))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(theme.palette.strongAccent)
                         .padding(7)
                         .background(theme.palette.resolved(for: colorScheme).cardBackground, in: Circle())
                         .offset(x: -8, y: 8)
@@ -1158,7 +1158,7 @@ struct PersonalizationScreen: View {
                 VStack(spacing: 8) {
                     ForEach(AppTheme.allCases) { option in
                         Button {
-                            guard hasPremiumAccess || option == .pink || option == .black else {
+                            guard hasPremiumAccess || !option.requiresMembership else {
                                 isThemePickerPresented = false
                                 isMembershipPresented = true
                                 return
@@ -1174,10 +1174,10 @@ struct PersonalizationScreen: View {
                                     .font(settingsItemFont)
                                     .foregroundStyle(.primary)
                                 Spacer()
-                                if option != .pink && option != .black && !hasPremiumAccess {
+                                if option.requiresMembership && !hasPremiumAccess {
                                     Image(systemName: "lock.fill")
                                         .font(.caption)
-                                        .foregroundStyle(.secondary)
+                                        .foregroundStyle(theme.palette.strongAccent)
                                 }
                                 if storedTheme == option.rawValue {
                                     Image(systemName: "checkmark")
@@ -1226,7 +1226,7 @@ struct PersonalizationScreen: View {
             VStack(spacing: 8) {
                 ForEach(SelectionShape.allCases) { option in
                     Button {
-                        guard hasPremiumAccess || option == .circle || option == .star else {
+                        guard hasPremiumAccess || !option.requiresMembership else {
                             isShapePickerPresented = false
                             isMembershipPresented = true
                             return
@@ -1245,10 +1245,10 @@ struct PersonalizationScreen: View {
                                 .font(settingsItemFont)
                                 .foregroundStyle(.primary)
                             Spacer()
-                            if option != .circle && option != .star && !hasPremiumAccess {
+                            if option.requiresMembership && !hasPremiumAccess {
                                 Image(systemName: "lock.fill")
                                     .font(.caption)
-                                    .foregroundStyle(.secondary)
+                                    .foregroundStyle(theme.palette.strongAccent)
                             }
                             if storedSelectionShape == option.rawValue {
                                 Image(systemName: "checkmark")

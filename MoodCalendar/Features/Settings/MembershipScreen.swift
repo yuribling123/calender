@@ -36,8 +36,16 @@ struct MembershipScreen: View {
                         }
 
                         VStack(alignment: .leading, spacing: 24) {
-                            benefit(localized("解锁全部表情包"), detail: localized("让兔兔、四叶草和小翅膀，陪你记下每一天。"))
-                            benefit(localized("日历也有你的风格"), detail: localized("起个喜欢的名字，换上喜欢的颜色，让星星、花瓣或猫猫圈住今天。"))
+                            benefit(localized("解锁所有表情包"), detail: localized(
+                                "包括%@等全部表情包。", groupNames(memberOnly: true)
+                            ))
+                            benefit(localized("解锁所有月便签皮肤"), detail: localized(
+                                "包括%@等皮肤。", noteSkinNames(memberOnly: true)
+                            ))
+                            benefit(localized("自定义日历"), detail: localized(
+                                "设置日历标题，解锁%@主题，以及%@选中图形。",
+                                themeNames(memberOnly: true), shapeNames(memberOnly: true)
+                            ))
                         }
                         .padding(24)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -113,6 +121,27 @@ struct MembershipScreen: View {
             }
             .task { await membership.loadProduct() }
         }
+    }
+
+    // Keep the benefit lists aligned with the same definitions used by the pickers.
+    private func groupNames(memberOnly: Bool) -> String {
+        ChoiceGroup.allCases.filter { $0.requiresMembership == memberOnly }
+            .map(\.title).joined(separator: localized("、"))
+    }
+
+    private func themeNames(memberOnly: Bool) -> String {
+        AppTheme.allCases.filter { $0.requiresMembership == memberOnly }
+            .map(\.title).joined(separator: localized("、"))
+    }
+
+    private func shapeNames(memberOnly: Bool) -> String {
+        SelectionShape.allCases.filter { $0.requiresMembership == memberOnly }
+            .map(\.title).joined(separator: localized("、"))
+    }
+
+    private func noteSkinNames(memberOnly: Bool) -> String {
+        MonthlyNoteSkin.allCases.filter { $0.requiresMembership == memberOnly }
+            .map { localized($0.title) }.joined(separator: localized("、"))
     }
 
     private var purchaseTitle: String {
