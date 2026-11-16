@@ -46,6 +46,9 @@ struct MembershipScreen: View {
                                 "设置日历标题，解锁%@主题，以及%@选中图形。",
                                 themeNames(memberOnly: true), shapeNames(memberOnly: true)
                             ))
+                            benefit(localized("新表情皮肤，持续解锁"), detail: localized(
+                                "后续上新的全部表情皮肤，也都包含在会员权益中，无需另行购买。"
+                            ))
                         }
                         .padding(24)
                         .frame(maxWidth: .infinity, alignment: .leading)

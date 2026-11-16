@@ -120,7 +120,7 @@ struct MonthlyNoteSkinStore {
         var errorDescription: String? {
             switch self {
             case .dateIsReadOnly: localized("此日期不可修改，请检查「允许修改往日」设置。")
-            case .membershipRequired: localized("解锁永久会员后才能使用这套表情。")
+            case .membershipRequired: localized("解锁永久会员后才能使用这款月便签皮肤。")
             }
         }
     }

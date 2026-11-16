@@ -1,6 +1,93 @@
 {
   "sourceLanguage" : "zh-Hans",
   "strings" : {
+  "新表情皮肤，持续解锁": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Keep unlocking new stickers and styles"
+        }
+      },
+      "ja": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "新しいスタンプとデザインも続々アンロック"
+        }
+      },
+      "ko": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "새로운 스티커와 스타일도 계속 잠금 해제"
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "新表情皮肤，持续解锁"
+        }
+      }
+    }
+  },
+  "后续上新的全部表情皮肤，也都包含在会员权益中，无需另行购买。": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "All future stickers and styles are included in your membership, with no additional purchase required."
+        }
+      },
+      "ja": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "今後追加されるすべてのスタンプとデザインもメンバー特典に含まれ、追加購入は不要です。"
+        }
+      },
+      "ko": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "앞으로 출시되는 모든 스티커와 스타일도 멤버십 혜택에 포함되며, 추가 구매가 필요하지 않습니다."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "后续上新的全部表情皮肤，也都包含在会员权益中，无需另行购买。"
+        }
+      }
+    }
+  },
+  "解锁永久会员后才能使用这款月便签皮肤。": {
+    "extractionState": "manual",
+    "localizations": {
+      "en": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "Unlock lifetime membership to use this monthly note style."
+        }
+      },
+      "ja": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "この月のメモのデザインを使うには、永久メンバーシップをアンロックしてください。"
+        }
+      },
+      "ko": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "이 월별 메모 스타일을 사용하려면 평생 멤버십을 잠금 해제하세요."
+        }
+      },
+      "zh-Hans": {
+        "stringUnit": {
+          "state": "translated",
+          "value": "解锁永久会员后才能使用这款月便签皮肤。"
+        }
+      }
+    }
+  },
   "解锁所有表情包": {
     "extractionState": "manual",
     "localizations": {

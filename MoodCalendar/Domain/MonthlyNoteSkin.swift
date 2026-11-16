@@ -6,8 +6,8 @@ enum MonthlyNoteSkin: String, CaseIterable, Identifiable {
 
     var requiresMembership: Bool {
         switch self {
-        case .plain, .grid, .tablecloth, .lace: false
-        case .player, .player2, .ticket: true
+        case .plain, .grid, .tablecloth: false
+        case .lace, .player, .player2, .ticket: true
         }
     }
 

@@ -94,19 +94,24 @@ struct MonthlyNoteSkinPersistenceChecks {
         try store.select(.grid, for: "2025-12", isMember: false, now: now)
         rejects { try store.select(.grid, for: "2026-11", isMember: false, now: now) }
         rejects { try store.select(.grid, for: "2026-13", isMember: false, now: now) }
-        for freeSkin in [MonthlyNoteSkin.plain, .grid, .tablecloth, .lace] {
+        for freeSkin in [MonthlyNoteSkin.plain, .grid, .tablecloth] {
             try store.select(freeSkin, for: "2026-10", isMember: false, now: now)
             try expect(try skin("2026-10") == freeSkin)
         }
-        // Lace can also be saved for a past month and reopened without membership.
-        try store.select(.lace, for: "2026-09", isMember: false, now: now)
+        // Members can save lace; existing selections survive without membership.
+        try store.select(.lace, for: "2026-09", isMember: true, now: now)
         try expect(try skin("2026-09") == .lace)
-        for memberSkin in [MonthlyNoteSkin.player, .player2, .ticket] {
+        for memberSkin in [MonthlyNoteSkin.lace, .player, .player2, .ticket] {
             rejects { try store.select(memberSkin, for: "2026-10", isMember: false, now: now) }
+            try expect(try skin("2026-10") == .tablecloth)
         }
-        rejects { try store.select(.lace, for: "2026-11", isMember: false, now: now) }
+        rejects { try store.select(.lace, for: "2026-09", isMember: false, now: now) }
+        try expect(try skin("2026-09") == .lace)
+        try store.select(.lace, for: "2026-10", isMember: true, now: now)
+        try expect(try skin("2026-10") == .lace)
+        rejects { try store.select(.lace, for: "2026-11", isMember: true, now: now) }
         defaults.set(false, forKey: "allowPastDateEditing")
-        rejects { try store.select(.lace, for: "2024-02", isMember: false, now: now) }
+        rejects { try store.select(.lace, for: "2024-02", isMember: true, now: now) }
         rejects { try store.select(.plain, for: "2024-02", isMember: true, now: now) }
         try store.select(.plain, for: "2026-10", isMember: false, now: now.addingTimeInterval(2))
         defaults.set(true, forKey: "allowPastDateEditing")
