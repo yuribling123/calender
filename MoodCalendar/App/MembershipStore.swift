@@ -72,7 +72,7 @@ final class MembershipStore: ObservableObject {
             switch try await product.purchase() {
             case .success(let result):
                 await apply(result)
-                if isUnlocked { message = localized("已永久解锁会员表情包、日历标题、主题色、选中图形和月便签皮肤。") }
+                if isUnlocked { message = localized("已永久解锁会员表情包、主题色、选中图形和月便签皮肤。") }
             case .pending:
                 message = localized("购买正在等待批准。")
             case .userCancelled:

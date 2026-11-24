@@ -12,61 +12,79 @@ struct SelectedDateDetail: View {
 
     let date: Date
     let entry: MoodEntry?
+    // Rediscovery shares the original card without exposing write actions.
+    var isReadOnly = false
+    var showsYear = false
+    var onOpenRecord: (() -> Void)? = nil
     var isStarred = false
     var onToggleStar: () -> Void = {}
     let onRecordMood: (Mood) -> Void
     let onEdit: () -> Void
 
     private var relation: DayRelation { DayKey(date).relationToToday }
-    private var canMark: Bool { relation != .past || allowPastDateEditing }
-    private var pastEditTitle: String { localized("编辑") }
+    private var canMark: Bool { !isReadOnly && (relation == .today || relation == .past && allowPastDateEditing) }
+    private var canEdit: Bool {
+        !isReadOnly && (relation == .past && allowPastDateEditing || relation == .today && entry?.choice != nil)
+    }
+    private var selectedPaper: CardPaper {
+        let paper = CardPaper.resolve(relation == .today && entry?.choice == nil ? lastSelectedCardPaper : entry?.cardPaperID)
+        return relation == .today && entry?.choice == nil && paper == .strawberryHearts ? .blueberryHearts : paper
+    }
+    private var isNightPaper: Bool { selectedPaper == .nightHearts }
+    private var cardInk: Color { isNightPaper ? .white : theme.palette.resolved(for: colorScheme).foreground }
+    private var dateHeading: String {
+        if relation == .today { return localized(entry?.choice == nil ? "今天什么心情？" : "今天") }
+        let format: Date.FormatStyle = showsYear
+            ? .dateTime.locale(AppLanguage.locale).year().month().day()
+            : .dateTime.locale(AppLanguage.locale).month().day()
+        return "\(date.formatted(format)) · \(date.formatted(.dateTime.locale(AppLanguage.locale).weekday(.wide)))"
+    }
 
     var body: some View {
+        detailCard
+        .fullScreenCover(isPresented: $isPhotoPresented) {
+            if let data = entry?.photoData, let image = UIImage(data: data) {
+                DailyPhotoPreview(image: image)
+                    .environment(\.appTheme, theme)
+            }
+        }
+    }
+
+    private var detailActions: some View {
+        CalendarTextMenu(iconFont: .system(size: detailTextSize, weight: .medium),
+                         tint: cardInk.opacity(0.7)) { item in
+            if canMark {
+                item(localized(isStarred ? "已标记" : "标记"), onToggleStar)
+                    .accessibilityLabel(localized(isStarred ? "取消标记这一天" : "标记这一天"))
+            }
+            if canEdit {
+                item(localized("编辑"), onEdit)
+            }
+        }
+    }
+
+    private var detailCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 14) {
-                Text(relation == .today
-                     ? localized(entry?.choice == nil ? "今天什么心情？" : "今天")
-                     : "\(date.formatted(.dateTime.locale(AppLanguage.locale).month().day())) · \(date.formatted(.dateTime.locale(AppLanguage.locale).weekday(.wide)))")
+                Text(dateHeading)
                     .font(.system(size: detailTextSize, weight: .medium))
-                    .foregroundStyle(AppTheme.black.palette.strongAccent)
+                    .foregroundStyle(isNightPaper ? .white : AppTheme.black.palette.strongAccent)
                 Spacer(minLength: 8)
-                Color.clear.frame(width: (relation == .past && allowPastDateEditing || relation == .today && entry?.choice != nil) ? 124 : (canMark ? 60 : 0), height: 22)
+                if canMark || canEdit {
+                    Color.clear.frame(width: 44, height: 22)
+                }
             }
             .frame(minHeight: 22)
             .padding(.bottom, -8)
             .overlay(alignment: .trailing) {
-                HStack(spacing: 4) {
-                    if canMark {
-                        Button(action: onToggleStar) {
-                            Text(localized(isStarred ? "已标记" : "标记"))
-                                .font(.system(size: detailTextSize, weight: .medium))
-                                .foregroundStyle(theme.palette.resolved(for: colorScheme).foreground.opacity(0.65))
-                                .frame(width: 60, height: 44)
-                                .contentShape(Rectangle())
-                        }
-                        .buttonStyle(.plain)
-                        .accessibilityLabel(localized(isStarred ? "取消标记这一天" : "标记这一天"))
-                    }
-                    if relation == .past && allowPastDateEditing || relation == .today && entry?.choice != nil {
-                        Button(action: onEdit) {
-                            Text(pastEditTitle)
-                            .font(.system(size: detailTextSize, weight: .medium))
-                            .foregroundStyle(theme.palette.strongAccent)
-                            .frame(width: 60, height: 44)
-                            .contentShape(Rectangle())
-                        }
-                        .buttonStyle(.plain)
-                        .accessibilityLabel(relation == .past ? pastEditTitle : localized("修改记录"))
-                        .transition(.scale(scale: 0.72).combined(with: .opacity))
-                    }
-                }
+                if canMark || canEdit { detailActions }
             }
             .animation(.spring(response: 0.42, dampingFraction: 0.64), value: entry?.choice)
 
             switch relation {
             case .today:
                 if let choice = entry?.choice {
-                    recordedChoice(choice)
+                    recordContent(choice)
                 } else {
                     HStack(spacing: 8) {
                         ForEach(Mood.allCases) { mood in
@@ -84,14 +102,14 @@ struct SelectedDateDetail: View {
 
                     Button(localized("选其他表情"), action: onEdit)
                         .font(.system(size: detailTextSize, weight: .medium))
-                        .foregroundStyle(theme.palette.strongAccent)
+                        .foregroundStyle(isNightPaper ? .white : theme.palette.strongAccent)
                         .padding(.vertical, 8)
                         .buttonStyle(.plain)
 
                 }
             case .past:
                 if let choice = entry?.choice {
-                    recordedChoice(choice)
+                    recordContent(choice)
                 } else {
                     statusMessage(localized("这一天没有留下记录"))
                 }
@@ -99,29 +117,19 @@ struct SelectedDateDetail: View {
                 statusMessage(localized("这一天还没到来"))
             }
         }
-        .fullScreenCover(isPresented: $isPhotoPresented) {
-            if let data = entry?.photoData, let image = UIImage(data: data) {
-                DailyPhotoPreview(image: image)
-                    .environment(\.appTheme, theme)
-            }
-        }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
         .background {
-            RoundedRectangle(cornerRadius: 18)
-                .fill(CardPaper.resolve(
-                    relation == .today && entry?.choice == nil
-                        ? lastSelectedCardPaper
-                        : entry?.cardPaperID
-                ).color(for: theme, scheme: colorScheme))
+            CardPaperBackground(paper: selectedPaper, cornerRadius: 18)
         }
+        .environment(\.colorScheme, isNightPaper ? .dark : colorScheme)
     }
 
     private func choiceArtwork(_ choice: DailyChoice) -> some View {
         ChoiceArtwork(choice: choice)
             .scaledToFit()
             .frame(width: 60, height: 52) // 图片渲染尺寸，不要改
-            .scaleEffect([DailyChoice.poutyRabbit, .absentRabbit, .glassesRabbit, .tearfulRabbit].contains(choice) ? 1.17 : choice.group == .mood ? 1 : choice == .cake ? 1.15 : 1.3)
+            .scaleEffect(detailArtworkScale(for: choice))
             .scaleEffect(choice.group == .daily ? 0.9 : 1)
             .offset(x: choice.group == .mood ? 0 : -10)
             .frame(
@@ -129,6 +137,23 @@ struct SelectedDateDetail: View {
                 height: 52,
                 alignment: .leading
             ) // 只改变它占的布局空间
+    }
+
+    private func detailArtworkScale(for choice: DailyChoice) -> CGFloat {
+        choice.weatherArtworkScale
+            ?? ([DailyChoice.poutyRabbit, .absentRabbit, .glassesRabbit, .tearfulRabbit].contains(choice) ? 1.17 : choice.group == .mood ? 1 : choice == .cake ? 1.15 : 1.3)
+    }
+
+    @ViewBuilder
+    private func recordContent(_ choice: DailyChoice) -> some View {
+        if !isReadOnly, let onOpenRecord {
+            recordedChoice(choice)
+                .contentShape(Rectangle())
+                .onTapGesture(perform: onOpenRecord)
+                .accessibilityAction(named: localized("查看这一天的记录")) { onOpenRecord() }
+        } else {
+            recordedChoice(choice)
+        }
     }
 
     private func recordedChoice(_ choice: DailyChoice) -> some View {
@@ -156,36 +181,29 @@ struct SelectedDateDetail: View {
                 .accessibilityElement(children: .combine)
                 .accessibilityLabel("\(choice.group.title), \(choice.title), \(choice.caption)")
                 Spacer(minLength: 8)
-                if let data = entry?.photoData, let image = UIImage(data: data) {
-                    Button { isPhotoPresented = true } label: {
-                        Image(uiImage: image)
-                            .resizable()
-                            .scaledToFill()
-                            .frame(width: 22, height: 18)
-                            .clipShape(RoundedRectangle(cornerRadius: 3))
-                            .padding(1)
-                            .background(theme.palette.resolved(for: colorScheme).cardBackground)
-                            .clipShape(RoundedRectangle(cornerRadius: 4))
-                            .accessibilityHidden(true)
-                            .frame(minWidth: 44, minHeight: 44, alignment: .center)
-                            .contentShape(Rectangle())
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel(localized("这天有个画面"))
-                }
+                photoButton
             }
+            if let location = entry?.locationName, !location.isEmpty {
+                Label(location, systemImage: "mappin")
+                    .font(.system(size: 13))
+                    .foregroundStyle(cardInk.opacity(0.72))
+                    .lineLimit(2)
+                    .padding(.top, 7)
+                    .accessibilityLabel("\(localized("地点"))，\(location)")
+            }
+
             // 🎬 电影
             if let title = entry?.watchTitle, !title.isEmpty {
                 VStack(alignment: .leading, spacing: 6) {
                     HStack(spacing: 6) {
                         WatchTVIcon()
                             .frame(width: 16, height: 12)
-                            .foregroundStyle(theme.palette.resolved(for: colorScheme).foreground.opacity(0.72))
+                            .foregroundStyle(cardInk.opacity(0.72))
                             .accessibilityHidden(true)
 
                         Text(title)
                             .font(.system(size: 13))
-                            .foregroundStyle(theme.palette.strongAccent)
+                            .foregroundStyle(isNightPaper ? .white : theme.palette.strongAccent)
                             .lineLimit(1)
                             .truncationMode(.tail)
 
@@ -213,7 +231,8 @@ struct SelectedDateDetail: View {
             if let title = entry?.songTitle, !title.isEmpty {
                 DailySongCard(
                     title: title,
-                    artist: entry?.songArtist ?? ""
+                    artist: entry?.songArtist ?? "",
+                    isNightPaper: isNightPaper
                 )
                 .padding(.top, 7)
                 .padding(.bottom, entry?.note.isEmpty == false ? 18 : 12)
@@ -228,11 +247,98 @@ struct SelectedDateDetail: View {
         }
     }
 
+    @ViewBuilder
+    private var photoButton: some View {
+        if let data = entry?.photoData, let image = UIImage(data: data) {
+            Button {
+                if let onOpenRecord { onOpenRecord() } else { isPhotoPresented = true }
+            } label: {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 22, height: 18)
+                    .clipShape(RoundedRectangle(cornerRadius: 3))
+                    .padding(1)
+                    .background(theme.palette.resolved(for: colorScheme).cardBackground)
+                    .clipShape(RoundedRectangle(cornerRadius: 4))
+                    .accessibilityHidden(true)
+                    .frame(minWidth: 44, minHeight: 44, alignment: .center)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(localized("这天有个画面"))
+        }
+    }
+
     private func statusMessage(_ message: String) -> some View {
         Text(message)
             .font(.system(size: detailTextSize))
             .foregroundStyle(.secondary)
             .frame(maxWidth: .infinity, minHeight: 52, alignment: .leading)
+    }
+}
+
+struct CalendarTextMenu<Items: View>: View {
+    @ScaledMetric(relativeTo: .footnote) private var textSize: CGFloat = 12
+    @State private var isPresented = false
+    @State private var pendingAction: (() -> Void)?
+
+    let iconFont: Font
+    let tint: Color
+    @ViewBuilder let items: (_ item: (String, @escaping () -> Void) -> Button<Text>) -> Items
+
+    var body: some View {
+        Button { isPresented = true } label: {
+            Image(systemName: "ellipsis")
+                .font(iconFont)
+                .foregroundStyle(tint)
+                .frame(width: 44, height: 44)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(localized("日历菜单"))
+        .popover(isPresented: $isPresented, attachmentAnchor: .rect(.bounds), arrowEdge: .top) {
+            VStack(spacing: 0) {
+                items(menuItem)
+            }
+            .buttonStyle(CalendarTextMenuItemStyle(textSize: textSize))
+            .fixedSize(horizontal: true, vertical: false)
+            .padding(.horizontal, 4)
+            .padding(.vertical, 3)
+            .presentationCompactAdaptation(.popover)
+            .onDisappear {
+                let action = pendingAction
+                pendingAction = nil
+                action?()
+            }
+        }
+    }
+
+    private func menuItem(_ title: String, action: @escaping () -> Void) -> Button<Text> {
+        Button {
+            pendingAction = action
+            isPresented = false
+        } label: {
+            Text(title)
+        }
+    }
+}
+
+private struct CalendarTextMenuItemStyle: ButtonStyle {
+    let textSize: CGFloat
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.system(size: textSize, weight: .medium))
+            .foregroundStyle(.primary)
+            .padding(.horizontal, 8)
+            .frame(minWidth: 44, minHeight: 44)
+            .background {
+                if configuration.isPressed {
+                    RoundedRectangle(cornerRadius: 8).fill(.primary.opacity(0.07))
+                }
+            }
+            .contentShape(Rectangle())
     }
 }
 
@@ -242,6 +348,7 @@ struct DailySongCard: View {
     @Environment(\.colorScheme) private var colorScheme
     let title: String
     let artist: String
+    var isNightPaper = false
 
     var body: some View {
         HStack(spacing: 0) {
@@ -249,12 +356,12 @@ struct DailySongCard: View {
                 Text("♫")
                     .accessibilityHidden(true)
                 Text(songDescription)
-                    .foregroundStyle(theme.palette.strongAccent)
+                    .foregroundStyle(isNightPaper ? .white : theme.palette.strongAccent)
                     .lineLimit(1)
                     .truncationMode(.tail)
             }
             .font(.system(size: 13))
-            .foregroundStyle(theme.palette.resolved(for: colorScheme).foreground.opacity(0.72))
+            .foregroundStyle((isNightPaper ? Color.white : theme.palette.resolved(for: colorScheme).foreground).opacity(0.72))
             .layoutPriority(1)
 
             Spacer(minLength: 0)

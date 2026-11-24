@@ -161,14 +161,25 @@ enum DemoData {
     private static func seedCollectionExamples(into context: ModelContext) throws {
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: .now)
+        // Keep November empty while still supplying the Collection previews.
+        let collectionEndDate: Date
+        if calendar.component(.month, from: today) == 11,
+           let monthStart = calendar.dateInterval(of: .month, for: today)?.start,
+           let lastOctoberDay = calendar.date(byAdding: .day, value: -1, to: monthStart) {
+            collectionEndDate = lastOctoberDay
+        } else {
+            collectionEndDate = today
+        }
         var entriesByDay = Dictionary(grouping: try context.fetch(FetchDescriptor<MoodEntry>()), by: \.dayKey)
         let songs = [("晴天", "周杰伦"), ("遇见", "孙燕姿"), ("小情歌", "苏打绿"),
-                     ("慢慢喜欢你", "莫文蔚"), ("Dreams", "The Cranberries"), ("旅行的意义", "陈绮贞")]
+                     ("慢慢喜欢你", "莫文蔚"), ("Dreams", "The Cranberries"), ("旅行的意义", "陈绮贞"),
+                     ("红豆", "王菲"), ("那些花儿", "朴树"), ("First Love", "宇多田ヒカル")]
         let watches: [(String, WatchKind)] = [("海街日记", .movie), ("重启人生", .series),
-                                             ("小森林", .movie), ("千与千寻", .movie)]
+                                             ("小森林", .movie), ("千与千寻", .movie),
+                                             ("请回答1988", .series), ("天使爱美丽", .movie)]
         let choices: [DailyChoice] = [.coffee, .cake, .clover, .guitar, .heart, .friends]
-        for offset in 0..<12 {
-            guard let date = calendar.date(byAdding: .day, value: -offset, to: today) else { continue }
+        for offset in 0..<18 {
+            guard let date = calendar.date(byAdding: .day, value: -offset, to: collectionEndDate) else { continue }
             guard calendar.component(.month, from: date) != 11 else { continue }
             let key = DayKey(date).storageValue
             let entry: MoodEntry

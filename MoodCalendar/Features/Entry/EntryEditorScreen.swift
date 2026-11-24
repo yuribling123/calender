@@ -35,6 +35,7 @@ struct EntryEditorScreen: View {
     @State private var isLoadingPhoto = false
     @State private var photoLoadTask: Task<Void, Never>?
     @State private var note = ""
+    @State private var locationName = ""
     @State private var showsNote = false
     @AppStorage("lastSelectedCardPaper") private var lastSelectedCardPaper = ""
     @State private var selectedPaper: CardPaper = .pink
@@ -47,6 +48,7 @@ struct EntryEditorScreen: View {
     @State private var songArtist = ""
     @State private var isSongEditorPresented = false
     @State private var isPaperPickerPresented = false
+    @State private var paperBeforePreview: CardPaper = .pink
     @State private var errorMessage: String?
     @State private var showsDeleteConfirmation = false
     @State private var errorTitle = localized("保存失败")
@@ -75,6 +77,7 @@ struct EntryEditorScreen: View {
                             .frame(maxWidth: .infinity, alignment: .topLeading)
                             VStack(alignment: .leading, spacing: 20) {
                                 noteCard
+                                locationAttachment
                                 songAttachment
                                 watchAttachment
                                 photoAttachment
@@ -93,6 +96,8 @@ struct EntryEditorScreen: View {
                             choicePicker
 
                             noteCard
+
+                            locationAttachment
 
                             songAttachment
 
@@ -145,14 +150,21 @@ struct EntryEditorScreen: View {
                 MembershipScreen()
                     .environmentObject(membership)
             }
-            .sheet(isPresented: $isPaperPickerPresented) {
+            .sheet(isPresented: $isPaperPickerPresented, onDismiss: {
+                if selectedPaper.requiresMembership && !hasPremiumAccess {
+                    selectedPaper = paperBeforePreview
+                    isMembershipPresented = true
+                } else {
+                    lastSelectedCardPaper = selectedPaper.rawValue
+                }
+            }) {
                 PaperDialPicker(selectedPaper: Binding(
                     get: { selectedPaper },
                     set: { paper in
                         selectedPaper = paper
-                        lastSelectedCardPaper = paper.rawValue
                     }
                 ))
+                .environmentObject(membership)
             }
             .onChange(of: photoItem) { _, item in
                 photoLoadTask?.cancel()
@@ -179,13 +191,18 @@ struct EntryEditorScreen: View {
             }
             .onDisappear { photoLoadTask?.cancel() }
             .onAppear {
-                selectedChoice = entry?.choice
-                selectedGroup = entry?.choice?.group ?? initialGroup
+                selectedChoice = entry?.choice ?? .veryGood
+                selectedGroup = selectedChoice?.group ?? initialGroup
                 photoData = entry?.photoData
                 note = entry?.note ?? ""
+                locationName = entry?.locationName ?? ""
                 showsNote = !(entry?.note.isEmpty ?? true)
                 let savedPaper = CardPaper.resolve(entry == nil ? lastSelectedCardPaper : entry?.cardPaperID)
-                selectedPaper = savedPaper == .original ? CardPaper.matching(theme) : savedPaper
+                selectedPaper = entry == nil && savedPaper == .strawberryHearts
+                    ? .blueberryHearts : (savedPaper == .original ? CardPaper.matching(theme) : savedPaper)
+                if entry == nil && selectedPaper.requiresMembership && !hasPremiumAccess {
+                    selectedPaper = .stars
+                }
                 songTitle = entry?.songTitle ?? ""
                 songArtist = entry?.songArtist ?? ""
                 showsSong = !songTitle.isEmpty
@@ -301,6 +318,20 @@ struct EntryEditorScreen: View {
                 .strokeBorder(.primary.opacity(0.08), lineWidth: 0.5)
         }
         .shadow(color: .black.opacity(0.12), radius: 20, y: 8)
+    }
+
+    private var locationAttachment: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "mappin")
+                .accessibilityHidden(true)
+            TextField(localized("添加地点"), text: $locationName)
+                .textInputAutocapitalization(.words)
+                .submitLabel(.done)
+                .accessibilityLabel(localized("添加地点"))
+        }
+        .font(.subheadline)
+        .foregroundStyle(.primary)
+        .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
     }
 
     private var songAttachment: some View {
@@ -518,7 +549,7 @@ struct EntryEditorScreen: View {
                                 ChoiceArtwork(choice: choice)
                                     .scaledToFit()
                                     .frame(height: 32)
-                                    .scaleEffect(selectedGroup == .mood ? 1 : choice == .cake ? 1 : choice == .study ? 1.38 : selectedGroup == .company ? 1.32 : 1.22)
+                                    .scaleEffect(choicePickerArtworkScale(for: choice))
                                     .accessibilityHidden(true)
 
 
@@ -558,6 +589,13 @@ struct EntryEditorScreen: View {
         .padding(.top, 10)
         .padding(.bottom, !hasPremiumAccess && selectedGroup.requiresMembership ? 0 : 10)
         .background(theme.palette.resolved(for: colorScheme).cardBackground, in: RoundedRectangle(cornerRadius: 22))
+    }
+
+    /// Weather artwork has different silhouettes; tune visible subjects against the rainbow.
+    private func choicePickerArtworkScale(for choice: DailyChoice) -> CGFloat {
+        if choice == .wings { return 1.5 }
+        return choice.weatherArtworkScale
+            ?? (selectedGroup == .mood ? 1 : choice == .cake ? 1 : choice == .study ? 1.38 : selectedGroup == .company ? 1.32 : 1.22)
     }
 
     private var editorHeading: some View {
@@ -616,17 +654,16 @@ struct EntryEditorScreen: View {
                 .accessibilityAddTraits(.isButton)
                 .accessibilityLabel(localized("写文字"))
             }
-            if showsNote {
-                Text(localized("文字可选"))
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
+            if showsNote && isNoteFocused {
+                Button(localized("确认")) { isNoteFocused = false }
+                    .font(.footnote.weight(.semibold))
+                    .frame(maxWidth: .infinity, alignment: .trailing)
             }
         }
         .padding(18)
         .background {
             GeometryReader { proxy in
-                RoundedRectangle(cornerRadius: 22)
-                    .fill(selectedPaper.color(for: theme, scheme: colorScheme))
+                CardPaperBackground(paper: selectedPaper, cornerRadius: 22)
                     .preference(
                         key: NoteCardFramePreferenceKey.self,
                         value: proxy.frame(in: .named("EntryEditor"))
@@ -640,6 +677,7 @@ struct EntryEditorScreen: View {
                     .onTapGesture { beginNoteEditing() }
             }
         }
+        .environment(\.colorScheme, selectedPaper == .nightHearts ? .dark : colorScheme)
     }
 
     private func beginNoteEditing() {
@@ -650,23 +688,38 @@ struct EntryEditorScreen: View {
     }
 
     private var paperPicker: some View {
-        Button { isPaperPickerPresented = true } label: {
-            HStack(spacing: 10) {
-                Text(localized("色纸"))
-                Spacer()
+        Button {
+            paperBeforePreview = selectedPaper
+            isPaperPickerPresented = true
+        } label: {
+            HStack(spacing: 8) {
+                Text(localized("色卡"))
                 Circle()
-                    .fill(selectedPaper.swatchAccent(for: theme))
+                    .fill(selectedPaper == .nightHearts || selectedPaper.hasUnbackedStarPreview
+                          ? Color.clear : (selectedPaper.isPatterned ? selectedPaper.color(for: theme) : selectedPaper.swatchAccent(for: theme)))
+                    .overlay {
+                        if selectedPaper.isHeartPattern {
+                            Image(systemName: "heart.fill")
+                                .font(.system(size: 11))
+                                .foregroundStyle(selectedPaper == .nightHearts ? Color(white: 0.24) : selectedPaper.heartInk)
+                        } else if selectedPaper.isStarPattern {
+                            Image(systemName: "star.fill")
+                                .font(.system(size: 10))
+                                .foregroundStyle(selectedPaper.previewStarInk)
+                        }
+                    }
                     .frame(width: 20, height: 20)
-                Text(selectedPaper.title)
-                Image(systemName: "chevron.right")
-                    .font(.caption2)
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.right").font(.caption2)
             }
             .font(.subheadline)
             .foregroundStyle(.secondary)
-            .frame(minHeight: 44)
+            .frame(maxWidth: .infinity, minHeight: 44)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        .accessibilityLabel(localized("色卡"))
+        .accessibilityValue(selectedPaper.title)
     }
 
     private func deleteEntry() {
@@ -682,15 +735,21 @@ struct EntryEditorScreen: View {
     private func save() {
         errorTitle = localized("保存失败")
         guard let selectedChoice else { return }
+        if selectedPaper.requiresMembership && !hasPremiumAccess && selectedPaper.rawValue != entry?.cardPaperID {
+            isMembershipPresented = true
+            return
+        }
         let savedNote = (showsNote ? note : "").trimmingCharacters(in: .whitespacesAndNewlines)
         let savedPaper = CardPaper.resolve(entry == nil ? lastSelectedCardPaper : entry?.cardPaperID)
-        let initialPaper = savedPaper == .original ? CardPaper.matching(theme) : savedPaper
+        let initialPaper = entry == nil && savedPaper == .strawberryHearts
+            ? CardPaper.blueberryHearts : (savedPaper == .original ? CardPaper.matching(theme) : savedPaper)
+        let savedLocation = locationName.trimmingCharacters(in: .whitespacesAndNewlines)
         let savedSong = showsSong ? songTitle.trimmingCharacters(in: .whitespacesAndNewlines) : ""
         let savedArtist = showsSong ? songArtist.trimmingCharacters(in: .whitespacesAndNewlines) : ""
         let savedWatch = watchTitle.trimmingCharacters(in: .whitespacesAndNewlines)
         let savedWatchNote = savedWatch.isEmpty ? "" : watchNote.trimmingCharacters(in: .whitespacesAndNewlines)
         let watchChanged = savedWatch != (entry?.watchTitle ?? "") || (!savedWatch.isEmpty && watchKind != (entry?.watchKind ?? "")) || savedWatchNote != (entry?.watchNote ?? "")
-        let hasChanges = watchChanged || selectedChoice != entry?.choice || savedNote != (entry?.note ?? "") || photoData != entry?.photoData || selectedPaper != initialPaper || savedSong != (entry?.songTitle ?? "") || savedArtist != (entry?.songArtist ?? "")
+        let hasChanges = savedLocation != (entry?.locationName ?? "") || watchChanged || selectedChoice != entry?.choice || savedNote != (entry?.note ?? "") || photoData != entry?.photoData || selectedPaper != initialPaper || savedSong != (entry?.songTitle ?? "") || savedArtist != (entry?.songArtist ?? "")
         do {
             try EntryStore(context: modelContext).save(
                 day: DayKey(day), choice: selectedChoice, note: showsNote ? note : "",
@@ -698,7 +757,8 @@ struct EntryEditorScreen: View {
                 cardPaperID: selectedPaper.rawValue,
                 updatesCardPaper: true,
                 songTitle: savedSong, songArtist: savedArtist, updatesSong: true,
-                watchTitle: savedWatch, watchKind: watchKind, watchNote: savedWatchNote, updatesWatch: true
+                watchTitle: savedWatch, watchKind: watchKind, watchNote: savedWatchNote, updatesWatch: true,
+                locationName: savedLocation, updatesLocation: true
             )
             onSaved(selectedChoice, hasChanges)
             dismiss()
@@ -926,28 +986,86 @@ private struct PlayerCenterButtonStyle: ButtonStyle {
     }
 }
 
+private enum PaperPickerKind: String, CaseIterable, Identifiable {
+    case solid, patterned, hearts
+    var id: String { rawValue }
+    var title: String {
+        switch self {
+        case .solid: localized("色纸")
+        case .patterned: localized("星星")
+        case .hearts: localized("爱心")
+        }
+    }
+    var papers: [CardPaper] {
+        CardPaper.allCases.filter { paper in
+            switch self {
+            case .solid: paper != .original && !paper.isPatterned
+            case .patterned: paper.isStarPattern
+            case .hearts: paper.isHeartPattern && paper != .strawberryHearts
+            }
+        }
+    }
+}
+
 private struct PaperDialPicker: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.appTheme) private var theme
     @Environment(\.colorScheme) private var colorScheme
-    @Binding var selectedPaper: CardPaper
+    @State private var kind: PaperPickerKind
+    @EnvironmentObject private var membership: MembershipStore
+    @Binding private var selectedPaper: CardPaper
+    @State private var isMembershipPresented = false
     @State private var rotation = 0.0
     @State private var lastDragAngle: Double?
-    private let papers = CardPaper.allCases.filter { $0 != .original }
+    private var papers: [CardPaper] { kind.papers }
+    private var angleStep: Double { 360 / Double(papers.count) }
+    // Opening another category previews its first paper without changing the user's selection.
+    private var displayedPaper: CardPaper { papers.contains(selectedPaper) ? selectedPaper : papers[0] }
+
+    init(selectedPaper: Binding<CardPaper>) {
+        _selectedPaper = selectedPaper
+        _kind = State(initialValue: selectedPaper.wrappedValue.isHeartPattern ? .hearts
+            : selectedPaper.wrappedValue.isStarPattern ? .patterned : .solid)
+    }
 
     var body: some View {
         NavigationStack {
+            ScrollView {
             VStack(spacing: 12) {
+                Picker(localized("色卡"), selection: $kind) {
+                    ForEach(PaperPickerKind.allCases) { kind in
+                        Text(kind.title).tag(kind)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .padding(.horizontal, 28)
                 ZStack {
                     Circle()
                         .strokeBorder(Color.black.opacity(0.04), lineWidth: 1)
                         .frame(width: 210, height: 210)
                     ZStack {
                         ForEach(Array(papers.enumerated()), id: \.element.id) { index, paper in
-                            let angle = Double(index) * .pi / 4
+                            let angle = Double(index) * angleStep * .pi / 180
                             Button { select(index) } label: {
                                 Circle()
-                                    .fill(paper.swatchAccent(for: theme))
+                                    .fill(paper == .nightHearts || paper.hasUnbackedStarPreview
+                                          ? Color.clear : (paper.isPatterned ? paper.color(for: theme) : paper.swatchAccent(for: theme)))
+                                    .overlay {
+                                        if paper.isHeartPattern {
+                                            Image(systemName: "heart.fill")
+                                                .font(.system(size: 17))
+                                                .foregroundStyle(paper == .nightHearts ? Color(white: 0.24) : paper.heartInk)
+                                                .rotationEffect(.degrees(-rotation))
+                                        } else if paper.isStarPattern {
+                                            Image(systemName: "star.fill")
+                                                .font(.system(size: 17))
+                                                .foregroundStyle(paper.previewStarInk)
+                                                .opacity(0.7)
+                                                .blur(radius: 0.4)
+                                                .rotationEffect(.degrees(-14))
+                                                .rotationEffect(.degrees(-rotation))
+                                        }
+                                    }
                                     .frame(width: 38, height: 38)
                                     .frame(width: 44, height: 44)
                                     .contentShape(Circle())
@@ -958,7 +1076,12 @@ private struct PaperDialPicker: View {
                     }
                     .rotationEffect(.degrees(rotation))
                     VStack(spacing: 8) {
-                        Text(selectedPaper.title)
+                        if displayedPaper.requiresMembership && !membership.hasMembershipAccess {
+                            Text(localized("会员专属"))
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                        Text(displayedPaper.title)
                             .font(.headline.weight(.medium))
                         Image(systemName: "arrow.triangle.2.circlepath")
                             .font(.caption)
@@ -989,7 +1112,7 @@ private struct PaperDialPicker: View {
                         .onEnded { _ in
                             lastDragAngle = nil
                             withAnimation(.easeOut(duration: 0.2)) {
-                                rotation = (rotation / 45).rounded() * 45
+                                rotation = (rotation / angleStep).rounded() * angleStep
                             }
                             updateSelection()
                         }
@@ -1003,10 +1126,10 @@ private struct PaperDialPicker: View {
                         .allowsHitTesting(false)
                 }
                 .accessibilityElement(children: .ignore)
-                .accessibilityLabel(localized("色纸"))
-                .accessibilityValue(selectedPaper.title)
+                .accessibilityLabel(kind.title)
+                .accessibilityValue(displayedPaper.title + (displayedPaper.requiresMembership && !membership.hasMembershipAccess ? " · " + localized("会员专属") : ""))
                 .accessibilityAdjustableAction { direction in
-                    let index = papers.firstIndex(of: selectedPaper) ?? 0
+                    let index = papers.firstIndex(of: displayedPaper) ?? 0
                     switch direction {
                     case .increment: select((index + 1) % papers.count)
                     case .decrement: select((index + papers.count - 1) % papers.count)
@@ -1014,39 +1137,48 @@ private struct PaperDialPicker: View {
                     }
                 }
 
-                Text(localized("转动或轻点选色"))
+                Text(localized(kind == .solid ? "转动或轻点选色" : "转动或轻点选花纸"))
                     .font(.footnote)
                     .foregroundStyle(.secondary)
-                RoundedRectangle(cornerRadius: 14)
-                    .fill(selectedPaper.color(for: theme, scheme: colorScheme))
-                    .frame(height: 52)
-                    .overlay { Text(selectedPaper.title).font(.subheadline) }
-                    .padding(.horizontal, 28)
+                    .padding(.bottom, 4)
             }
-            .iPadScrollable()
+            }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(theme.palette.resolved(for: colorScheme).background)
-            .navigationTitle(localized("色纸"))
+            .navigationTitle(localized("色卡"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
-                    Button(localized("完成")) { dismiss() }
+                    Button(localized("完成")) {
+                        guard !selectedPaper.requiresMembership || membership.hasMembershipAccess else {
+                            isMembershipPresented = true
+                            return
+                        }
+                        dismiss()
+                    }
                 }
             }
             .tint(theme.palette.strongAccent)
         }
-        .presentationDetents(UIDevice.current.userInterfaceIdiom == .pad ? [.large] : [.height(470)])
+        .sheet(isPresented: $isMembershipPresented) {
+            MembershipScreen().environmentObject(membership)
+        }
+        .presentationDetents(UIDevice.current.userInterfaceIdiom == .pad ? [.large] : [.height(420), .large])
         .presentationDragIndicator(.visible)
-        .onAppear { rotation = -Double(papers.firstIndex(of: selectedPaper) ?? 0) * 45 }
+        .onAppear { rotation = -Double(papers.firstIndex(of: displayedPaper) ?? 0) * angleStep }
+        .onChange(of: kind) { _, _ in
+            lastDragAngle = nil
+            rotation = -Double(papers.firstIndex(of: displayedPaper) ?? 0) * angleStep
+        }
     }
 
     private func updateSelection() {
-        let index = Int((-rotation / 45).rounded())
+        let index = Int((-rotation / angleStep).rounded())
         selectedPaper = papers[(index % papers.count + papers.count) % papers.count]
     }
 
     private func select(_ index: Int) {
-        var delta = (-Double(index) * 45 - rotation).truncatingRemainder(dividingBy: 360)
+        var delta = (-Double(index) * angleStep - rotation).truncatingRemainder(dividingBy: 360)
         if delta > 180 { delta -= 360 }
         if delta < -180 { delta += 360 }
         withAnimation(.easeInOut(duration: 0.2)) {

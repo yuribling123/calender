@@ -28,7 +28,7 @@
 
 - 默认由用户自行检查模拟器中的界面和交互。除非用户明确要求模拟器验证，否则不要启动或操作模拟器、向模拟器安装应用，也不要通过 Xcode Run 启动应用进行验证。不要为此反复询问确认；完成代码修改与适当的静态检查或编译后直接交付，并如实说明未做模拟器验证。
 
-- 每次完成文件修改，都必须向用户展示本次改动，优先提供应用原生的 Edited / Undo / View changes 变更卡片，方便查看与撤销。原生卡片由客户端生成，不得用文字伪造或声称已提供不可用的撤销功能；如果无法主动生成卡片，则使用可用工具打开本次改动的差异面板，并在最终回复中提供修改文件的可点击链接及简短说明。不要为了生成卡片重复修改文件。
+- 每次完成任何文件修改（包括代码、文案、配置和 Markdown，以及 agent 代做的修改），交付前都必须展示本次改动。用户明确要求优先看到带有 Edited 文件名、增删行数、Undo 和 View changes 的应用原生变更卡片；仅在回复中写“已修改”或提供文件链接不能替代展示。原生卡片由客户端生成，不得用文字伪造或声称已提供不可用的撤销功能；如果客户端未生成卡片或无法主动生成，则必须使用可用工具打开本次改动的差异面板，并在最终回复中提供修改文件的可点击链接及简短说明。工具仅返回 queued 时，只能说明已请求打开，不能声称面板已展示。不要为了生成卡片重复修改文件。
 
 - Keep verification proportional to the change. For simple visual or content edits (such as font size, weight, color, spacing, labels, or removing a decorative element), edit the relevant files, review the small diff, and report completion directly. Do not automatically build, install, launch a simulator, or add tests for these changes.
 - Build and run appropriate non-UI checks for changes to functionality, gestures, data, navigation, complex layout, dependencies, or resource registration, and whenever the user explicitly requests verification. Batch related edits into one build rather than repeating this for each small adjustment. Simulator interaction checks remain user-owned unless explicitly requested; a general request to verify does not authorize simulator use.

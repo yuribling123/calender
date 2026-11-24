@@ -11,6 +11,7 @@ struct RecordSearchResult: Identifiable {
     let date: Date
     let choice: DailyChoice?
     let cardPaperID: String?
+    let locationName: String?
     let preview: String
 }
 
@@ -35,7 +36,9 @@ enum RecordSearch {
                   date <= today else { return nil }
 
             let note = singleLine(entry.note)
-            guard !note.isEmpty, query.isEmpty || contains(note, query: query) else { return nil }
+            let location = singleLine(entry.locationName ?? "")
+            guard !note.isEmpty || !location.isEmpty,
+                  query.isEmpty || contains(note, query: query) || contains(location, query: query) else { return nil }
 
             return RecordSearchResult(
                 id: "day:\(entry.dayKey)",
@@ -43,7 +46,9 @@ enum RecordSearch {
                 date: date,
                 choice: entry.choice,
                 cardPaperID: entry.cardPaperID,
-                preview: query.isEmpty ? note : snippet(note, query: query)
+                locationName: location.isEmpty ? nil : location,
+                preview: contains(location, query: query) && !query.isEmpty ? location :
+                    (note.isEmpty ? location : (query.isEmpty ? note : snippet(note, query: query)))
             )
         }
 
@@ -62,6 +67,7 @@ enum RecordSearch {
                 date: date,
                 choice: nil,
                 cardPaperID: nil,
+                locationName: nil,
                 preview: query.isEmpty ? text : snippet(text, query: query)
             )
         }

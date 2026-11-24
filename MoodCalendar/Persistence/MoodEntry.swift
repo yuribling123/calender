@@ -10,6 +10,7 @@ final class MoodEntry {
     var note: String = ""
     @Attribute(.externalStorage) var photoData: Data? = nil
     var cardPaperID: String? = nil
+    var locationName: String? = nil
     var songTitle: String? = nil
     var songArtist: String? = nil
     // Optional additions allow existing stores to migrate without replacing records.

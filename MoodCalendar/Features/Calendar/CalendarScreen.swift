@@ -10,9 +10,12 @@ struct CalendarScreen: View {
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.selectionShape) private var selectionShape
     @Environment(\.scenePhase) private var scenePhase
+    @EnvironmentObject private var membership: MembershipStore
+    // @EnvironmentObject private var futureLetterStore: FutureLetterStore
     @AppStorage("calendarTitle") private var storedCalendarTitle = ""
     @AppStorage("dailyReminderEnabled") private var isDailyReminderEnabled = true
     @AppStorage("allowPastDateEditing") private var allowPastDateEditing = true
+    @AppStorage("lastSelectedCardPaper") private var lastSelectedCardPaper = ""
     @AppStorage("showMonthArrows") private var showMonthArrows = true
     @Query private var starredDaySelections: [StarredDaySelection]
     @Query private var entries: [MoodEntry]
@@ -32,7 +35,16 @@ struct CalendarScreen: View {
     @State private var pendingRevealDayKey: String?
     @State private var animatedDayKey: String?
     @State private var saveError: String?
-    @State private var isSearchPresented = false
+    private enum MenuDestination: String, Identifiable {
+        case search, memoryShuffle
+        var id: String { rawValue }
+    }
+    @State private var menuDestination: MenuDestination?
+    @State private var memoryCardWidth: CGFloat = 0
+    @State private var previewMemory: RediscoveredMemory?
+    @State private var previewIsVisible = false
+    @State private var selectedCardHeight: CGFloat = 0
+    // @State private var isFutureLettersPresented = false
 
     private var calendar: Calendar { .autoupdatingCurrent }
 
@@ -69,17 +81,41 @@ struct CalendarScreen: View {
         NavigationStack {
             calendarContent
         }
-        .allowsHitTesting(!isSearchPresented)
-        .accessibilityHidden(isSearchPresented)
-        .overlay {
-            if isSearchPresented {
-                RecordSearchScreen(starredDayKeys: starredDayKeys, onClose: { isSearchPresented = false }) { result in
-                    openDay(result.date)
-                    isSearchPresented = false
+        // Let the presentation system coordinate menu dismissal. A transparent cover
+        // covers the tab bar without changing the calendar's safe area or hit testing.
+        .fullScreenCover(item: $menuDestination) { destination in
+            Group {
+                switch destination {
+                case .search:
+                    RecordSearchScreen(entries: entries, starredDayKeys: starredDayKeys,
+                                       onClose: dismissMenuDestination) { result in
+                        openDay(result.date)
+                        dismissMenuDestination()
+                    }
+                case .memoryShuffle:
+                    MemoryShuffleScreen(cardWidth: memoryCardWidth, entries: entries,
+                                        onClose: dismissMenuDestination) { date in
+                        openDay(date)
+                        dismissMenuDestination()
+                    }
                 }
             }
+            .presentationBackground(.clear)
         }
-        .toolbar(isSearchPresented ? .hidden : .visible, for: .tabBar)
+        .overlay {
+            if let memory = previewMemory {
+                MemoryShuffleScreen(cardWidth: memoryCardWidth, entries: entries,
+                                    previewMemory: memory, initialCardHeight: selectedCardHeight,
+                                    isPreviewVisible: previewIsVisible,
+                                    onClose: closeCardPreview,
+                                    onOpenDay: { _ in closeCardPreview() })
+                    .ignoresSafeArea()
+                    .zIndex(1)
+                    .onAppear {
+                        withAnimation(.easeOut(duration: 0.24)) { previewIsVisible = true }
+                    }
+            }
+        }
     }
 
     private var calendarContent: some View {
@@ -153,6 +189,11 @@ struct CalendarScreen: View {
                 onSaved: handleEditorSaved
             )
         }
+        /* 暂时停用，保留以便恢复。
+        .sheet(isPresented: $isFutureLettersPresented) {
+            FutureLettersScreen()
+        }
+        */
         .alert(localized("保存失败"), isPresented: Binding(
             get: { saveError != nil },
             set: { if !$0 { saveError = nil } }
@@ -183,6 +224,7 @@ struct CalendarScreen: View {
                             .contentShape(Rectangle())
                             .simultaneousGesture(monthSwipeGesture)
                         selectedDateDetail
+                            .padding(.top, -16)
                     }
                 }
                 .padding(24)
@@ -217,6 +259,7 @@ struct CalendarScreen: View {
         SelectedDateDetail(
             date: selectedDay,
             entry: selectedEntry,
+            onOpenRecord: openCardPreview,
             isStarred: starredDayKeys.contains(DayKey(selectedDay).storageValue),
             onToggleStar: toggleSelectedDayStar,
             onRecordMood: saveMood,
@@ -226,8 +269,71 @@ struct CalendarScreen: View {
                 }
             }
         )
+        .background {
+            GeometryReader { geometry in
+                Color.clear
+                    .preference(key: CalendarCardWidthKey.self, value: geometry.size.width)
+                    .preference(key: CalendarCardHeightKey.self, value: geometry.size.height)
+            }
+        }
+        .onPreferenceChange(CalendarCardWidthKey.self) { memoryCardWidth = $0 }
+        .onPreferenceChange(CalendarCardHeightKey.self) { selectedCardHeight = $0 }
     }
 
+    private func openCardPreview() {
+        guard previewMemory == nil, let entry = selectedEntry, entry.choice != nil else { return }
+        previewMemory = RediscoveredMemory(entry: entry, date: selectedDay)
+    }
+
+    private func closeCardPreview() {
+        guard previewIsVisible else { return }
+        withAnimation(.easeIn(duration: 0.18)) { previewIsVisible = false }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.18) {
+            if !previewIsVisible { previewMemory = nil }
+        }
+    }
+
+    private func presentMenuDestination(_ destination: MenuDestination) {
+        guard menuDestination == nil else { return }
+        var transaction = Transaction()
+        transaction.disablesAnimations = true
+        withTransaction(transaction) { menuDestination = destination }
+    }
+
+    private func dismissMenuDestination() {
+        var transaction = Transaction()
+        transaction.disablesAnimations = true
+        withTransaction(transaction) { menuDestination = nil }
+    }
+
+    private var calendarMenu: some View {
+        CalendarTextMenu(iconFont: .system(size: 18),
+                         tint: theme.palette.resolved(for: colorScheme).foreground.opacity(0.7)) { item in
+            item(localized("搜索")) { presentMenuDestination(.search) }
+            item(localized("随机翻")) { presentMenuDestination(.memoryShuffle) }
+        }
+    }
+
+    /* 暂时停用，保留以便恢复。
+    private var futureLettersButton: some View {
+        Button { isFutureLettersPresented = true } label: {
+            HStack(spacing: 6) {
+                Label(localized("给未来的纸条"), systemImage: "envelope")
+                if futureLetterStore.letters.contains(where: { !$0.isOpened && $0.hasArrived(on: DayKey(Date())) }) {
+                    Circle()
+                        .fill(theme.palette.strongAccent)
+                        .frame(width: 5, height: 5)
+                        .accessibilityHidden(true)
+                }
+            }
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(minHeight: 44)
+                .contentShape(Rectangle())
+        }
+        .accessibilityHint(localized(futureLetterStore.letters.contains(where: { !$0.isOpened && $0.hasArrived(on: DayKey(Date())) }) ? "有到期的纸条可以拆开" : "写给未来的自己，到约定的日子再拆开"))
+    }
+
+    */
     private func iPadCalendar(size: CGSize) -> some View {
         let usesColumns = size.width >= 1000 && !dynamicTypeSize.isAccessibilitySize
         let rows = CGFloat(max(1, (MonthLayout(containing: displayedMonth).days.count + 6) / 7))
@@ -306,14 +412,7 @@ struct CalendarScreen: View {
                 }
                 Spacer()
 
-                Button { isSearchPresented = true } label: {
-                    Image(systemName: "magnifyingglass")
-                        .font(.system(size: 18, weight: .regular))
-                        .foregroundStyle(theme.palette.strongAccent)
-                        .frame(width: 44, height: 44)
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel(localized("搜索记录"))
+                calendarMenu
 
                 if !isChoosingMonth && !isDisplayingCurrentMonth {
                     todayButton
@@ -633,7 +732,14 @@ struct CalendarScreen: View {
         guard DayKey(selectedDay).relationToToday == .today else { return }
         do {
             guard let choice = DailyChoice(rawValue: mood.rawValue) else { return }
-            try EntryStore(context: modelContext).save(day: DayKey(selectedDay), choice: choice, note: "")
+            let savedPaper = CardPaper.resolve(lastSelectedCardPaper)
+            let initialPaper = savedPaper == .strawberryHearts
+                ? CardPaper.blueberryHearts : (savedPaper == .original ? CardPaper.matching(theme) : savedPaper)
+            try EntryStore(context: modelContext).save(
+                day: DayKey(selectedDay), choice: choice, note: selectedEntry?.note ?? "",
+                isMember: membership.hasMembershipAccess,
+                cardPaperID: initialPaper.rawValue, updatesCardPaper: selectedEntry == nil
+            )
             SaveFeedback.play()
         } catch {
             saveError = error.localizedDescription
@@ -682,6 +788,20 @@ struct CalendarScreen: View {
 
 #Preview {
     CalendarScreen(requestedMonth: .constant(nil))
+        .environmentObject(MembershipStore())
+        // .environmentObject(FutureLetterStore(isInMemory: true))
         .modelContainer(for: [MoodEntry.self, StarredDaySelection.self], inMemory: true)
 }
 
+
+private struct CalendarCardWidthKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = max(value, nextValue())
+    }
+}
+
+private struct CalendarCardHeightKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) { value = nextValue() }
+}

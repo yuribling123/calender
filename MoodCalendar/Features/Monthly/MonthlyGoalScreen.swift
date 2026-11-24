@@ -22,6 +22,7 @@ struct MonthlyGoalScreen: View {
     @State private var saveError: String?
     @State private var isAddingNote = false
     @State private var didScrollToInitialMonth = false
+    // @State private var isZinePresented = false
 
     @ScaledMetric(relativeTo: .body) private var noteFontSize: CGFloat = 14
     private var noteLineSpacing: CGFloat {
@@ -61,22 +62,7 @@ struct MonthlyGoalScreen: View {
                     } else {
                         ScrollView {
                             VStack(alignment: .leading, spacing: 0) {
-                                HStack {
-                                    Text(localized("月便签"))
-                                        .font(.system(size: 23, weight: .medium))
-                                        .foregroundStyle(theme.palette.foreground)
-                                    Spacer()
-                                    Button { isAddingNote = true } label: {
-                                        Image(systemName: "plus")
-                                            .font(.system(size: 19, weight: .regular))
-                                            .foregroundStyle(theme.palette.strongAccent)
-                                            .frame(width: 44, height: 44)
-                                    }
-                                    .buttonStyle(.plain)
-                                    .accessibilityLabel(localized("添加月便签"))
-                                }
-                                .padding(.top, 4)
-                                .padding(.bottom, 20)
+                                monthlyHeading
 
                                 LazyVStack(alignment: .leading, spacing: 0) {
                                     ForEach(Array(visibleMonthDates.enumerated()), id: \.element) { index, date in
@@ -138,6 +124,11 @@ struct MonthlyGoalScreen: View {
                 Text(saveError ?? localized("请稍后再试。"))
             }
         }
+        /* 暂时停用，保留以便恢复。
+        .sheet(isPresented: $isZinePresented) {
+            MonthlyZineScreen(initialMonth: initialMonth ?? startOfCurrentMonth)
+        }
+        */
         .sheet(isPresented: Binding(
             get: { skinMonth != nil },
             set: { if !$0 { skinMonth = nil } }
@@ -254,6 +245,17 @@ struct MonthlyGoalScreen: View {
                 .font(.system(size: 23, weight: .medium))
                 .foregroundStyle(theme.palette.foreground)
             Spacer()
+            /* 暂时停用，保留以便恢复。
+            Button { isZinePresented = true } label: {
+                Label(localized("小刊"), systemImage: "newspaper")
+                    .font(.subheadline)
+                    .foregroundStyle(theme.palette.strongAccent)
+                    .frame(minWidth: 44, minHeight: 44)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(localized("制作本月小刊"))
+            */
             Button { isAddingNote = true } label: {
                 Image(systemName: "plus")
                     .font(.system(size: 19, weight: .regular))

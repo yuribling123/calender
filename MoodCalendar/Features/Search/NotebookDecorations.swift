@@ -12,12 +12,6 @@ struct ClothNotebookSpine: View {
                 thread.addLine(to: CGPoint(x: x, y: size.height))
                 context.stroke(thread, with: .color(theme.palette.foreground.opacity(0.045)), lineWidth: 0.5)
             }
-            for y in stride(from: CGFloat(1), to: size.height, by: 3) {
-                var thread = Path()
-                thread.move(to: CGPoint(x: 0, y: y))
-                thread.addLine(to: CGPoint(x: size.width, y: y))
-                context.stroke(thread, with: .color(.white.opacity(0.07)), lineWidth: 0.5)
-            }
         }
         .overlay {
             LinearGradient(

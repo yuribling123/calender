@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+        F11920260000000000000001 /* AppUpdate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11920260000000000000002; };
+        F11920260000000000000003 /* AppUpdateChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11920260000000000000004; };
+		F11820260000000000000001 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F11820260000000000000002 /* LaunchScreen.storyboard */; };
 		F30A20260000000000000002 /* AdaptiveLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = F30A20260000000000000001; };
 		F29C20260000000000000002 /* MoodCalendar/Domain/WatchKind.swift in Sources */ = {isa = PBXBuildFile; fileRef = F29C20260000000000000001; };
 		F26C20260000000000000004 /* MoodCalendar/Features/Collection/CollectionScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = F26C20260000000000000003; };
@@ -47,9 +50,22 @@
 		F071CA1E0000000000000001 /* MoodCalendar/Resources/Fonts in Resources */ = {isa = PBXBuildFile; fileRef = F071CA1E0000000000000002 /* MoodCalendar/Resources/Fonts */; };
 		F071CA1E0000000000000003 /* MoodCalendar/Resources/Sounds/photo-flip.wav in Resources */ = {isa = PBXBuildFile; fileRef = F071CA1E0000000000000004 /* MoodCalendar/Resources/Sounds/photo-flip.wav */; };
 		F4171D7AA7BFA1ECAECEE9B0 /* MoodCalendar/Features/Calendar/SelectedDateDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D8FFAD8C7F230C3E65731BA /* MoodCalendar/Features/Calendar/SelectedDateDetail.swift */; };
+		2177149D9554AC5BAE1D4CA9 /* MoodCalendar/Domain/FutureLetter.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF4647F5F8E4F75E72A60CFF; };
+		9754C240D1F66C6EFA434651 /* MoodCalendar/Domain/MemoryShuffle.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFD08A3394B2DAB18A216F38; };
+		81F7E29F91367F8E4FFC56A3 /* MoodCalendar/Domain/MonthlyZine.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB309B9E5546788F1F9630A7; };
+		E13F9FF85810A2B0B1080FBC /* MoodCalendar/Features/Letters/FutureLettersScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CE0CEEB7A69169B297F5B2E; };
+		747994E5B66E33DE5D28F3B4 /* MoodCalendar/Features/Memories/MemoryShuffleScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB3C4833379A5BB304484D2E; };
+		6AC1B26A96647EC77FD38C78 /* MoodCalendar/Persistence/FutureLetterStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = D58D909FEC9592176803222D; };
+		D84206C10D25C0D908C5F7C1 /* MoodCalendar/Persistence/MemoryDiscoveryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 639D58B373249629531B3C2F; };
+		7F1B0F7A0533BFB5A58865B2 /* MoodCalendar/Persistence/MonthlyZineDraftStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C740AB799839137541EE6B7; };
+		7FF53E7762D8E08CACAEDD5C /* MoodCalendar/Features/Zine/MonthlyZinePoster.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39B7D307D6369DA1D0188827; };
+		8B68DF77B3FA20AF36574646 /* MoodCalendar/Features/Zine/MonthlyZineScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CED8C0661A412EC88240FC7; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+        F11920260000000000000002 /* AppUpdate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Domain/AppUpdate.swift; sourceTree = "<group>"; };
+        F11920260000000000000004 /* AppUpdateChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/App/AppUpdateChecker.swift; sourceTree = "<group>"; };
+		F11820260000000000000002 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = MoodCalendar/Resources/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		F30A20260000000000000001 /* AdaptiveLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Features/Shared/AdaptiveLayout.swift; sourceTree = "<group>"; };
 		F29C20260000000000000001 /* MoodCalendar/Domain/WatchKind.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Domain/WatchKind.swift; sourceTree = "<group>"; };
 		F26C20260000000000000003 /* MoodCalendar/Features/Collection/CollectionScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Features/Collection/CollectionScreen.swift; sourceTree = "<group>"; };
@@ -92,12 +108,34 @@
 		E091A2B3C4D5E6F701234578 /* MoodCalendar/PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = MoodCalendar/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		F071CA1E0000000000000002 /* MoodCalendar/Resources/Fonts */ = {isa = PBXFileReference; lastKnownFileType = folder; path = MoodCalendar/Resources/Fonts; sourceTree = "<group>"; };
 		F071CA1E0000000000000004 /* MoodCalendar/Resources/Sounds/photo-flip.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "MoodCalendar/Resources/Sounds/photo-flip.wav"; sourceTree = "<group>"; };
+		AF4647F5F8E4F75E72A60CFF /* MoodCalendar/Domain/FutureLetter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Domain/FutureLetter.swift; sourceTree = "<group>"; };
+		AFD08A3394B2DAB18A216F38 /* MoodCalendar/Domain/MemoryShuffle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Domain/MemoryShuffle.swift; sourceTree = "<group>"; };
+		BB309B9E5546788F1F9630A7 /* MoodCalendar/Domain/MonthlyZine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Domain/MonthlyZine.swift; sourceTree = "<group>"; };
+		3CE0CEEB7A69169B297F5B2E /* MoodCalendar/Features/Letters/FutureLettersScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Features/Letters/FutureLettersScreen.swift; sourceTree = "<group>"; };
+		BB3C4833379A5BB304484D2E /* MoodCalendar/Features/Memories/MemoryShuffleScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Features/Memories/MemoryShuffleScreen.swift; sourceTree = "<group>"; };
+		D58D909FEC9592176803222D /* MoodCalendar/Persistence/FutureLetterStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Persistence/FutureLetterStore.swift; sourceTree = "<group>"; };
+		639D58B373249629531B3C2F /* MoodCalendar/Persistence/MemoryDiscoveryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Persistence/MemoryDiscoveryStore.swift; sourceTree = "<group>"; };
+		8C740AB799839137541EE6B7 /* MoodCalendar/Persistence/MonthlyZineDraftStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Persistence/MonthlyZineDraftStore.swift; sourceTree = "<group>"; };
+		39B7D307D6369DA1D0188827 /* MoodCalendar/Features/Zine/MonthlyZinePoster.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Features/Zine/MonthlyZinePoster.swift; sourceTree = "<group>"; };
+		8CED8C0661A412EC88240FC7 /* MoodCalendar/Features/Zine/MonthlyZineScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Features/Zine/MonthlyZineScreen.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
 		B28B7AF69320201D1CF206EB = {
 			isa = PBXGroup;
 			children = (
+        F11920260000000000000002 /* AppUpdate.swift */,
+        F11920260000000000000004 /* AppUpdateChecker.swift */,
+				8CED8C0661A412EC88240FC7 /* MoodCalendar/Features/Zine/MonthlyZineScreen.swift */,
+				39B7D307D6369DA1D0188827 /* MoodCalendar/Features/Zine/MonthlyZinePoster.swift */,
+				8C740AB799839137541EE6B7 /* MoodCalendar/Persistence/MonthlyZineDraftStore.swift */,
+				639D58B373249629531B3C2F /* MoodCalendar/Persistence/MemoryDiscoveryStore.swift */,
+				D58D909FEC9592176803222D /* MoodCalendar/Persistence/FutureLetterStore.swift */,
+				BB3C4833379A5BB304484D2E /* MoodCalendar/Features/Memories/MemoryShuffleScreen.swift */,
+				3CE0CEEB7A69169B297F5B2E /* MoodCalendar/Features/Letters/FutureLettersScreen.swift */,
+				BB309B9E5546788F1F9630A7 /* MoodCalendar/Domain/MonthlyZine.swift */,
+				AFD08A3394B2DAB18A216F38 /* MoodCalendar/Domain/MemoryShuffle.swift */,
+				AF4647F5F8E4F75E72A60CFF /* MoodCalendar/Domain/FutureLetter.swift */,
 				F30A20260000000000000001 /* AdaptiveLayout.swift */,
 				F18D20260000000000000006 /* MoodCalendar/Features/Search/NotebookDecorations.swift */,
 				F26C20260000000000000001 /* MoodCalendar/Domain/EntryCollection.swift */,
@@ -111,6 +149,7 @@
 				F071CA1E0000000000000002 /* MoodCalendar/Resources/Fonts */,
 				C8649DE90000000000000002 /* MoodCalendar/Resources/Localizable.xcstrings */,
 				C8649DE90000000000000004 /* MoodCalendar/Resources/InfoPlist.xcstrings */,
+				F11820260000000000000002 /* LaunchScreen.storyboard */,
 				8C0B7456F844A41B2530A42A /* MoodCalendar/App/MoodCalendarApp.swift */,
 				E091A2B3C4D5E6F701234568 /* MoodCalendar/App/DailyFragmentReminder.swift */,
 				E091A2B3C4D5E6F701234574 /* MoodCalendar/App/SaveFeedback.swift */,
@@ -224,6 +263,7 @@
 				C8649DE90000000000000001 /* MoodCalendar/Resources/Localizable.xcstrings in Resources */,
 				C8649DE90000000000000003 /* MoodCalendar/Resources/InfoPlist.xcstrings in Resources */,
 				222F0DBFFE5EB23DCD3FD16F /* MoodCalendar/Resources/Assets.xcassets in Resources */,
+				F11820260000000000000001 /* LaunchScreen.storyboard in Resources */,
 				E091A2B3C4D5E6F701234575 /* MoodCalendar/Resources/Sounds/save-chime.wav in Resources */,
 				E091A2B3C4D5E6F701234577 /* MoodCalendar/PrivacyInfo.xcprivacy in Resources */,
 			);
@@ -236,6 +276,18 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+        F11920260000000000000001 /* AppUpdate.swift in Sources */,
+        F11920260000000000000003 /* AppUpdateChecker.swift in Sources */,
+				8B68DF77B3FA20AF36574646 /* MoodCalendar/Features/Zine/MonthlyZineScreen.swift in Sources */,
+				7FF53E7762D8E08CACAEDD5C /* MoodCalendar/Features/Zine/MonthlyZinePoster.swift in Sources */,
+				7F1B0F7A0533BFB5A58865B2 /* MoodCalendar/Persistence/MonthlyZineDraftStore.swift in Sources */,
+				D84206C10D25C0D908C5F7C1 /* MoodCalendar/Persistence/MemoryDiscoveryStore.swift in Sources */,
+				6AC1B26A96647EC77FD38C78 /* MoodCalendar/Persistence/FutureLetterStore.swift in Sources */,
+				747994E5B66E33DE5D28F3B4 /* MoodCalendar/Features/Memories/MemoryShuffleScreen.swift in Sources */,
+				E13F9FF85810A2B0B1080FBC /* MoodCalendar/Features/Letters/FutureLettersScreen.swift in Sources */,
+				81F7E29F91367F8E4FFC56A3 /* MoodCalendar/Domain/MonthlyZine.swift in Sources */,
+				9754C240D1F66C6EFA434651 /* MoodCalendar/Domain/MemoryShuffle.swift in Sources */,
+				2177149D9554AC5BAE1D4CA9 /* MoodCalendar/Domain/FutureLetter.swift in Sources */,
 				F30A20260000000000000002 /* AdaptiveLayout.swift in Sources */,
 				F18D20260000000000000005 /* MoodCalendar/Features/Search/NotebookDecorations.swift in Sources */,
 				F26C20260000000000000002 /* MoodCalendar/Domain/EntryCollection.swift in Sources */,
@@ -281,15 +333,14 @@
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CODE_SIGN_ENTITLEMENTS = MoodCalendar/MoodCalendar.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_TEAM = 2A2N95V422;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = MoodCalendar/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Little Today";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MARKETING_VERSION = 1.0.4;
+				MARKETING_VERSION = 1.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.qingqing.MoodCalendar;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -330,15 +381,14 @@
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CODE_SIGN_ENTITLEMENTS = MoodCalendar/MoodCalendarDebug.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_TEAM = 2A2N95V422;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = MoodCalendar/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Little Today";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MARKETING_VERSION = 1.0.4;
+				MARKETING_VERSION = 1.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.qingqing.MoodCalendar;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;

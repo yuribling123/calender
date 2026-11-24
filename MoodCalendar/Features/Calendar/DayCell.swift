@@ -123,6 +123,7 @@ struct DayCell: View {
     }
 
     private func artworkScale(for choice: DailyChoice) -> CGFloat {
+        if let weatherScale = choice.weatherArtworkScale { return weatherScale }
         if [DailyChoice.poutyRabbit, .absentRabbit, .glassesRabbit, .tearfulRabbit].contains(choice) { return 1.26 }
         if choice == .starRabbit { return 1.3 }
         if choice == .cake { return 1.15 }

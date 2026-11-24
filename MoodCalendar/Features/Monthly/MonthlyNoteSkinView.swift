@@ -49,6 +49,72 @@ struct MonthlyNoteSurface<Content: View>: View {
                 .accessibilityValue(monthLabel)
                 .background { MovieTicketBackground() }
         }
+        else if skin == .transparentPlayer {
+            VStack(alignment: .leading, spacing: 8) {
+                content()
+                    .foregroundStyle(theme.palette.foreground)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.vertical, playerNoteVerticalInset)
+                    .frame(maxWidth: .infinity, minHeight: minimumContentHeight, alignment: .leading)
+                    .overlay(alignment: .bottom) {
+                        GeometryReader { geometry in
+                            ZStack(alignment: .leading) {
+                                Capsule().fill(theme.palette.foreground.opacity(0.28))
+                                    .frame(height: 1.5)
+                                Capsule().fill(theme.palette.foreground)
+                                    .frame(width: geometry.size.width * 0.18, height: 1.5)
+                                Circle().fill(theme.palette.foreground)
+                                    .frame(width: 4, height: 4)
+                                    .offset(x: max(0, geometry.size.width * 0.18 - 2))
+                            }
+                            .frame(height: 5)
+                        }
+                        .frame(height: 5)
+                        .accessibilityHidden(true)
+                        .allowsHitTesting(false)
+                    }
+
+                HStack(alignment: .center, spacing: 0) {
+                    Image(systemName: "headphones")
+                        .font(.system(size: 10, weight: .medium))
+                        .frame(maxWidth: .infinity, alignment: .leading)
+
+                    Image(systemName: "backward.end.fill")
+                        .font(.system(size: 13))
+                        .frame(width: 28, height: 26)
+                    Image(systemName: "pause.fill")
+                        .font(.system(size: 12, weight: .semibold))
+                        .frame(width: 26, height: 26)
+                        .overlay {
+                            Circle().strokeBorder(theme.palette.foreground.opacity(0.58), lineWidth: 1)
+                        }
+                        .padding(.horizontal, 10)
+                    Image(systemName: "forward.end.fill")
+                        .font(.system(size: 13))
+                        .frame(width: 28, height: 26)
+
+                    Image(systemName: "repeat.1")
+                        .font(.system(size: 11, weight: .medium))
+                        .frame(maxWidth: .infinity, alignment: .trailing)
+                }
+                .foregroundStyle(theme.palette.foreground.opacity(0.8))
+                .accessibilityHidden(true)
+                .allowsHitTesting(false)
+            }
+            .padding(.horizontal, 20)
+            .padding(.top, 5)
+            .padding(.bottom, 9)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background {
+                RoundedRectangle(cornerRadius: 22)
+                    .strokeBorder(theme.palette.foreground.opacity(0.38), lineWidth: 1)
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 19)
+                            .strokeBorder(theme.palette.foreground.opacity(0.10), lineWidth: 0.5)
+                            .padding(3)
+                    }
+            }
+        }
         else if skin == .player2 {
             VStack(alignment: .leading, spacing: 8) {
                 content()
@@ -58,7 +124,8 @@ struct MonthlyNoteSurface<Content: View>: View {
                     .frame(maxWidth: .infinity, minHeight: minimumContentHeight, alignment: .leading)
 
                 HStack {
-                    Image(systemName: "heart")
+                    Image(systemName: "heart.fill")
+                        .foregroundStyle(theme.palette.monthlyPlayerHeart)
                     Spacer()
                     Image(systemName: "backward.end.fill")
                     Spacer()
@@ -301,6 +368,37 @@ private struct MonthlyNoteSkinBackground: View {
         case .plain:
             RoundedRectangle(cornerRadius: 8)
                 .strokeBorder(edge, lineWidth: 0.7)
+        case .polkaDots:
+            RoundedRectangle(cornerRadius: 8)
+                .fill(.clear)
+                .overlay {
+                    Canvas { context, size in
+                        let colors = palette.monthlyPolkaInks
+                        var ink = context
+                        ink.addFilter(.blur(radius: 0.25))
+                        let columnSpacing: CGFloat = 54
+                        let rowSpacing: CGFloat = 37
+                        let diameter: CGFloat = 6
+                        let rows = Int(ceil(size.height / rowSpacing)) + 1
+                        let columns = Int(ceil(size.width / columnSpacing)) + 1
+                        for row in 0..<rows {
+                            for column in 0..<columns {
+                                let x = 18 + CGFloat(column) * columnSpacing
+                                    + (row.isMultiple(of: 2) ? 0 : columnSpacing / 2)
+                                let y = 18 + CGFloat(row) * rowSpacing
+                                guard x + diameter / 2 <= size.width - 8,
+                                      y + diameter / 2 <= size.height - 8 else { continue }
+                                let dot = Path(ellipseIn: CGRect(x: x - diameter / 2, y: y - diameter / 2,
+                                                                  width: diameter, height: diameter))
+                                ink.fill(dot, with: .color(colors[(row * 3 + column) % colors.count]
+                                    .opacity(0.65)))
+                            }
+                        }
+                        context.fill(paperGrain(in: size), with: .color(palette.foreground.opacity(0.12)))
+                    }
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                }
+                .overlay { RoundedRectangle(cornerRadius: 8).strokeBorder(edge, lineWidth: 0.6) }
         case .lace:
             LaceNoteBackground()
         case .ticket:
@@ -308,6 +406,9 @@ private struct MonthlyNoteSkinBackground: View {
         case .player:
             RoundedRectangle(cornerRadius: 22)
                 .fill(palette.monthlyPlayerPaper)
+        case .transparentPlayer:
+            RoundedRectangle(cornerRadius: 22)
+                .strokeBorder(palette.foreground.opacity(0.38), lineWidth: 1)
         case .player2:
             RoundedRectangle(cornerRadius: 28)
                 .fill(palette.monthlyPlayer2Body)
@@ -373,6 +474,25 @@ private struct MonthlyNoteSkinBackground: View {
                 }
                 .opacity(0.9)
         }
+    }
+
+    private func paperGrain(in size: CGSize) -> Path {
+        // A fixed seed keeps the texture still when SwiftUI redraws the canvas.
+        var seed: UInt64 = 42
+        func nextFraction() -> CGFloat {
+            seed = seed &* 6_364_136_223_846_793_005 &+ 1
+            return CGFloat(seed >> 48) / 65_536
+        }
+
+        var grain = Path()
+        let count = Int(size.width * size.height / 5)
+        for _ in 0..<count {
+            let x = nextFraction() * size.width
+            let y = nextFraction() * size.height
+            let width = 0.4 + nextFraction() * 0.8
+            grain.addEllipse(in: CGRect(x: x, y: y, width: width, height: 0.45))
+        }
+        return grain
     }
 }
 
@@ -777,7 +897,7 @@ struct MonthlyNoteSkinPicker: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
-                    ForEach(MonthlyNoteSkin.allCases) { skin in
+                    ForEach(MonthlyNoteSkin.selectableSkins) { skin in
                         Button {
                             if skin.requiresMembership && !membership.hasMembershipAccess {
                                 isMembershipPresented = true

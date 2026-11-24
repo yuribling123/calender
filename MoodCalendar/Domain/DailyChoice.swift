@@ -53,6 +53,7 @@ enum ChoiceGroup: String, CaseIterable, Identifiable {
     case daily = "小幸"
     case playful = "随性"
     case rabbit = "兔兔"
+    case weather = "天气"
 
     var id: String { rawValue }
     var title: String { localized(rawValue) }
@@ -60,7 +61,7 @@ enum ChoiceGroup: String, CaseIterable, Identifiable {
     var requiresMembership: Bool {
         switch self {
         case .mood, .company, .activity, .everyday: false
-        case .daily, .playful, .rabbit: true
+        case .daily, .playful, .rabbit, .weather: true
         }
     }
 }
@@ -79,6 +80,8 @@ enum DailyChoice: Int, CaseIterable, Identifiable {
     // Retained for existing records and backups; no longer offered in the picker.
     case walking = 35
     case shopping = 36
+    // Append-only IDs shared by local records, ZIP backups and iCloud.
+    case rainbow = 37, sunshine = 38, rain = 39, snow = 40, wind = 41
 
     var id: Int { rawValue }
     var mood: Mood? { Mood(rawValue: rawValue) }
@@ -88,7 +91,8 @@ enum DailyChoice: Int, CaseIterable, Identifiable {
         if rawValue <= 15 { return .activity }
         if rawValue <= 20 { return .company }
         if rawValue <= 25 { return .playful }
-        return rawValue <= 30 ? .rabbit : .everyday
+        if rawValue <= 30 { return .rabbit }
+        return rawValue <= 36 ? .everyday : .weather
     }
 
     static func choices(in group: ChoiceGroup) -> [DailyChoice] {
@@ -100,6 +104,7 @@ enum DailyChoice: Int, CaseIterable, Identifiable {
         case .company: [.alone, .thinkingOfSomeone, .fluffy, .friends, .family]
         case .playful: [.guitar, .wings, .cocktail, .lighter, .quill]
         case .rabbit: [.starRabbit, .glassesRabbit, .tearfulRabbit, .poutyRabbit, .absentRabbit]
+        case .weather: [.sunshine, .wind, .rain, .snow, .rainbow]
         }
     }
 
@@ -137,6 +142,11 @@ enum DailyChoice: Int, CaseIterable, Identifiable {
         case .tearfulRabbit: localized("委屈兔")
         case .poutyRabbit: localized("笑晕兔")
         case .absentRabbit: localized("无语兔")
+        case .rainbow: localized("彩虹")
+        case .sunshine: localized("晴天")
+        case .rain: localized("下雨")
+        case .snow: localized("下雪")
+        case .wind: localized("多云")
         default: ""
         }
     }
@@ -175,6 +185,11 @@ enum DailyChoice: Int, CaseIterable, Identifiable {
         case .tearfulRabbit: localized("没哭，只是眼睛下雨了")
         case .poutyRabbit: localized("哈哈哈哈救命啊")
         case .absentRabbit: localized("这都什么跟什么啊")
+        case .rainbow: localized("天空换了彩色皮肤")
+        case .sunshine: localized("天气真不错")
+        case .rain: localized("正在播放雨天频道")
+        case .snow: localized("出门多穿一点")
+        case .wind: localized("云朵有点多")
         default: ""
         }
     }
@@ -213,8 +228,20 @@ enum DailyChoice: Int, CaseIterable, Identifiable {
         case .tearfulRabbit: "rabbitTears"
         case .poutyRabbit: "rabbitPout"
         case .absentRabbit: "rabbitAbsent"
+        case .rainbow: "weatherRainbow"
+        case .sunshine: "weatherSunshine"
+        case .rain: "weatherRain"
+        case .snow: "weatherSnow"
+        case .wind: "weatherWind"
         default: ""
         }
     }
 
+}
+
+/// Saved paper IDs remain stable across backup and CloudKit records.
+enum CardPaperAccess {
+    static func requiresMembership(_ id: String?) -> Bool {
+        ["silverStars", "creamStars", "roseStars"].contains(id ?? "")
+    }
 }

@@ -15,8 +15,10 @@ new = dict(old, note='new', updatedAt='2024-03-02T00:00:00Z')
 notes = [{'monthKey':'2024-02','text':'old month','updatedAt':old['updatedAt']}, {'monthKey':'2024-02','text':'new month','updatedAt':new['updatedAt']}]
 payload = {'entries':[new,old],'monthlyNotes':notes,'monthlyNoteSkins':{'2024-02':'grid'}}
 photo = b'\xff\xd8TEST\xff\xd9'
-for name in ['legacy-duplicates.zip','conflicting-photos.zip','corrupt-crc.zip','invalid-date.zip','invalid-bookmark.zip']:
+for name in ['legacy-duplicates.zip','conflicting-photos.zip','corrupt-crc.zip','invalid-date.zip','invalid-bookmark.zip','invalid-letter.zip','invalid-zine.zip']:
     data = dict(payload)
+    if name == 'invalid-letter.zip': data['futureLetters'] = [{'id':'A51B2092-A2F8-4EDD-9D8C-366C9FE25137','title':'bad','body':'text','writtenDay':{'year':2024,'month':2,'day':28},'deliveryDay':{'year':2023,'month':2,'day':29},'createdAt':0,'updatedAt':0}]
+    if name == 'invalid-zine.zip': data['monthlyZineDrafts'] = {'2024-02':{'title':'bad','introduction':'','selectedDayKeys':['2024-03-01'],'showsWriting':False,'showsPhoto':False,'showsMusic':False,'showsWatch':False}}
     if name == 'invalid-bookmark.zip': data['starredDays'] = {'2023-02-29': True}
     if name == 'invalid-date.zip': data['entries'] = [dict(new,dayKey='2023-02-29'),old]
     with zipfile.ZipFile(root/name,'w',compression=zipfile.ZIP_STORED) as z:
@@ -31,6 +33,10 @@ PY
 sources=(
     MoodCalendar/Domain/Mood.swift
     MoodCalendar/Domain/DayKey.swift
+    MoodCalendar/Domain/FutureLetter.swift
+    MoodCalendar/Domain/MonthlyZine.swift
+    MoodCalendar/Persistence/FutureLetterStore.swift
+    MoodCalendar/Persistence/MonthlyZineDraftStore.swift
     MoodCalendar/Domain/DailyChoice.swift
     MoodCalendar/Domain/WatchKind.swift
     MoodCalendar/Domain/MonthLayout.swift

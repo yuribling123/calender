@@ -43,7 +43,7 @@ struct MembershipScreen: View {
                                 "包括%@等皮肤。", noteSkinNames(memberOnly: true)
                             ))
                             benefit(localized("自定义日历"), detail: localized(
-                                "设置日历标题，解锁%@主题，以及%@选中图形。",
+                                "解锁%@主题，以及%@选中图形。",
                                 themeNames(memberOnly: true), shapeNames(memberOnly: true)
                             ))
                             benefit(localized("新表情皮肤，持续解锁"), detail: localized(
@@ -143,7 +143,7 @@ struct MembershipScreen: View {
     }
 
     private func noteSkinNames(memberOnly: Bool) -> String {
-        MonthlyNoteSkin.allCases.filter { $0.requiresMembership == memberOnly }
+        MonthlyNoteSkin.selectableSkins.filter { $0.requiresMembership == memberOnly }
             .map { localized($0.title) }.joined(separator: localized("、"))
     }
 

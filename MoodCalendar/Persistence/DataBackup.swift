@@ -22,7 +22,9 @@ struct DataBackupDocument: FileDocument {
 }
 
 enum DataBackupExporter {
-    static func makeArchive(entries: [MoodEntry], monthlyNotes: [MonthlyNote], monthlyNoteSkins: [String: String] = [:], starredDays: [String: Bool] = [:]) throws -> Data {
+    static func makeArchive(entries: [MoodEntry], monthlyNotes: [MonthlyNote], monthlyNoteSkins: [String: String] = [:], starredDays: [String: Bool] = [:], futureLetters: [FutureLetter] = [], monthlyZineDrafts: [String: MonthlyZineDraft] = [:]) throws -> Data {
+        try FutureLetterStore.validate(futureLetters)
+        try MonthlyZineDraftStore.validate(monthlyZineDrafts)
         // CloudKit can deliver duplicate records before the normal reconciliation
         // runs. Export one whole, latest record per day/month, including its photo.
         let entries = Dictionary(grouping: entries, by: \.dayKey).values.compactMap {
@@ -49,6 +51,7 @@ enum DataBackupExporter {
                     choiceID: $0.moodValue,
                     note: $0.note,
                     cardPaperID: $0.cardPaperID,
+                    locationName: $0.locationName,
                     songTitle: $0.songTitle,
                     songArtist: $0.songArtist,
                     watchTitle: $0.watchTitle,
@@ -60,6 +63,8 @@ enum DataBackupExporter {
             },
             monthlyNoteSkins: monthlyNoteSkins,
             starredDays: starredDays,
+            futureLetters: futureLetters,
+            monthlyZineDrafts: monthlyZineDrafts,
             monthlyNotes: monthlyNotes.sorted { $0.monthKey < $1.monthKey }.map {
                 BackupMonthlyNote(
                     monthKey: $0.monthKey,
@@ -89,6 +94,7 @@ enum DataBackupExporter {
         for entry in entries.sorted(by: { $0.dayKey < $1.dayKey }) {
             lines.append("\(entry.dayKey) · \(entry.choice?.title ?? localized("Unknown sticker (%@)", String(entry.moodValue)))")
             if !entry.note.isEmpty { lines.append(entry.note) }
+            if let location = entry.locationName, !location.isEmpty { lines.append("📍 \(location)") }
             if let title = entry.watchTitle, !title.isEmpty {
                 lines.append("\(WatchKind.title(for: entry.watchKind)) · \(title)")
                 if let note = entry.watchNote, !note.isEmpty { lines.append(note) }
@@ -124,6 +130,8 @@ private struct BackupPayload: Codable {
     let entries: [BackupEntry]
     let monthlyNoteSkins: [String: String]?
     let starredDays: [String: Bool]?
+    let futureLetters: [FutureLetter]?
+    let monthlyZineDrafts: [String: MonthlyZineDraft]?
     let monthlyNotes: [BackupMonthlyNote]
 }
 
@@ -132,6 +140,7 @@ private struct BackupEntry: Codable {
     let choiceID: Int
     let note: String
     let cardPaperID: String?
+    let locationName: String?
     let songTitle: String?
     let songArtist: String?
     let watchTitle: String?
@@ -153,6 +162,7 @@ struct DataBackupImportPlan: Sendable {
         let choiceID: Int
         let note: String
         let cardPaperID: String?
+        let locationName: String?
         let songTitle: String?
         let songArtist: String?
         let watchTitle: String?
@@ -174,6 +184,8 @@ struct DataBackupImportPlan: Sendable {
     let monthlyNotesToImport: [MonthlyNote]
     let existingEntryCount: Int
     let existingMonthlyNoteCount: Int
+    let futureLetters: [FutureLetter]
+    let monthlyZineDrafts: [String: MonthlyZineDraft]
 
     var photoCount: Int { entriesToImport.filter { $0.photoData != nil }.count }
 }
@@ -233,12 +245,24 @@ enum DataBackupImporter {
             throw ImportError.invalidBackup
         }
         let skins = importedSkins.mapValues { MonthlyNoteSkin(rawValue: $0)?.rawValue ?? MonthlyNoteSkin.plain.rawValue }
+        let futureLetters = payload.futureLetters ?? []
+        let monthlyZineDrafts = payload.monthlyZineDrafts ?? [:]
+        guard futureLetters.count <= maximumFileCount, monthlyZineDrafts.count <= maximumFileCount else {
+            throw ImportError.invalidBackup
+        }
+        do {
+            try FutureLetterStore.validate(futureLetters)
+            try MonthlyZineDraftStore.validate(monthlyZineDrafts)
+        } catch {
+            throw ImportError.invalidBackup
+        }
 
         let entries = try payload.entries.map { item -> DataBackupImportPlan.Entry in
             guard isValidDayKey(item.dayKey),
                   DailyChoice(rawValue: item.choiceID) != nil,
                   item.note.utf8.count <= 1_000_000,
                   (item.cardPaperID?.utf8.count ?? 0) <= 100,
+                  (item.locationName?.utf8.count ?? 0) <= 1_000_000,
                   (item.songTitle?.utf8.count ?? 0) <= 1_000_000,
                   (item.songArtist?.utf8.count ?? 0) <= 1_000_000,
                   (item.watchTitle?.utf8.count ?? 0) <= 1_000_000,
@@ -268,6 +292,7 @@ enum DataBackupImporter {
                 choiceID: item.choiceID,
                 note: item.note,
                 cardPaperID: item.cardPaperID.flatMap { CardPaper(rawValue: $0)?.rawValue },
+                locationName: nonEmpty(item.locationName),
                 songTitle: songTitle,
                 songArtist: songTitle == nil ? nil : nonEmpty(item.songArtist),
                 watchTitle: nonEmpty(item.watchTitle),
@@ -317,7 +342,9 @@ enum DataBackupImporter {
             entriesToImport: newEntries,
             monthlyNotesToImport: newNotes,
             existingEntryCount: latestEntries.count - newEntries.count,
-            existingMonthlyNoteCount: latestNotes.count - newNotes.count
+            existingMonthlyNoteCount: latestNotes.count - newNotes.count,
+            futureLetters: futureLetters,
+            monthlyZineDrafts: monthlyZineDrafts
         )
     }
 
@@ -337,6 +364,7 @@ enum DataBackupImporter {
             entry.updatedAt = item.updatedAt
             entry.photoData = item.photoData
             entry.cardPaperID = item.cardPaperID
+            entry.locationName = item.locationName
             entry.songTitle = item.songTitle
             entry.songArtist = item.songArtist
             entry.watchTitle = item.watchTitle

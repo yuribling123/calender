@@ -27,6 +27,8 @@ struct EntryDeletionChecks {
         if CommandLine.arguments[1] == "reopen" {
             try expect(try count("2024-02-29") == 0)
             try expect(try count("2024-03-01") == 1)
+            let retained = try context.fetch(FetchDescriptor<MoodEntry>()).first { $0.dayKey == "2024-03-01" }
+            try expect(retained?.cardPaperID == "hearts")
             print("Deletion remains saved after reopening")
             return
         }
@@ -37,6 +39,7 @@ struct EntryDeletionChecks {
         }
         let leapDay = day(2024, 2, 29)
         let nextMonth = day(2024, 3, 1)
+        let premiumPaperDay = day(2024, 4, 1)
         let choice = DailyChoice.allCases.first!
         for freeChoice in [DailyChoice.cooking, .gaming, .tastyFood, .watchingShows, .walking, .shopping] {
             try store.save(day: leapDay, choice: freeChoice, note: "free")
@@ -59,7 +62,22 @@ struct EntryDeletionChecks {
         try store.save(day: leapDay, choice: choice, note: "first")
         try store.save(day: leapDay, choice: choice, note: "updated")
         try expect(try count(leapDay.storageValue) == 1)
-        try store.save(day: nextMonth, choice: choice, note: "keep")
+        // Calendar quick recording passes the remembered paper only when creating a day.
+        try store.save(day: nextMonth, choice: choice, note: "", cardPaperID: "hearts", updatesCardPaper: true)
+        try store.save(day: nextMonth, choice: choice, note: "keep", cardPaperID: "blue", updatesCardPaper: false)
+        let retained = try context.fetch(FetchDescriptor<MoodEntry>()).first { $0.dayKey == nextMonth.storageValue }
+        try expect(retained?.cardPaperID == "hearts")
+        try expect(try count(nextMonth.storageValue) == 1)
+        do {
+            try store.save(day: premiumPaperDay, choice: choice, note: "", cardPaperID: "silverStars", updatesCardPaper: true)
+            fatalError("Premium paper must still require membership")
+        } catch {
+            try expect(error.localizedDescription == localized("解锁永久会员后才能使用这款花纸。"))
+        }
+        try store.save(day: premiumPaperDay, choice: choice, note: "member", isMember: true,
+                       cardPaperID: "silverStars", updatesCardPaper: true)
+        let premiumPaperEntry = try context.fetch(FetchDescriptor<MoodEntry>()).first { $0.dayKey == premiumPaperDay.storageValue }
+        try expect(premiumPaperEntry?.cardPaperID == "silverStars")
         // Also remove any legacy duplicates for the selected day.
         context.insert(MoodEntry(dayKey: leapDay.storageValue, choice: choice, note: "duplicate"))
         try context.save()

@@ -4,7 +4,11 @@ import UIKit
 
 @main
 struct MoodCalendarApp: App {
+    @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.openURL) private var openURL
+    @StateObject private var updateChecker = AppUpdateChecker()
     @StateObject private var membershipStore = MembershipStore()
+    @StateObject private var futureLetterStore = FutureLetterStore(isInMemory: DemoData.isEnabled)
     @AppStorage("appTheme") private var storedTheme = AppTheme.pink.rawValue
     @AppStorage("selectionShape") private var storedSelectionShape = SelectionShape.circle.rawValue
 
@@ -13,6 +17,7 @@ struct MoodCalendarApp: App {
     @AppStorage("appLanguage") private var storedLanguage = AppLanguage.selection
     @State private var requestedCalendarMonth: Date?
     @State private var isGuidePresented = false
+    @State private var isStartupReady = false
 
     private var guideKey: String { DemoData.isEnabled ? "demoHasSeenGuide" : "hasSeenGuide" }
 
@@ -105,6 +110,7 @@ struct MoodCalendarApp: App {
                 .id(storedLanguage)
                 .environment(\.locale, AppLanguage.locale)
                 .environmentObject(membershipStore)
+                .environmentObject(futureLetterStore)
                 .environment(\.appTheme, AppTheme(rawValue: storedTheme) ?? .pink)
                 .environment(\.selectionShape, SelectionShape(rawValue: storedSelectionShape) ?? .circle)
                 .tint((AppTheme(rawValue: storedTheme) ?? .pink).palette.strongAccent)
@@ -148,6 +154,7 @@ struct MoodCalendarApp: App {
                     Text(localized("这次未能开启同步，记录仍保存在本机。可以稍后在「我的」重新开启 iCloud 同步。"))
                 }
                 .task {
+                    defer { isStartupReady = true }
                     try? await MainActor.run { try prepareStore() }
                     let entries = (try? container.mainContext.fetch(FetchDescriptor<MoodEntry>())) ?? []
                     await DailyFragmentReminder.refresh(
@@ -165,6 +172,22 @@ struct MoodCalendarApp: App {
                             isGuidePresented = true
                         }
                     }
+                }
+                .task(id: scenePhase) {
+                    guard scenePhase == .active else { return }
+                    await updateChecker.checkIfNeeded()
+                }
+                .alert(localized("有新版本啦"), isPresented: Binding(
+                    get: {
+                        isStartupReady && updateChecker.availableUpdate != nil && !isGuidePresented
+                            && !isICloudFailurePending
+                    },
+                    set: { if !$0 { updateChecker.availableUpdate = nil } }
+                ), presenting: updateChecker.availableUpdate) { update in
+                    Button(localized("前往更新")) {
+                        if let url = update.productURL { openURL(url) }
+                    }
+                    Button(localized("稍后"), role: .cancel) { updateChecker.dismiss(update) }
                 }
         }
         .modelContainer(container)

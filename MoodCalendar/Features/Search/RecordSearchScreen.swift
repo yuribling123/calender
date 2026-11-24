@@ -1,28 +1,30 @@
 import SwiftUI
-import SwiftData
 import UIKit
 
 struct RecordSearchScreen: View {
+    let entries: [MoodEntry]
     var starredDayKeys: Set<String> = []
     let onClose: () -> Void
     let onOpenResult: (RecordSearchResult) -> Void
     @Environment(\.appTheme) private var theme
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
-    @Query private var entries: [MoodEntry]
     @State private var query = ""
-    @State private var topResultID: String?
     @State private var isKeyboardVisible = false
     @State private var pendingResult: RecordSearchResult?
     @FocusState private var isSearchFocused: Bool
     @ScaledMetric(relativeTo: .body) private var contentFontSize: CGFloat = 14
 
-    private var results: [RecordSearchResult] {
-        RecordSearch.results(entries: entries, monthlyNotes: [], query: query)
+    @State private var results: [RecordSearchResult] = []
+    @State private var resultMonths: [JournalMonth] = []
+    private var entryRevision: [String] {
+        entries.map { "\($0.id):\($0.updatedAt.timeIntervalSince1970)" }
     }
 
-    private var resultMonths: [JournalMonth] {
-        Dictionary(grouping: results) {
+    private func refreshResults() {
+        let matches = RecordSearch.results(entries: entries, monthlyNotes: [], query: query)
+        results = matches
+        resultMonths = Dictionary(grouping: matches) {
             Calendar.current.dateInterval(of: .month, for: $0.date)?.start ?? $0.date
         }
         .map { JournalMonth(date: $0.key, results: $0.value) }
@@ -39,11 +41,13 @@ struct RecordSearchScreen: View {
             ZStack {
                 Color.black.opacity(colorScheme == .dark ? 0.38 : 0.18)
                     .ignoresSafeArea()
-                    .onTapGesture { isSearchFocused = false }
+                    .onTapGesture(perform: closeSearch)
                     .accessibilityHidden(true)
 
                 notebook
                     .frame(width: width, height: height)
+                    .contentShape(RoundedRectangle(cornerRadius: 13))
+                    .onTapGesture { isSearchFocused = false }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
@@ -62,12 +66,16 @@ struct RecordSearchScreen: View {
             // Let the restored keyboard safe area settle before locating the date in the main calendar.
             DispatchQueue.main.async { openPendingResult() }
         }
+        .onChange(of: query, initial: true) { _, _ in refreshResults() }
+        .onChange(of: entryRevision) { _, _ in refreshResults() }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.significantTimeChangeNotification)) { _ in
+            refreshResults()
+        }
         .onDisappear {
             pendingResult = nil
             isSearchFocused = false
             isKeyboardVisible = false
         }
-        .onChange(of: query) { _, _ in topResultID = nil }
     }
 
     private func requestOpenResult(_ result: RecordSearchResult) {
@@ -176,7 +184,8 @@ struct RecordSearchScreen: View {
                 }
                 .padding(.bottom, 24)
             }
-            .scrollPosition(id: $topResultID, anchor: .top)
+            // Results need ordinary vertical scrolling. Tracking a row with an explicit
+            // anchor can re-align the content horizontally when keyboard focus changes.
             .scrollDismissesKeyboard(.interactively)
             .overlay(alignment: .bottom) {
                 LinearGradient(
@@ -193,39 +202,14 @@ struct RecordSearchScreen: View {
 
     private var journalHeader: some View {
         VStack(alignment: .leading, spacing: 0) {
-            HStack(spacing: 12) {
-                Text(localized("找一找"))
-                    .font(.system(.title3, design: .rounded).weight(.medium))
-                    .tracking(0.5)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .accessibilityAddTraits(.isHeader)
-                Spacer(minLength: 0)
-                Button(action: closeSearch) {
-                    Image(systemName: "xmark")
-                        .font(.system(size: 15, weight: .regular))
-                        .foregroundStyle(.secondary)
-                        .frame(width: 44, height: 44)
-                        .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel(localized("关闭"))
-            }
-            // if !isSearchFocused {
-            //     Text(localized("那些记下来的日子"))
-            //         .font(.caption)
-            //         .foregroundStyle(.secondary)
-            //         .padding(.top, 2)
-            // }
-
             searchField
-                .padding(.top, 6)
                 .disabled(pendingResult != nil)
 
             HStack(spacing: 8) {
                 Spacer(minLength: 0)
                 Text(localized(
                     query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-                        ? "共记录了 %@ 个日子" : "找到 %@ 条回忆",
+                        ? "有 %@ 条文字记录" : "找到 %@ 条回忆",
                     String(results.count)
                 ))
             }
@@ -305,7 +289,6 @@ struct RecordSearchScreen: View {
                         }
                     }
                 }
-                .scrollTargetLayout()
             }
         }
         .frame(maxWidth: .infinity)
@@ -330,7 +313,7 @@ struct RecordSearchScreen: View {
     }
 
     private var emptyState: some View {
-        let hasWrittenNotes = entries.contains { !$0.note.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+        let hasWrittenNotes = entries.contains { !$0.note.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !($0.locationName ?? "").trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
         return VStack(spacing: 10) {
             Text(localized(hasWrittenNotes ? "没有找到这段回忆" : "还没有写下文字"))
                 .font(.subheadline)
@@ -383,9 +366,10 @@ private struct SearchResultRow: View {
     @ScaledMetric(relativeTo: .body) private var noteFontSize: CGFloat = 14
     @ScaledMetric(relativeTo: .caption2) private var secondaryFontSize: CGFloat = 11
 
-    private var paper: Color {
-        CardPaper.resolve(result.cardPaperID).swatchAccent(for: theme)
-    }
+    // 暂停显示记录的色纸颜色，保留以便恢复。
+    // private var paper: Color {
+    //     CardPaper.resolve(result.cardPaperID).swatchAccent(for: theme)
+    // }
 
     var body: some View {
         Group {
@@ -401,7 +385,8 @@ private struct SearchResultRow: View {
                 }
             }
         }
-        .padding(.horizontal, 12)
+        .padding(.leading, 4)
+        .padding(.trailing, 12)
         .padding(.vertical, 5)
         .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
         .foregroundStyle(theme.palette.foreground)
@@ -414,14 +399,14 @@ private struct SearchResultRow: View {
                     .accessibilityHidden(true)
             }
         }
-        .overlay(alignment: .leading) {
-            if result.source == .day {
-                Capsule()
-                    .fill(paper)
-                    .frame(width: 4, height: 22)
-                    .accessibilityHidden(true)
-            }
-        }
+        // .overlay(alignment: .leading) {
+        //     if result.source == .day {
+        //         Capsule()
+        //             .fill(paper)
+        //             .frame(width: 4, height: 22)
+        //             .accessibilityHidden(true)
+        //     }
+        // }
         .contentShape(Rectangle())
     }
 
@@ -435,6 +420,12 @@ private struct SearchResultRow: View {
                     .accessibilityHidden(true)
             }
             VStack(alignment: .leading, spacing: 3) {
+                if let location = result.locationName {
+                    Label(location, systemImage: "mappin")
+                        .font(.system(size: noteFontSize - 1))
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
                 highlighted(result.preview)
                     .font(.system(size: noteFontSize))
                     .lineLimit(2)

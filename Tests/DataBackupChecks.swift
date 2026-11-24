@@ -4,7 +4,7 @@ import SwiftData
 #if os(macOS)
 // Only raw IDs are needed by the importer. The actual iOS palette depends on UIKit.
 enum CardPaper: String {
-    case original, pink, apricot, yellow, green, blue, purple, caramel, black
+    case original, pink, apricot, yellow, green, blue, purple, caramel, black, hearts, stars, silverStars, creamStars, roseStars
 }
 #endif
 
@@ -49,10 +49,44 @@ struct DataBackupChecks {
         expect(imported.monthlyNotesToImport.count == 1)
         expect(imported.monthlyNotesToImport.first?.text == "new month")
         let filtered = try plan("legacy-duplicates.zip", days: ["2024-02-29"], months: ["2024-02"])
+        expect(imported.futureLetters.isEmpty && imported.monthlyZineDrafts.isEmpty)
+        // Local letters and editorial drafts travel with a ZIP, including a
+        // letters-only archive. Restoring never replaces an existing local ID.
+        let letter = FutureLetter(id: UUID(), title: "给以后", body: "一段私人的正文",
+            writtenDay: DayKey(Calendar.current.date(from: DateComponents(year: 2024, month: 2, day: 28, hour: 12))!),
+            deliveryDay: DayKey(Calendar.current.date(from: DateComponents(year: 2024, month: 2, day: 29, hour: 12))!),
+            createdAt: Date(timeIntervalSince1970: 1_709_078_400),
+            updatedAt: Date(timeIntervalSince1970: 1_709_078_400), openedAt: nil)
+        var zine = MonthlyZineDraft()
+        zine.title = "二月的小刊"
+        zine.selectedDayKeys = ["2024-02-29"]
+        zine.introduction = "想留下的二月"
+        let localArchive = try DataBackupExporter.makeArchive(entries: [], monthlyNotes: [],
+            futureLetters: [letter], monthlyZineDrafts: ["2024-02": zine])
+        let localPlan = try DataBackupImporter.makePlan(from: localArchive, existingDayKeys: [], existingMonthKeys: [])
+        expect(localPlan.futureLetters == [letter])
+        expect(localPlan.monthlyZineDrafts == ["2024-02": zine])
+        let lettersURL = directory.appendingPathComponent("future-letters.json")
+        let letters = FutureLetterStore(fileURL: lettersURL)
+        try letters.importLetters(localPlan.futureLetters)
+        try letters.open(letter.id)
+        try letters.importLetters(localPlan.futureLetters)
+        let reopenedLetters = FutureLetterStore(fileURL: lettersURL)
+        expect(reopenedLetters.letters.count == 1 && reopenedLetters.letters[0].isOpened)
+        let draftsURL = directory.appendingPathComponent("zine-drafts.json")
+        let drafts = MonthlyZineDraftStore(fileURL: draftsURL)
+        try drafts.mergeImportedDrafts(localPlan.monthlyZineDrafts)
+        var localDraft = zine
+        localDraft.title = "本机修改的标题"
+        try drafts.save(localDraft, for: "2024-02")
+        try drafts.mergeImportedDrafts(localPlan.monthlyZineDrafts)
+        expect(MonthlyZineDraftStore(fileURL: draftsURL).draft(for: "2024-02")?.title == localDraft.title)
         expect(filtered.entriesToImport.isEmpty && filtered.monthlyNotesToImport.isEmpty)
         expect(filtered.existingEntryCount == 1 && filtered.existingMonthlyNoteCount == 1)
         rejects("conflicting-photos.zip")
         rejects("corrupt-crc.zip")
+        rejects("invalid-letter.zip")
+        rejects("invalid-zine.zip")
         rejects("invalid-date.zip")
         rejects("invalid-bookmark.zip")
         expect(imported.starredDays.isEmpty)
@@ -76,6 +110,19 @@ struct DataBackupChecks {
                 return note
             }
             return (entries, notes)
+        }
+        func entryPlan(for entries: [MoodEntry]) throws -> DataBackupImportPlan {
+            let archive = try DataBackupExporter.makeArchive(entries: entries, monthlyNotes: [])
+            return try DataBackupImporter.makePlan(from: archive, existingDayKeys: [], existingMonthKeys: [])
+        }
+        func withEntryStore(
+            at url: URL,
+            schema: Schema,
+            perform: (ModelContext) throws -> Void
+        ) throws {
+            let container = try ModelContainer(for: schema, configurations:
+                ModelConfiguration(schema: schema, url: url, cloudKitDatabase: .none))
+            try perform(ModelContext(container))
         }
         let (entries, notes) = models(imported)
         let stale = MoodEntry(dayKey: "2024-02-29", choice: .bad, note: "stale")
@@ -101,12 +148,47 @@ struct DataBackupChecks {
             MoodEntry(dayKey: "2024-03-04", choice: .walking, note: "散步"),
             MoodEntry(dayKey: "2024-03-05", choice: .shopping, note: "逛街")
         ]
-        let everydayArchive = try DataBackupExporter.makeArchive(entries: everydayEntries, monthlyNotes: [])
-        let everydayPlan = try DataBackupImporter.makePlan(from: everydayArchive, existingDayKeys: [], existingMonthKeys: [])
+        let everydayPlan = try entryPlan(for: everydayEntries)
         expect(Set(everydayPlan.entriesToImport.map(\.choiceID)) == [31, 32, 33, 34, 35, 36])
         expect(DailyChoice.choices(in: .everyday) == [.cooking, .gaming, .tastyFood, .watchingShows, .shopping])
         expect(DailyChoice(rawValue: 35) == .walking) // Historical walks stay readable.
         expect(DailyChoice.cooking.group == .everyday && DailyChoice.gaming.group == .everyday)
+
+        let weather = DailyChoice.choices(in: .weather)
+        expect(weather == [.rainbow, .sunshine, .rain, .snow, .wind])
+        expect(weather.map(\.rawValue) == [37, 38, 39, 40, 41])
+        expect(weather.allSatisfy { $0.group == .weather && $0.group.requiresMembership })
+        let weatherEntries = weather.enumerated().map { index, choice in
+            MoodEntry(dayKey: "2024-03-0\(index + 1)", choice: choice, note: choice.title)
+        }
+        let weatherText = DataBackupExporter.readableText(entries: weatherEntries, monthlyNotes: [])
+        expect(weather.allSatisfy { weatherText.contains($0.title) })
+        let weatherPlan = try entryPlan(for: weatherEntries)
+        expect(Set(weatherPlan.entriesToImport.map(\.choiceID)) == Set(37...41))
+        let weatherStoreURL = directory.appendingPathComponent("weather.store")
+        let weatherSchema = Schema([MoodEntry.self, MonthlyNote.self, MonthlyNoteSkinSelection.self, StarredDaySelection.self])
+        try withEntryStore(at: weatherStoreURL, schema: weatherSchema) { context in
+            _ = try DataBackupImporter.restore(weatherPlan, into: context)
+            _ = try DataBackupImporter.restore(weatherPlan, into: context)
+            let restoredWeatherCount = try context.fetchCount(FetchDescriptor<MoodEntry>())
+            expect(restoredWeatherCount == 5)
+            for choice in weather {
+                do {
+                    try EntryStore(context: context).save(day: DayKey(Date()), choice: choice, note: "blocked")
+                    preconditionFailure("Weather sticker accepted without membership")
+                } catch {
+                    expect(error.localizedDescription == localized("解锁永久会员后才能使用这套表情。"))
+                }
+                try EntryStore(context: context).save(day: DayKey(Date()), choice: choice, note: "member", isMember: true)
+            }
+        }
+        try withEntryStore(at: weatherStoreURL, schema: weatherSchema) { context in
+            let records = try context.fetch(FetchDescriptor<MoodEntry>())
+            expect(records.count == 6) // Five imported days and one updated today.
+            expect(Set(records.compactMap(\.choice)) == Set(weather))
+            expect(records.first { $0.dayKey == DayKey(Date()).storageValue }?.choice == .wind)
+        }
+        print("PASS: weather membership gate, stable IDs, backup round trip and reopened records")
 
         // New optional fields must survive export/import, while old backups stay readable.
         expect(imported.entriesToImport.first?.watchTitle == nil)
@@ -138,7 +220,50 @@ struct DataBackupChecks {
         expect(titleOnlyPlan.entriesToImport.first?.watchKind == nil)
         expect(titleOnlyPlan.entriesToImport.first?.watchNote == nil)
 
+        for paperID in ["hearts", "stars", "silverStars", "creamStars", "roseStars"] {
+            let patterned = MoodEntry(dayKey: "2024-02-29", choice: .good, note: "纸上的文字")
+            patterned.cardPaperID = paperID
+            let archive = try DataBackupExporter.makeArchive(entries: [patterned], monthlyNotes: [])
+            let plan = try DataBackupImporter.makePlan(from: archive, existingDayKeys: [], existingMonthKeys: [])
+            expect(plan.entriesToImport.first?.cardPaperID == paperID)
+        }
+
         let schema = Schema([MoodEntry.self, MonthlyNote.self, MonthlyNoteSkinSelection.self, StarredDaySelection.self])
+        // Import must preserve premium appearance without granting membership.
+        let paperStoreURL = directory.appendingPathComponent("premium-papers.store")
+        let premiumIDs = ["silverStars", "creamStars", "roseStars"]
+        do {
+            let store = try ModelContainer(for: schema, configurations:
+                ModelConfiguration(schema: schema, url: paperStoreURL, cloudKitDatabase: .none))
+            let context = ModelContext(store)
+            for (index, id) in premiumIDs.enumerated() {
+                let record = MoodEntry(dayKey: "2024-02-\(27 + index)", choice: .good, note: id)
+                record.cardPaperID = id
+                let archive = try DataBackupExporter.makeArchive(entries: [record], monthlyNotes: [])
+                let plan = try DataBackupImporter.makePlan(from: archive, existingDayKeys: [], existingMonthKeys: [])
+                _ = try DataBackupImporter.restore(plan, into: context)
+            }
+        }
+        do {
+            let store = try ModelContainer(for: schema, configurations:
+                ModelConfiguration(schema: schema, url: paperStoreURL, cloudKitDatabase: .none))
+            let context = ModelContext(store)
+            let records = try context.fetch(FetchDescriptor<MoodEntry>())
+            expect(Set(records.compactMap(\.cardPaperID)) == Set(premiumIDs))
+            expect(!CardPaperAccess.requiresMembership("stars"))
+            for id in premiumIDs {
+                expect(CardPaperAccess.requiresMembership(id))
+                do {
+                    try EntryStore(context: context).save(day: DayKey(Date()), choice: .good,
+                        note: "blocked", cardPaperID: id, updatesCardPaper: true)
+                    fatalError("Premium paper accepted without membership")
+                } catch { }
+            }
+            try EntryStore(context: context).save(day: DayKey(Date()), choice: .good,
+                note: "member", isMember: true, cardPaperID: "roseStars", updatesCardPaper: true)
+            try EntryStore(context: context).save(day: DayKey(Date()), choice: .good,
+                note: "retain existing paper", cardPaperID: "roseStars", updatesCardPaper: true)
+        }
         let bookmarkArchive = try DataBackupExporter.makeArchive(entries: [], monthlyNotes: [],
             starredDays: ["2024-02-29": true, "2025-12-31": false, "2027-01-01": true])
         let bookmarkPlan = try DataBackupImporter.makePlan(from: bookmarkArchive, existingDayKeys: [], existingMonthKeys: [])

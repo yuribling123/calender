@@ -1,6 +1,88 @@
 import SwiftUI
 import UIKit
 
+enum CollectionPhotoSkin: String, CaseIterable, Identifiable {
+    case original, nightPrint, clearPlate
+
+    var id: String { rawValue }
+    var title: String {
+        switch self {
+        case .original: localized("原版相纸")
+        case .nightPrint: localized("夜拍相纸")
+        case .clearPlate: localized("清透片")
+        }
+    }
+    var caption: String {
+        switch self {
+        case .original: localized("暖白小相纸，留住日常的一瞬")
+        case .nightPrint: localized("哑黑相纸，收好夜里的微光")
+        case .clearPlate: localized("清透薄片，让回忆轻轻浮着")
+        }
+    }
+    static func resolve(_ value: String) -> Self { Self(rawValue: value) ?? .original }
+}
+
+enum CollectionWatchSkin: String, CaseIterable, Identifiable {
+    case original, clearWhite
+    var id: String { rawValue }
+    var title: String {
+        switch self {
+        case .original: localized("经典录像带")
+        case .clearWhite: localized("透明录像带")
+        }
+    }
+    var caption: String {
+        switch self {
+        case .original: localized("小小录像带，收好看过的故事")
+        case .clearWhite: localized("清透带壳，留住故事转动的片刻")
+        }
+    }
+    static func resolve(_ value: String) -> Self { Self(rawValue: value) ?? .original }
+}
+
+struct CollectionTapeMaterial {
+    let shell: Color
+    let bevel: Color
+    let edge: Color
+    let window: Color
+    let pack: Color
+    let hub: Color
+    let label: Color
+    let ink: Color
+    let grainOpacity: Double
+}
+
+enum CollectionVinylSkin: String, CaseIterable, Identifiable {
+    case original, peachSmoke, teaMarble, lightFilm, nightLace
+    // case rainMist // 雨雾透胶暂时停用，保留实现。
+    // case teaMilkMist // 暂时停用，恢复时放回雨雾透胶之后。
+
+    var id: String { rawValue }
+    var title: String {
+        switch self {
+        case .original: localized("原版")
+        // case .rainMist: localized("雨雾透胶")
+        case .nightLace: localized("夜色蕾丝")
+        // case .teaMilkMist: localized("青茶奶雾")
+        case .teaMarble: localized("青玉流纹")
+        case .peachSmoke: localized("白桃浮烟")
+        case .lightFilm: localized("花影白胶")
+        }
+    }
+    var caption: String {
+        switch self {
+        case .original: localized("细唱纹，哑光黑")
+        // case .rainMist: localized("蓝灰透胶，藏着两缕雨雾")
+        case .nightLace: localized("梅灰黑胶，轻轻压上一圈蕾丝")
+        // case .teaMilkMist: localized("清透茶绿，揉进一团暖奶雾")
+        case .teaMarble: localized("青绿透胶，乳白纹路慢慢流淌")
+        case .peachSmoke: localized("淡茶桃色，浮着柔柔的奶白烟")
+        case .lightFilm: localized("清透白胶，轻轻刻下几朵小花")
+        }
+    }
+    static func resolve(_ value: String) -> Self { Self(rawValue: value) ?? .original }
+}
+
 // Collection skin customization is temporarily disabled.
 // enum CollectionVinylSkin: String, CaseIterable, Identifiable {
 //     case original, rose, smoked
@@ -142,7 +224,60 @@ enum AppTheme: String, CaseIterable, Identifiable {
 }
 
 enum CardPaper: String, CaseIterable, Identifiable {
-    case original, pink, apricot, yellow, green, blue, purple, caramel, black
+    // roseStars remains the saved ID for the replacement mist-purple design.
+    case original, pink, apricot, yellow, green, blue, purple, caramel, black, stars, silverStars, creamStars, roseStars
+    case strawberryHearts, blueberryHearts, peachHearts, grapeHearts, nightHearts
+
+    var isHeartPattern: Bool {
+        switch self {
+        case .strawberryHearts, .blueberryHearts, .peachHearts, .grapeHearts, .nightHearts: true
+        default: false
+        }
+    }
+    var isStarPattern: Bool { self == .stars || self == .silverStars || self == .creamStars || self == .roseStars }
+    var isPatterned: Bool { isStarPattern || isHeartPattern }
+    var requiresMembership: Bool { CardPaperAccess.requiresMembership(rawValue) }
+    var hasUnbackedStarPreview: Bool { isStarPattern }
+
+    var dotInk: Color { heartInk }
+
+    var heartInk: Color {
+        switch self {
+        case .strawberryHearts: adaptive(light: rgb(214, 160, 168), dark: rgb(217, 169, 177))
+        case .blueberryHearts: adaptive(light: rgb(158, 173, 196), dark: rgb(172, 190, 213))
+        case .peachHearts: adaptive(light: rgb(212, 195, 179), dark: rgb(186, 163, 147))
+        case .grapeHearts: adaptive(light: rgb(190, 161, 172), dark: rgb(204, 176, 189))
+        default: adaptive(light: rgb(216, 191, 195), dark: rgb(222, 201, 205))
+        }
+    }
+
+    var previewStarInk: Color {
+        self == .creamStars
+            ? adaptive(light: rgb(216, 206, 190), dark: rgb(196, 187, 170))
+            : patternInk
+    }
+
+    var patternInk: Color {
+        if self == .roseStars {
+            return adaptive(light: rgb(196, 105, 151), dark: rgb(222, 135, 175))
+        }
+        if self == .creamStars {
+            return adaptive(light: rgb(255, 252, 245), dark: rgb(196, 187, 170))
+        }
+        return self == .silverStars
+            ? adaptive(light: rgb(65, 65, 65), dark: rgb(190, 190, 190))
+            : adaptive(light: rgb(218, 196, 127), dark: rgb(194, 175, 122))
+    }
+
+    var secondaryStarInk: Color {
+        if self == .roseStars {
+            return adaptive(light: rgb(227, 154, 185), dark: rgb(195, 104, 147))
+        }
+        if self == .creamStars {
+            return adaptive(light: rgb(216, 206, 190), dark: rgb(113, 104, 89))
+        }
+        return adaptive(light: rgb(100, 100, 100), dark: rgb(165, 165, 165))
+    }
 
     var id: String { rawValue }
 
@@ -174,6 +309,15 @@ enum CardPaper: String, CaseIterable, Identifiable {
         case .purple: "紫藤"
         case .caramel: "亚麻"
         case .black: "曜黑"
+        case .stars: "奶黄星星"
+        case .silverStars: "灰黑星星"
+        case .creamStars: "奶油星星"
+        case .roseStars: "雾紫星星"
+        case .strawberryHearts: "樱桃苏打"
+        case .blueberryHearts: "蓝莓爱心"
+        case .peachHearts: "杏桃爱心"
+        case .grapeHearts: "葡萄爱心"
+        case .nightHearts: "夜色爱心"
         }
         return localized(key)
     }
@@ -181,10 +325,18 @@ enum CardPaper: String, CaseIterable, Identifiable {
     private var matchingTheme: AppTheme {
         switch self {
         case .original, .pink: .pink
+        case .roseStars: .lavender
+        case .strawberryHearts: .pink
+        case .blueberryHearts: .blue
+        case .peachHearts: .apricot
+        case .grapeHearts: .lavender
+        case .nightHearts: .black
         case .apricot: .apricot
         case .yellow: .creamYellow
         case .green: .sage
         case .blue: .blue
+        case .stars, .silverStars: .black
+        case .creamStars: .caramel
         case .purple: .lavender
         case .caramel: .caramel
         case .black: .black
@@ -202,6 +354,15 @@ enum CardPaper: String, CaseIterable, Identifiable {
         case .purple: rgb(243, 240, 244)
         case .caramel: rgb(244, 240, 233)
         case .black: rgb(239, 238, 235)
+        case .stars: rgb(254, 253, 252)
+        case .silverStars: rgb(250, 248, 244)
+        case .creamStars: rgb(238, 232, 222)
+        case .roseStars: rgb(250, 248, 244)
+        case .strawberryHearts: rgb(250, 251, 252)
+        case .blueberryHearts: rgb(252, 250, 245)
+        case .peachHearts: rgb(253, 251, 248)
+        case .grapeHearts: rgb(252, 249, 250)
+        case .nightHearts: rgb(52, 50, 54)
         }
         let dark: Color = switch paper {
         case .original, .pink: rgb(58, 43, 48)
@@ -212,6 +373,15 @@ enum CardPaper: String, CaseIterable, Identifiable {
         case .purple: rgb(50, 43, 59)
         case .caramel: rgb(53, 47, 40)
         case .black: rgb(46, 44, 41)
+        case .stars: rgb(44, 43, 42)
+        case .silverStars: rgb(48, 45, 42)
+        case .creamStars: rgb(48, 45, 41)
+        case .roseStars: rgb(48, 45, 42)
+        case .strawberryHearts: rgb(56, 43, 49)
+        case .blueberryHearts: rgb(41, 47, 63)
+        case .peachHearts: rgb(57, 46, 41)
+        case .grapeHearts: rgb(50, 43, 58)
+        case .nightHearts: rgb(52, 50, 54)
         }
         return adaptive(light: light, dark: dark)
     }
@@ -224,6 +394,164 @@ enum CardPaper: String, CaseIterable, Identifiable {
         let theme = self == .original ? currentTheme : matchingTheme
         return theme.palette.accent
     }
+}
+
+/// Soft-focus stars repeat beneath the shared card content.
+struct CardPaperBackground: View {
+    @Environment(\.appTheme) private var theme
+    @Environment(\.colorScheme) private var scheme
+    let paper: CardPaper
+    var cornerRadius: CGFloat = 18
+
+    var body: some View {
+        ZStack {
+            paper.color(for: theme, scheme: scheme)
+            if paper.isHeartPattern {
+                Canvas { context, size in
+                    // Alternating rows: hearts sit halfway between the dots above and below.
+                    let columnSpacing: CGFloat = 84
+                    let rowSpacing: CGFloat = 42
+                    for row in -1...Int(ceil(size.height / rowSpacing)) {
+                        for column in -1...Int(ceil(size.width / columnSpacing)) {
+                            let isHeart = row.isMultiple(of: 2)
+                            let center = CGPoint(
+                                x: CGFloat(column) * columnSpacing + (isHeart ? columnSpacing / 2 : 0) + 10,
+                                y: CGFloat(row) * rowSpacing + 12
+                            )
+                            let path = isHeart
+                                ? paperHeart(center: center, size: 9)
+                                : Path(ellipseIn: CGRect(x: center.x - 3, y: center.y - 3,
+                                                         width: 6, height: 6))
+                            context.fill(path, with: .color((isHeart ? paper.heartInk : paper.dotInk)
+                                .opacity(paper == .nightHearts ? (isHeart ? 0.88 : 0.68)
+                                    : (scheme == .dark ? 0.63 : 0.74))))
+                        }
+                    }
+                }
+                .blur(radius: 0.35)
+            } else if paper.isStarPattern {
+                Canvas { context, size in
+                    // Anchor to the top-left so longer notes only reveal more rows.
+                    // Each star stays inside its own cell, without image tile seams.
+                    let columnSpacing: CGFloat = 88
+                    let rowSpacing: CGFloat = 64
+                    for row in -1...Int(ceil(size.height / rowSpacing)) {
+                        for column in -1...Int(ceil(size.width / columnSpacing)) {
+                            let variant = ((row * 7 + column * 3) % 5 + 5) % 5
+                            let center = CGPoint(
+                                x: CGFloat(column) * columnSpacing + 13
+                                    + (row.isMultiple(of: 2) ? 0 : columnSpacing / 2)
+                                    + CGFloat(variant - 2) * 1.5,
+                                y: CGFloat(row) * rowSpacing + 9 + CGFloat(variant - 2) * 2
+                            )
+                            let radius = 6.25 + CGFloat(variant) * 0.3
+                            let rotation = Double(variant * 7 - 14)
+                            let print = paperStar(center: center, radius: radius * 0.8, rotation: rotation)
+                            if paper == .roseStars {
+                                let stamp = ((row * 7 + column * 3) % 10 + 10) % 10
+                                let ink = stamp.isMultiple(of: 2) ? paper.patternInk : paper.secondaryStarInk
+                                if stamp < 7 {
+                                    let opacity = scheme == .dark
+                                        ? (stamp < 5 ? 0.32 : 0.40)
+                                        : (stamp < 5 ? 0.44 : 0.55)
+                                    context.fill(print, with: .color(ink.opacity(opacity)))
+                                } else {
+                                    context.stroke(print, with: .color(ink.opacity(
+                                        scheme == .dark ? 0.42 : 0.50
+                                    )), style: StrokeStyle(lineWidth: 0.6, lineCap: .round, lineJoin: .round))
+                                }
+                            } else if paper == .creamStars {
+                                context.fill(print, with: .color(paper.patternInk.opacity(
+                                    scheme == .dark ? 0.38 : 0.86
+                                )))
+                                context.stroke(print, with: .color(paper.secondaryStarInk.opacity(
+                                    scheme == .dark ? 0.5 : 0.65
+                                )), style: StrokeStyle(lineWidth: 0.6, lineJoin: .round))
+                            } else if paper == .stars {
+                                let ink = scheme == .dark
+                                    ? paper.patternInk
+                                    : Color(red: 0.89, green: 0.77, blue: 0.39)
+                                let opacity = (scheme == .dark ? 0.58 : 0.38) + Double(variant) * 0.015
+                                context.fill(print, with: .color(ink.opacity(opacity)))
+                            } else {
+                                // Original palette: five light fills, two medium fills, three outlines.
+                                let stamp = ((row * 7 + column * 3) % 10 + 10) % 10
+                                if stamp < 7 {
+                                    let opacity: Double = stamp < 5
+                                        ? (scheme == .dark ? 0.28 : 0.48)
+                                        : (scheme == .dark ? 0.42 : 0.72)
+                                    context.fill(print, with: .color(paper.patternInk.opacity(
+                                        opacity
+                                    )))
+                                } else {
+                                    context.stroke(print, with: .color(paper.secondaryStarInk.opacity(
+                                        scheme == .dark ? 0.44 : 0.66
+                                    )), style: StrokeStyle(lineWidth: 0.5, lineCap: .round, lineJoin: .round))
+                                }
+                            }
+                        }
+                    }
+                }
+                .blendMode(.normal)
+                .opacity(paper == .stars ? 0.8 : 1)
+            }
+        }
+        .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
+    }
+
+    private func paperHeart(center: CGPoint, size: CGFloat) -> Path {
+        var path = Path()
+        path.move(to: CGPoint(x: center.x, y: center.y - size * 0.23))
+        path.addCurve(to: CGPoint(x: center.x - size * 0.5, y: center.y - size * 0.10),
+                      control1: CGPoint(x: center.x - size * 0.22, y: center.y - size * 0.57),
+                      control2: CGPoint(x: center.x - size * 0.52, y: center.y - size * 0.41))
+        path.addCurve(to: CGPoint(x: center.x, y: center.y + size * 0.48),
+                      control1: CGPoint(x: center.x - size * 0.55, y: center.y + size * 0.16),
+                      control2: CGPoint(x: center.x - size * 0.18, y: center.y + size * 0.38))
+        path.addCurve(to: CGPoint(x: center.x + size * 0.5, y: center.y - size * 0.10),
+                      control1: CGPoint(x: center.x + size * 0.18, y: center.y + size * 0.38),
+                      control2: CGPoint(x: center.x + size * 0.55, y: center.y + size * 0.16))
+        path.addCurve(to: CGPoint(x: center.x, y: center.y - size * 0.23),
+                      control1: CGPoint(x: center.x + size * 0.52, y: center.y - size * 0.41),
+                      control2: CGPoint(x: center.x + size * 0.22, y: center.y - size * 0.57))
+        path.closeSubpath()
+        return path
+    }
+
+    private func paperStar(center: CGPoint, radius: CGFloat, rotation: Double) -> Path {
+        let vertices = (0..<10).map { point in
+            let angle = (Double(point) * 36 - 90 + rotation) * .pi / 180
+            let distance = point.isMultiple(of: 2) ? radius : radius * 0.57
+            return CGPoint(x: center.x + CGFloat(cos(angle)) * distance,
+                           y: center.y + CGFloat(sin(angle)) * distance)
+        }
+        var path = Path()
+        // Round the tips slightly to preserve the original soft, plump print.
+        for index in vertices.indices {
+            let previous = vertices[(index + 9) % 10]
+            let current = vertices[index]
+            let next = vertices[(index + 1) % 10]
+            let entry = CGPoint(x: current.x * 0.88 + previous.x * 0.12,
+                                y: current.y * 0.88 + previous.y * 0.12)
+            let exit = CGPoint(x: current.x * 0.88 + next.x * 0.12,
+                               y: current.y * 0.88 + next.y * 0.12)
+            if index == 0 { path.move(to: entry) } else { path.addLine(to: entry) }
+            path.addQuadCurve(to: exit, control: current)
+        }
+        path.closeSubpath()
+        return path
+    }
+
+
+}
+
+/// Warm graphite surfaces, independent of the selected accent theme.
+enum MemoryButtonColors {
+    static let background = adaptive(light: rgb(75, 73, 70), dark: rgb(145, 142, 138))
+    static let disabledBackground = adaptive(light: rgb(124, 121, 117), dark: rgb(113, 111, 108))
+    static let topEdge = adaptive(light: rgb(252, 250, 247).opacity(0.20), dark: rgb(252, 250, 247).opacity(0.14))
 }
 
 struct ThemePalette {
@@ -265,6 +593,35 @@ extension ThemePalette {
     var collectionPlayerHighlight: Color { adaptive(light: rgb(212, 216, 212), dark: rgb(66, 71, 67)) }
     var collectionDiscBase: Color { adaptive(light: rgb(211, 213, 215), dark: rgb(97, 99, 102)) }
     var collectionBlackDisc: Color { adaptive(light: rgb(41, 39, 46), dark: rgb(36, 34, 41)) }
+    var collectionMistVinyl: Color { adaptive(light: rgb(186, 199, 206), dark: rgb(120, 141, 155)) }
+    var collectionMistVinylCloud: Color { adaptive(light: rgb(135, 154, 168), dark: rgb(82, 106, 124)) }
+    var collectionMistVinylLight: Color { adaptive(light: rgb(232, 238, 240), dark: rgb(189, 205, 215)) }
+    var collectionLaceVinyl: Color { adaptive(light: rgb(57, 50, 62), dark: rgb(73, 65, 79)) }
+    var collectionLaceVinylPrint: Color { adaptive(light: rgb(184, 170, 169), dark: rgb(206, 190, 190)) }
+    var collectionLaceVinylShade: Color { adaptive(light: rgb(40, 36, 46), dark: rgb(36, 31, 42)) }
+    // var collectionTeaSmokeBase: Color { adaptive(light: rgb(175, 191, 169), dark: rgb(139, 159, 137)) }
+    // var collectionTeaSmokeMilk: Color { adaptive(light: rgb(241, 235, 223), dark: rgb(215, 216, 201)) }
+    // var collectionTeaSmokeDepth: Color { adaptive(light: rgb(127, 151, 127), dark: rgb(100, 125, 102)) }
+    var collectionPeachSmokeBase: Color { adaptive(light: rgb(215, 183, 170), dark: rgb(175, 148, 142)) }
+    var collectionPeachSmokeMilk: Color { adaptive(light: rgb(238, 229, 217), dark: rgb(213, 203, 193)) }
+    var collectionPeachSmokeDepth: Color { adaptive(light: rgb(183, 155, 155), dark: rgb(139, 113, 119)) }
+    var collectionTeaMarbleBase: Color { adaptive(light: rgb(168, 190, 147), dark: rgb(139, 161, 126)) }
+    var collectionTeaMarbleMilk: Color { adaptive(light: rgb(240, 238, 221), dark: rgb(218, 220, 206)) }
+    var collectionLightFilmBody: Color { adaptive(light: rgb(229, 228, 223), dark: rgb(185, 187, 189)) }
+    var collectionLightFilmEdge: Color { adaptive(light: rgb(161, 164, 166), dark: rgb(207, 210, 211)) }
+    var collectionLightFilmEtch: Color { adaptive(light: rgb(255, 254, 250), dark: rgb(231, 231, 225)) }
+    var collectionLightFilmShade: Color { adaptive(light: rgb(124, 127, 129), dark: rgb(63, 64, 67)) }
+    var collectionLightFilmLine: Color { adaptive(light: rgb(125, 127, 122), dark: rgb(238, 236, 228)) }
+    var collectionLightFilmPeach: Color { adaptive(light: rgb(232, 197, 190), dark: rgb(207, 182, 181)) }
+    var collectionLightFilmGreen: Color { adaptive(light: rgb(189, 203, 199), dark: rgb(172, 195, 188)) }
+    var collectionLightFilmGelGradient: Gradient {
+        Gradient(stops: [
+            .init(color: collectionLightFilmEtch.opacity(0.28), location: 0),
+            .init(color: collectionLightFilmBody.opacity(0.44), location: 0.5),
+            .init(color: collectionLightFilmBody.opacity(0.3), location: 0.78),
+            .init(color: collectionLightFilmEtch.opacity(0.2), location: 1)
+        ])
+    }
     var collectionFavoriteHeart: Color { adaptive(light: rgb(190, 70, 79), dark: rgb(225, 116, 124)) }
     var collectionSelectedRow: Color { adaptive(light: rgb(232, 231, 231), dark: rgb(56, 55, 58)) }
     var collectionDiscLabelInk: Color { adaptive(light: rgb(239, 234, 225), dark: rgb(239, 234, 225)) }
@@ -291,15 +648,50 @@ extension ThemePalette {
 //     var collectionRentalPaper: Color { adaptive(light: rgb(232, 201, 125), dark: rgb(210, 181, 113)) }
 //     var collectionRentalRed: Color { adaptive(light: rgb(142, 63, 54), dark: rgb(123, 52, 46)) }
 //     var collectionRentalReel: Color { adaptive(light: rgb(191, 187, 177), dark: rgb(174, 171, 163)) }
-    var collectionTapeShell: Color { adaptive(light: rgb(23, 23, 26), dark: rgb(25, 25, 29)) }
-    var collectionTapeBevel: Color { adaptive(light: rgb(43, 42, 46), dark: rgb(50, 49, 54)) }
-    var collectionTapeEdge: Color { adaptive(light: rgb(125, 121, 127), dark: rgb(146, 141, 148)) }
+    func tapeMaterial(for skin: CollectionWatchSkin) -> CollectionTapeMaterial {
+        switch skin {
+        case .clearWhite:
+            CollectionTapeMaterial(
+                shell: collectionLightFilmBody.opacity(0.12),
+                bevel: collectionLightFilmEtch.opacity(0.22),
+                edge: collectionLightFilmEdge,
+                window: adaptive(light: rgb(210, 208, 206).opacity(0.1), dark: rgb(190, 187, 185).opacity(0.07)),
+                pack: adaptive(light: rgb(108, 105, 104).opacity(0.34), dark: rgb(184, 181, 179).opacity(0.3)),
+                hub: collectionLightFilmEtch.opacity(0.55),
+                label: adaptive(light: rgb(253, 251, 248).opacity(0.64), dark: rgb(239, 236, 232).opacity(0.16)),
+                ink: adaptive(light: rgb(64, 61, 60), dark: rgb(235, 231, 227)), grainOpacity: 0)
+        case .original:
+            CollectionTapeMaterial(shell: collectionTapeShell, bevel: collectionTapeBevel,
+                                   edge: collectionTapeEdge, window: collectionTapeWindow,
+                                   pack: collectionTapePack, hub: collectionTapeHub,
+                                   label: collectionBackground, ink: collectionInk, grainOpacity: 0.23)
+        }
+    }
+
+    var collectionClearTapeRibbon: Color { adaptive(light: rgb(60, 57, 59).opacity(0.88), dark: rgb(81, 76, 81).opacity(0.9)) }
+    var collectionClearTapeHub: Color { adaptive(light: rgb(91, 86, 90), dark: rgb(112, 105, 112)) }
+    var collectionClearTapeSpoke: Color { adaptive(light: rgb(75, 70, 74).opacity(0.72), dark: rgb(130, 121, 130).opacity(0.72)) }
+    var collectionTapeShell: Color { adaptive(light: rgb(49, 46, 48), dark: rgb(43, 40, 43)) }
+    var collectionTapeBevel: Color { adaptive(light: rgb(65, 61, 63), dark: rgb(59, 55, 59)) }
+    var collectionTapeEdge: Color { adaptive(light: rgb(145, 137, 142), dark: rgb(157, 148, 155)) }
     var collectionTapeWindow: Color { adaptive(light: rgb(66, 63, 70), dark: rgb(60, 57, 64)) }
-    var collectionTapePack: Color { adaptive(light: rgb(29, 28, 32), dark: rgb(26, 25, 29)) }
+    var collectionTapePack: Color { adaptive(light: rgb(35, 32, 35), dark: rgb(31, 28, 32)) }
     var collectionTapeHub: Color { adaptive(light: rgb(174, 167, 166), dark: rgb(151, 145, 146)) }
     var collectionTapeLabel: Color { adaptive(light: rgb(233, 226, 223), dark: rgb(206, 199, 197)) }
     var collectionTapeLabelInk: Color { adaptive(light: rgb(34, 31, 34), dark: rgb(36, 33, 36)) }
     var collectionPhotoMount: Color { adaptive(light: rgb(248, 248, 247), dark: rgb(54, 54, 55)) }
+    func photoPaper(for skin: CollectionPhotoSkin) -> Color {
+        switch skin {
+        case .original: collectionPhotoMount
+        case .nightPrint: adaptive(light: rgb(55, 48, 52), dark: rgb(39, 34, 39))
+        case .clearPlate: .clear
+        }
+    }
+    var collectionPhotoNightEdge: Color { adaptive(light: rgb(136, 121, 130), dark: rgb(143, 129, 143)) }
+    var collectionPhotoNightLip: Color { adaptive(light: rgb(76, 64, 71), dark: rgb(57, 47, 57)) }
+    var collectionPhotoClearEdge: Color { collectionLightFilmEdge.opacity(0.48) }
+    var collectionPhotoClearHighlight: Color { collectionLightFilmEtch.opacity(0.8) }
+    var collectionPhotoClearShade: Color { adaptive(light: rgb(75, 82, 91).opacity(0.12), dark: .black.opacity(0.22)) }
     var collectionPaperEdge: Color { adaptive(light: rgb(116, 112, 120).opacity(0.22), dark: rgb(179, 170, 178).opacity(0.24)) }
     var collectionAlbumCover: Color { adaptive(light: rgb(211, 211, 209), dark: rgb(77, 77, 78)) }
     var collectionAlbumBinding: Color { adaptive(light: rgb(185, 188, 190), dark: rgb(153, 156, 158)) }
@@ -359,6 +751,13 @@ extension ThemePalette {
     var monthlyTicketStubInk: Color { adaptive(light: rgb(122, 48, 56), dark: rgb(211, 170, 176)) }
     var monthlyTicketRule: Color { foreground.opacity(0.35) }
     var monthlyClothBase: Color { adaptive(light: rgb(247, 241, 228), dark: rgb(49, 45, 39)) }
+    var monthlyPolkaInks: [Color] {
+        [adaptive(light: rgb(181, 133, 140), dark: rgb(195, 154, 160)),
+         adaptive(light: rgb(189, 153, 130), dark: rgb(204, 170, 150)),
+         adaptive(light: rgb(179, 169, 127), dark: rgb(193, 184, 147)),
+         adaptive(light: rgb(133, 156, 169), dark: rgb(151, 174, 186)),
+         adaptive(light: rgb(156, 141, 166), dark: rgb(175, 161, 185))]
+    }
     var monthlyClothCheck: Color { adaptive(light: rgb(183, 158, 125), dark: rgb(167, 144, 114)) }
     var monthlyClothStitch: Color { adaptive(light: rgb(150, 128, 101), dark: rgb(190, 170, 143)) }
 //     var monthlyScreenPaper: Color { adaptive(light: rgb(236, 232, 240), dark: rgb(49, 42, 55)) }
@@ -446,7 +845,7 @@ extension ThemePalette {
             strongAccent: adaptive(light: strongAccent, dark: accent),
             todayButtonFill: todayButtonFill,
             onSelection: adaptive(light: onSelection, dark: rgb(247, 242, 236)),
-            background: adaptive(light: rgb(252, 250, 247), dark: rgb(29, 28, 27)),
+            background: Color("AppBackground"),
             foreground: adaptive(light: rgb(49, 44, 42), dark: rgb(242, 237, 231)),
             onStrongAccent: rgb(252, 250, 247),
             cardBackground: adaptive(light: .white.opacity(0.72), dark: rgb(43, 40, 38)),
@@ -677,6 +1076,20 @@ extension EnvironmentValues {
     }
 }
 
+extension DailyChoice {
+    /// Balances the visible subject inside each weather asset's transparent canvas.
+    var weatherArtworkScale: CGFloat? {
+        switch self {
+        case .rainbow: 1.18
+        case .sunshine: 1.34
+        case .rain: 1.36
+        case .snow: 1.30
+        case .wind: 1.14
+        default: nil
+        }
+    }
+}
+
 /// Keeps the supplied artwork intact and adapts monochrome groups to dark backgrounds.
 struct ChoiceArtwork: View {
     @Environment(\.colorScheme) private var colorScheme
@@ -708,7 +1121,7 @@ struct ChoiceArtwork: View {
                 .luminanceToAlpha()
                 .colorInvert()
         } else {
-            let usesWhiteLines = colorScheme == .dark && group != .playful && group != .everyday
+            let usesWhiteLines = colorScheme == .dark && group != .playful && group != .everyday && group != .weather
             artwork
                 .renderingMode(usesWhiteLines ? .template : .original)
                 .resizable()

@@ -5,7 +5,7 @@ import SwiftData
 struct EntryStore {
     let context: ModelContext
 
-    func save(day: DayKey, choice: DailyChoice, note: String, isMember: Bool = false, photoData: Data? = nil, updatesPhoto: Bool = false, cardPaperID: String? = nil, updatesCardPaper: Bool = false, songTitle: String? = nil, songArtist: String? = nil, updatesSong: Bool = false, watchTitle: String? = nil, watchKind: String? = nil, watchNote: String? = nil, updatesWatch: Bool = false) throws {
+    func save(day: DayKey, choice: DailyChoice, note: String, isMember: Bool = false, photoData: Data? = nil, updatesPhoto: Bool = false, cardPaperID: String? = nil, updatesCardPaper: Bool = false, songTitle: String? = nil, songArtist: String? = nil, updatesSong: Bool = false, watchTitle: String? = nil, watchKind: String? = nil, watchNote: String? = nil, updatesWatch: Bool = false, locationName: String? = nil, updatesLocation: Bool = false) throws {
         let allowsPastDates = UserDefaults.standard.object(forKey: "allowPastDateEditing") as? Bool ?? true
         guard day.isEditable(allowPastDates: allowsPastDates) else {
             throw EntryStoreError.dateIsReadOnly
@@ -20,6 +20,11 @@ struct EntryStore {
         let key = day.storageValue
         let descriptor = FetchDescriptor<MoodEntry>(predicate: #Predicate { $0.dayKey == key })
         let matchingEntries = try context.fetch(descriptor)
+        if updatesCardPaper, CardPaperAccess.requiresMembership(cardPaperID), !isMember,
+           cardPaperID != matchingEntries.max(by: { $0.updatedAt < $1.updatedAt })?.cardPaperID {
+            throw EntryStoreError.paperMembershipRequired
+        }
+        let location = locationName?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         let title = songTitle?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         let artist = songArtist?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         let watched = watchTitle?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
@@ -29,6 +34,7 @@ struct EntryStore {
             existing.moodValue = choice.rawValue
             existing.note = note.trimmingCharacters(in: .whitespacesAndNewlines)
             if updatesPhoto { existing.photoData = photoData }
+            if updatesLocation { existing.locationName = location.isEmpty ? nil : location }
             if updatesCardPaper { existing.cardPaperID = cardPaperID }
             if updatesSong {
                 existing.songTitle = title.isEmpty ? nil : title
@@ -45,6 +51,7 @@ struct EntryStore {
             let created = MoodEntry(dayKey: key, choice: choice,
                                     note: note.trimmingCharacters(in: .whitespacesAndNewlines))
             created.photoData = photoData
+            if updatesLocation { created.locationName = location.isEmpty ? nil : location }
             if updatesCardPaper { created.cardPaperID = cardPaperID }
             if updatesSong {
                 created.songTitle = title.isEmpty ? nil : title
@@ -178,11 +185,14 @@ struct MonthlyNoteStore {
 private enum EntryStoreError: LocalizedError {
     case dateIsReadOnly
     case membershipRequired
+    case paperMembershipRequired
 
     var errorDescription: String? {
         switch self {
         case .dateIsReadOnly:
             localized("此日期不可修改，请检查「允许修改往日」设置。")
+        case .paperMembershipRequired:
+            localized("解锁永久会员后才能使用这款花纸。")
         case .membershipRequired:
             localized("解锁永久会员后才能使用这套表情。")
         }
