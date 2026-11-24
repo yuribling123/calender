@@ -42,7 +42,6 @@ struct CalendarScreen: View {
     @State private var menuDestination: MenuDestination?
     @State private var memoryCardWidth: CGFloat = 0
     @State private var previewMemory: RediscoveredMemory?
-    @State private var previewIsVisible = false
     @State private var selectedCardHeight: CGFloat = 0
     // @State private var isFutureLettersPresented = false
 
@@ -80,9 +79,13 @@ struct CalendarScreen: View {
     var body: some View {
         NavigationStack {
             calendarContent
+                .overlayPreferenceValue(CalendarMenuPreference.self) { placement in
+                    if let placement {
+                        calendarMenuOverlay(placement)
+                    }
+                }
         }
-        // Let the presentation system coordinate menu dismissal. A transparent cover
-        // covers the tab bar without changing the calendar's safe area or hit testing.
+        // The transparent cover includes the tab bar without changing the calendar's safe area.
         .fullScreenCover(item: $menuDestination) { destination in
             Group {
                 switch destination {
@@ -106,13 +109,38 @@ struct CalendarScreen: View {
             if let memory = previewMemory {
                 MemoryShuffleScreen(cardWidth: memoryCardWidth, entries: entries,
                                     previewMemory: memory, initialCardHeight: selectedCardHeight,
-                                    isPreviewVisible: previewIsVisible,
                                     onClose: closeCardPreview,
                                     onOpenDay: { _ in closeCardPreview() })
                     .ignoresSafeArea()
                     .zIndex(1)
-                    .onAppear {
-                        withAnimation(.easeOut(duration: 0.24)) { previewIsVisible = true }
+            }
+        }
+    }
+
+    private func calendarMenuOverlay(_ placement: CalendarMenuPlacement) -> some View {
+        GeometryReader { geometry in
+            let trigger = geometry[placement.anchor]
+            let margin: CGFloat = 8
+            // The ellipsis is centered in a 44-point hit area.
+            let triggerInset: CGFloat = 8
+
+            Color.clear
+                .contentShape(Rectangle())
+                .onTapGesture(perform: placement.dismiss)
+                .accessibilityHidden(true)
+                .overlay(alignment: .topLeading) {
+                    placement.content
+                    .alignmentGuide(.leading) { menu in
+                        if placement.aboveTrigger {
+                            return -(trigger.midX + CalendarMenuPlacement.tailInset - menu.width)
+                        }
+                        return -max(margin, trigger.minX + triggerInset - menu.width)
+                    }
+                    .alignmentGuide(.top) { menu in
+                        if placement.aboveTrigger {
+                            return -(trigger.midY - 9 - menu.height)
+                        }
+                        return -(trigger.midY - menu.height / 2)
                     }
             }
         }
@@ -278,6 +306,8 @@ struct CalendarScreen: View {
         }
         .onPreferenceChange(CalendarCardWidthKey.self) { memoryCardWidth = $0 }
         .onPreferenceChange(CalendarCardHeightKey.self) { selectedCardHeight = $0 }
+        .allowsHitTesting(previewMemory == nil)
+        .accessibilityHidden(previewMemory != nil)
     }
 
     private func openCardPreview() {
@@ -286,11 +316,7 @@ struct CalendarScreen: View {
     }
 
     private func closeCardPreview() {
-        guard previewIsVisible else { return }
-        withAnimation(.easeIn(duration: 0.18)) { previewIsVisible = false }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.18) {
-            if !previewIsVisible { previewMemory = nil }
-        }
+        previewMemory = nil
     }
 
     private func presentMenuDestination(_ destination: MenuDestination) {
@@ -309,8 +335,9 @@ struct CalendarScreen: View {
     private var calendarMenu: some View {
         CalendarTextMenu(iconFont: .system(size: 18),
                          tint: theme.palette.resolved(for: colorScheme).foreground.opacity(0.7)) { item in
-            item(localized("搜索")) { presentMenuDestination(.search) }
-            item(localized("随机翻")) { presentMenuDestination(.memoryShuffle) }
+            item(localized("搜索"), "magnifyingglass") { presentMenuDestination(.search) }
+            CalendarTextMenuDivider()
+            item(localized("随机翻"), "shuffle") { presentMenuDestination(.memoryShuffle) }
         }
     }
 

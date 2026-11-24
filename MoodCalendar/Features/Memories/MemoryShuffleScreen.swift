@@ -60,8 +60,8 @@ struct MemoryShuffleScreen: View {
                 contentHeights[memory.id]
             }
             let fallbackHeight: CGFloat = previewMemory == nil
-                ? maximumCardHeight : max(1, initialCardHeight + 18)
-            let requestedHeight: CGFloat = measuredHeight.map { $0 + 18 } ?? fallbackHeight
+                ? maximumCardHeight : max(1, initialCardHeight)
+            let requestedHeight: CGFloat = measuredHeight ?? fallbackHeight
             let cardHeight: CGFloat = min(maximumCardHeight, requestedHeight)
             let groupHeight = cardHeight + (previewMemory == nil ? 8 + actionHeight : 0)
             let upwardOffset = min(40, max(0, (geometry.size.height - groupHeight) / 2 - 12))
@@ -141,7 +141,8 @@ struct MemoryShuffleScreen: View {
     }
 
     private func cardPage(_ memory: RediscoveredMemory) -> some View {
-        ScrollView {
+        let paper = CardPaper.resolve(memory.entry.cardPaperID)
+        return ScrollView {
             recordCard(memory)
                 .fixedSize(horizontal: false, vertical: true)
                 .background {
@@ -153,25 +154,13 @@ struct MemoryShuffleScreen: View {
         }
         .scrollDisabled(isSwitching)
         .scrollBounceBehavior(.basedOnSize)
-        .padding(.top, 10)
-        .padding(.bottom, 8)
         .background {
-            CardPaperBackground(paper: CardPaper.resolve(memory.entry.cardPaperID), cornerRadius: 18)
-                .padding(.top, 10)
-                .padding(.bottom, 8)
+            CardPaperBackground(paper: paper, cornerRadius: 18)
+                .environment(\.colorScheme, paper == .nightHearts ? .dark : colorScheme)
         }
         .clipShape(RoundedRectangle(cornerRadius: 18))
-        .overlay(alignment: .bottom) {
-            GeometryReader { viewport in
-                if let height = contentHeights[memory.id], height + 18 > viewport.size.height + 1 {
-                    LinearGradient(colors: [.clear, CardPaper.resolve(memory.entry.cardPaperID) == .nightHearts ? .black.opacity(0.65) : .white.opacity(0.65)], startPoint: .top, endPoint: .bottom)
-                        .frame(height: 24)
-                        .frame(maxHeight: .infinity, alignment: .bottom)
-                        .allowsHitTesting(false)
-                        .padding(.bottom, 8)
-                }
-            }
-        }
+        .shadow(color: palette.foreground.opacity(isLifted ? 0.12 : 0.04),
+                radius: isLifted ? 12 : 4, x: 0, y: isLifted ? 8 : 3)
     }
 
     private func recordCard(_ memory: RediscoveredMemory) -> some View {
@@ -180,12 +169,11 @@ struct MemoryShuffleScreen: View {
             entry: memory.entry,
             isReadOnly: true,
             showsYear: true,
+            showsPaperBackground: false,
             onOpenRecord: { open(memory) },
             onRecordMood: { _ in },
             onEdit: {}
         )
-        .shadow(color: palette.foreground.opacity(isLifted ? 0.12 : 0.04),
-                radius: isLifted ? 12 : 4, x: 0, y: isLifted ? 8 : 3)
         .contentShape(RoundedRectangle(cornerRadius: 18))
         .onTapGesture { open(memory) }
         .accessibilityElement(children: .ignore)

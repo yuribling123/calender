@@ -644,7 +644,7 @@ struct EntryEditorScreen: View {
             } else {
                 VStack(alignment: .leading, spacing: 10) {
                     Text(localized("写文字"))
-                        .font(.body.weight(.medium))
+                        .font(.subheadline.weight(.regular))
                         .foregroundStyle(.primary)
                     Text(localized("文字可选"))
                         .font(.footnote)
@@ -654,10 +654,13 @@ struct EntryEditorScreen: View {
                 .accessibilityAddTraits(.isButton)
                 .accessibilityLabel(localized("写文字"))
             }
-            if showsNote && isNoteFocused {
+            if showsNote {
                 Button(localized("确认")) { isNoteFocused = false }
                     .font(.footnote.weight(.semibold))
                     .frame(maxWidth: .infinity, alignment: .trailing)
+                    .opacity(isNoteFocused ? 1 : 0)
+                    .allowsHitTesting(isNoteFocused)
+                    .accessibilityHidden(!isNoteFocused)
             }
         }
         .padding(18)
@@ -1048,7 +1051,7 @@ private struct PaperDialPicker: View {
                             let angle = Double(index) * angleStep * .pi / 180
                             Button { select(index) } label: {
                                 Circle()
-                                    .fill(paper == .nightHearts || paper.hasUnbackedStarPreview
+                                    .fill((colorScheme == .dark && paper.isHeartPattern) || paper == .nightHearts || paper.hasUnbackedStarPreview
                                           ? Color.clear : (paper.isPatterned ? paper.color(for: theme) : paper.swatchAccent(for: theme)))
                                     .overlay {
                                         if paper.isHeartPattern {

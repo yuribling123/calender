@@ -30,6 +30,7 @@ struct MonthlyGoalScreen: View {
     }
 
     private let noteCharacterLimit = 100
+    private let noteDisplayMaximumHeight: CGFloat = 280
     private let noteVerticalSpacing: CGFloat = 32
     private let calendar = Calendar.current
     private var today: Date { Date() }
@@ -347,12 +348,7 @@ struct MonthlyGoalScreen: View {
                             if editingMonth == date {
                                 monthNoteEditor(for: date)
                             } else if let note = data.note {
-                                Text(DemoData.displayText(note))
-                                    .font(.system(size: noteFontSize, weight: .regular))
-                                    .fixedSize(horizontal: false, vertical: UIDevice.current.userInterfaceIdiom == .pad)
-                                    .foregroundStyle(displayedSkin(for: date) == .player2 ? theme.palette.monthlyPlayer2Ink : displayedSkin(for: date) == .player ? theme.palette.monthlyPlayerInk : theme.palette.foreground)
-                                    .lineSpacing(noteLineSpacing)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                scrollableNoteText(note, for: date)
                             }
                         }
                         .padding(.top, 20)
@@ -484,9 +480,7 @@ struct MonthlyGoalScreen: View {
                 .accessibilityAddTraits(.isButton)
                 .accessibilityLabel(localized("写一句话，留给这个月"))
             } else {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(DemoData.displayText(noteText))
-                        .font(.system(size: noteFontSize, weight: .regular))
+                scrollableNoteText(noteText, for: date)
                         /* 复古屏幕文字样式，保留供参考。
                         .tracking(MonthlyNoteSkinStore.skin(for: monthKey(for: date), in: monthlySkins) == .screen ? 1 : 0)
                         .foregroundStyle(MonthlyNoteSkinStore.skin(for: monthKey(for: date), in: monthlySkins) == .screen
@@ -494,11 +488,6 @@ struct MonthlyGoalScreen: View {
                         .lineSpacing(MonthlyNoteSkinStore.skin(for: monthKey(for: date), in: monthlySkins) == .screen ? 8 : 6)
                         */
                         .foregroundStyle(displayedSkin(for: date) == .player2 ? theme.palette.monthlyPlayer2Ink : displayedSkin(for: date) == .player ? theme.palette.monthlyPlayerInk : theme.palette.foreground)
-                        .lineSpacing(noteLineSpacing)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-
-
-                }
                 .contentShape(Rectangle())
                     .onTapGesture { beginNoteEditing(for: date) }
                     .accessibilityAddTraits(.isButton)
@@ -506,6 +495,37 @@ struct MonthlyGoalScreen: View {
 
             }
         }
+    }
+
+    private func scrollableNoteText(_ note: String, for date: Date) -> some View {
+        let skin = displayedSkin(for: date)
+        let displayText = DemoData.displayText(note)
+        let text = Text(displayText).font(.system(size: noteFontSize, weight: .regular))
+        let usesPlayerLayout = skin == .player || skin == .player2 || skin == .transparentPlayer
+
+        return Group {
+            if usesPlayerLayout || displayText.contains(where: \.isNewline) {
+                noteTextScrollView(text, skin: skin)
+            } else {
+                ViewThatFits(in: .horizontal) {
+                    text.fixedSize(horizontal: true, vertical: true)
+                    noteTextScrollView(text, skin: skin)
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func noteTextScrollView(_ text: Text, skin: MonthlyNoteSkin) -> some View {
+        ScrollView(.vertical) {
+            text
+                .foregroundStyle(skin == .player2 ? theme.palette.monthlyPlayer2Ink : skin == .player ? theme.palette.monthlyPlayerInk : theme.palette.foreground)
+                .lineSpacing(noteLineSpacing)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(maxHeight: noteDisplayMaximumHeight, alignment: .top)
+        .scrollIndicators(.visible)
     }
 
     private func beginNoteEditing(for date: Date) {

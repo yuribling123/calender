@@ -7,6 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		F12520260000000000000001 /* weather-reactions.mov in Resources */ = {isa = PBXBuildFile; fileRef = F12520260000000000000011; };
+		F12520260000000000000002 /* heart-palettes.mov in Resources */ = {isa = PBXBuildFile; fileRef = F12520260000000000000012; };
+		F12520260000000000000003 /* entry-location.mov in Resources */ = {isa = PBXBuildFile; fileRef = F12520260000000000000013; };
+		F12520260000000000000004 /* card-preview.mov in Resources */ = {isa = PBXBuildFile; fileRef = F12520260000000000000014; };
+		F12520260000000000000005 /* monthly-note-skins.mov in Resources */ = {isa = PBXBuildFile; fileRef = F12520260000000000000015; };
+		F12420260000000000000001 /* ReleaseHighlights.swift in Sources */ = {isa = PBXBuildFile; fileRef = F12420260000000000000002; };
         F11920260000000000000001 /* AppUpdate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11920260000000000000002; };
         F11920260000000000000003 /* AppUpdateChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11920260000000000000004; };
 		F11820260000000000000001 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F11820260000000000000002 /* LaunchScreen.storyboard */; };
@@ -63,6 +69,12 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		F12520260000000000000011 /* weather-reactions.mov */ = {isa = PBXFileReference; lastKnownFileType = video.quicktime; path = MoodCalendar/Resources/ReleaseHighlights/weather-reactions.mov; sourceTree = "<group>"; };
+		F12520260000000000000012 /* heart-palettes.mov */ = {isa = PBXFileReference; lastKnownFileType = video.quicktime; path = MoodCalendar/Resources/ReleaseHighlights/heart-palettes.mov; sourceTree = "<group>"; };
+		F12520260000000000000013 /* entry-location.mov */ = {isa = PBXFileReference; lastKnownFileType = video.quicktime; path = MoodCalendar/Resources/ReleaseHighlights/entry-location.mov; sourceTree = "<group>"; };
+		F12520260000000000000014 /* card-preview.mov */ = {isa = PBXFileReference; lastKnownFileType = video.quicktime; path = MoodCalendar/Resources/ReleaseHighlights/card-preview.mov; sourceTree = "<group>"; };
+		F12520260000000000000015 /* monthly-note-skins.mov */ = {isa = PBXFileReference; lastKnownFileType = video.quicktime; path = MoodCalendar/Resources/ReleaseHighlights/monthly-note-skins.mov; sourceTree = "<group>"; };
+		F12420260000000000000002 /* ReleaseHighlights.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Features/Shared/ReleaseHighlights.swift; sourceTree = "<group>"; };
         F11920260000000000000002 /* AppUpdate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Domain/AppUpdate.swift; sourceTree = "<group>"; };
         F11920260000000000000004 /* AppUpdateChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/App/AppUpdateChecker.swift; sourceTree = "<group>"; };
 		F11820260000000000000002 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = MoodCalendar/Resources/LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -124,6 +136,12 @@
 		B28B7AF69320201D1CF206EB = {
 			isa = PBXGroup;
 			children = (
+				F12520260000000000000011 /* weather-reactions.mov */,
+				F12520260000000000000012 /* heart-palettes.mov */,
+				F12520260000000000000013 /* entry-location.mov */,
+				F12520260000000000000014 /* card-preview.mov */,
+				F12520260000000000000015 /* monthly-note-skins.mov */,
+				F12420260000000000000002 /* ReleaseHighlights.swift */,
         F11920260000000000000002 /* AppUpdate.swift */,
         F11920260000000000000004 /* AppUpdateChecker.swift */,
 				8CED8C0661A412EC88240FC7 /* MoodCalendar/Features/Zine/MonthlyZineScreen.swift */,
@@ -257,6 +275,11 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F12520260000000000000001 /* weather-reactions.mov in Resources */,
+				F12520260000000000000002 /* heart-palettes.mov in Resources */,
+				F12520260000000000000003 /* entry-location.mov in Resources */,
+				F12520260000000000000004 /* card-preview.mov in Resources */,
+				F12520260000000000000005 /* monthly-note-skins.mov in Resources */,
 				F071CA1E0000000000000003 /* MoodCalendar/Resources/Sounds/photo-flip.wav in Resources */,
 				AB17C1000000000000000001 /* player-click.wav in Resources */,
 				F071CA1E0000000000000001 /* MoodCalendar/Resources/Fonts in Resources */,
@@ -276,6 +299,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F12420260000000000000001 /* ReleaseHighlights.swift in Sources */,
         F11920260000000000000001 /* AppUpdate.swift in Sources */,
         F11920260000000000000003 /* AppUpdateChecker.swift in Sources */,
 				8B68DF77B3FA20AF36574646 /* MoodCalendar/Features/Zine/MonthlyZineScreen.swift in Sources */,
@@ -340,7 +364,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = "Little Today";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MARKETING_VERSION = 1.1.0;
+				MARKETING_VERSION = 1.1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.qingqing.MoodCalendar;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -388,7 +412,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = "Little Today";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MARKETING_VERSION = 1.1.0;
+				MARKETING_VERSION = 1.1.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.qingqing.MoodCalendar;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;

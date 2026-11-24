@@ -1,6 +1,11 @@
 import SwiftUI
 import UIKit
 
+private enum MonthlyPolkaLayout {
+    static let rowSpacing: CGFloat = 37
+    static let edgeInset: CGFloat = 18
+}
+
 struct MonthlyNoteSurface<Content: View>: View {
     let skin: MonthlyNoteSkin
     var monthLabel: String = "MONTHLY NOTE"
@@ -369,36 +374,47 @@ private struct MonthlyNoteSkinBackground: View {
             RoundedRectangle(cornerRadius: 8)
                 .strokeBorder(edge, lineWidth: 0.7)
         case .polkaDots:
-            RoundedRectangle(cornerRadius: 8)
-                .fill(.clear)
+            RoundedRectangle(cornerRadius: 12)
+                .fill(palette.monthlyPolkaPaper)
                 .overlay {
                     Canvas { context, size in
                         let colors = palette.monthlyPolkaInks
                         var ink = context
-                        ink.addFilter(.blur(radius: 0.25))
+                        ink.addFilter(.blur(radius: 0.18))
                         let columnSpacing: CGFloat = 54
-                        let rowSpacing: CGFloat = 37
-                        let diameter: CGFloat = 6
-                        let rows = Int(ceil(size.height / rowSpacing)) + 1
+                        let printableHeight = max(0, size.height - 2 * MonthlyPolkaLayout.edgeInset)
+                        let preferredSpacing = MonthlyPolkaLayout.rowSpacing
+                        let rows = max(3, Int(floor(printableHeight / preferredSpacing)) + 1)
+                        let rowSpacing = min(preferredSpacing, printableHeight / CGFloat(rows - 1))
+                        let firstRowY = (size.height - CGFloat(rows - 1) * rowSpacing) / 2
                         let columns = Int(ceil(size.width / columnSpacing)) + 1
                         for row in 0..<rows {
                             for column in 0..<columns {
+                                let index = row * columns + column
+                                // Small, deterministic irregularities keep the print calm without
+                                // making it look like a mechanically generated dot grid.
+                                let xJitter = CGFloat((index * 17 + row * 7) % 9) - 4
+                                let yJitter = CGFloat((index * 11 + column * 3) % 7) - 3
+                                let diameter = CGFloat(5 + (index * 13 + row) % 4)
+                                let opacity = 0.34 + Double((index * 7 + column) % 3) * 0.07
                                 let x = 18 + CGFloat(column) * columnSpacing
-                                    + (row.isMultiple(of: 2) ? 0 : columnSpacing / 2)
-                                let y = 18 + CGFloat(row) * rowSpacing
-                                guard x + diameter / 2 <= size.width - 8,
-                                      y + diameter / 2 <= size.height - 8 else { continue }
+                                    + (row.isMultiple(of: 2) ? 0 : columnSpacing / 2) + xJitter
+                                let y = firstRowY + CGFloat(row) * rowSpacing + yJitter
+                                guard x + diameter / 2 <= size.width - 8 else { continue }
                                 let dot = Path(ellipseIn: CGRect(x: x - diameter / 2, y: y - diameter / 2,
                                                                   width: diameter, height: diameter))
-                                ink.fill(dot, with: .color(colors[(row * 3 + column) % colors.count]
-                                    .opacity(0.65)))
+                                ink.fill(dot, with: .color(colors[(row * 2 + column) % colors.count]
+                                    .opacity(opacity)))
                             }
                         }
-                        context.fill(paperGrain(in: size), with: .color(palette.foreground.opacity(0.12)))
+                        context.fill(paperGrain(in: size), with: .color(palette.foreground.opacity(0.055)))
                     }
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
-                .overlay { RoundedRectangle(cornerRadius: 8).strokeBorder(edge, lineWidth: 0.6) }
+                .overlay {
+                    RoundedRectangle(cornerRadius: 12)
+                        .strokeBorder(palette.foreground.opacity(0.1), lineWidth: 0.6)
+                }
         case .lace:
             LaceNoteBackground()
         case .ticket:
@@ -485,12 +501,13 @@ private struct MonthlyNoteSkinBackground: View {
         }
 
         var grain = Path()
-        let count = Int(size.width * size.height / 5)
+        let count = Int(size.width * size.height / 24)
         for _ in 0..<count {
             let x = nextFraction() * size.width
             let y = nextFraction() * size.height
-            let width = 0.4 + nextFraction() * 0.8
-            grain.addEllipse(in: CGRect(x: x, y: y, width: width, height: 0.45))
+            let width = 0.8 + nextFraction() * 1.4
+            let height = 0.35 + nextFraction() * 0.35
+            grain.addEllipse(in: CGRect(x: x, y: y, width: width, height: height))
         }
         return grain
     }

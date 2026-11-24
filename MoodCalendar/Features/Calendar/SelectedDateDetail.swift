@@ -15,6 +15,7 @@ struct SelectedDateDetail: View {
     // Rediscovery shares the original card without exposing write actions.
     var isReadOnly = false
     var showsYear = false
+    var showsPaperBackground = true
     var onOpenRecord: (() -> Void)? = nil
     var isStarred = false
     var onToggleStar: () -> Void = {}
@@ -52,13 +53,20 @@ struct SelectedDateDetail: View {
 
     private var detailActions: some View {
         CalendarTextMenu(iconFont: .system(size: detailTextSize, weight: .medium),
-                         tint: cardInk.opacity(0.7)) { item in
+                         tint: cardInk.opacity(0.7), aboveTrigger: true,
+                         menuColorScheme: colorScheme) { item in
             if canMark {
-                item(localized(isStarred ? "已标记" : "标记"), onToggleStar)
+                item(localized(isStarred ? "已标记" : "标记"), isStarred ? "star.fill" : "star", onToggleStar)
                     .accessibilityLabel(localized(isStarred ? "取消标记这一天" : "标记这一天"))
             }
+            if canMark && canEdit {
+                Rectangle()
+                    .fill(.primary.opacity(0.10))
+                    .frame(width: 0.5, height: 16)
+                    .accessibilityHidden(true)
+            }
             if canEdit {
-                item(localized("编辑"), onEdit)
+                item(localized("编辑"), "pencil", onEdit)
             }
         }
     }
@@ -120,7 +128,9 @@ struct SelectedDateDetail: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
         .background {
-            CardPaperBackground(paper: selectedPaper, cornerRadius: 18)
+            if showsPaperBackground {
+                CardPaperBackground(paper: selectedPaper, cornerRadius: 18)
+            }
         }
         .environment(\.colorScheme, isNightPaper ? .dark : colorScheme)
     }
@@ -184,11 +194,22 @@ struct SelectedDateDetail: View {
                 photoButton
             }
             if let location = entry?.locationName, !location.isEmpty {
-                Label(location, systemImage: "mappin")
+                HStack(spacing: 6) {
+                    Image(systemName: "mappin")
+                        .foregroundStyle(cardInk.opacity(0.72))
+                        .accessibilityHidden(true)
+                    Text(location)
+                        .foregroundStyle(isNightPaper ? .white : theme.palette.strongAccent)
+                }
                     .font(.system(size: 13))
-                    .foregroundStyle(cardInk.opacity(0.72))
                     .lineLimit(2)
                     .padding(.top, 7)
+                    .padding(
+                        .bottom,
+                        entry?.watchTitle?.isEmpty == false || entry?.songTitle?.isEmpty == false
+                            ? 0
+                            : (entry?.note.isEmpty == false ? 18 : 12)
+                    )
                     .accessibilityLabel("\(localized("地点"))，\(location)")
             }
 
@@ -281,11 +302,14 @@ struct SelectedDateDetail: View {
 struct CalendarTextMenu<Items: View>: View {
     @ScaledMetric(relativeTo: .footnote) private var textSize: CGFloat = 12
     @State private var isPresented = false
-    @State private var pendingAction: (() -> Void)?
+    @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.appTheme) private var theme
 
     let iconFont: Font
     let tint: Color
-    @ViewBuilder let items: (_ item: (String, @escaping () -> Void) -> Button<Text>) -> Items
+    var aboveTrigger = false
+    var menuColorScheme: ColorScheme? = nil
+    @ViewBuilder let items: (_ item: (String, String?, @escaping () -> Void) -> Button<CalendarTextMenuLabel>) -> Items
 
     var body: some View {
         Button { isPresented = true } label: {
@@ -297,47 +321,121 @@ struct CalendarTextMenu<Items: View>: View {
         }
         .buttonStyle(.plain)
         .accessibilityLabel(localized("日历菜单"))
-        .popover(isPresented: $isPresented, attachmentAnchor: .rect(.bounds), arrowEdge: .top) {
-            VStack(spacing: 0) {
-                items(menuItem)
-            }
-            .buttonStyle(CalendarTextMenuItemStyle(textSize: textSize))
-            .fixedSize(horizontal: true, vertical: false)
-            .padding(.horizontal, 4)
-            .padding(.vertical, 3)
-            .presentationCompactAdaptation(.popover)
-            .onDisappear {
-                let action = pendingAction
-                pendingAction = nil
-                action?()
-            }
+        .anchorPreference(key: CalendarMenuPreference.self, value: .bounds) { anchor in
+            guard isPresented else { return nil }
+            return CalendarMenuPlacement(anchor: anchor, content: AnyView(menuContent), dismiss: dismiss,
+                                         aboveTrigger: aboveTrigger)
         }
+        .onDisappear(perform: dismiss)
     }
 
-    private func menuItem(_ title: String, action: @escaping () -> Void) -> Button<Text> {
+    private var menuContent: some View {
+        let layout = aboveTrigger ? AnyLayout(HStackLayout(spacing: 0))
+            : AnyLayout(VStackLayout(alignment: .leading, spacing: 0))
+        return layout {
+            items(menuItem)
+        }
+        .buttonStyle(CalendarTextMenuItemStyle(textSize: textSize, isCompact: aboveTrigger))
+        .fixedSize(horizontal: true, vertical: false)
+        .padding(.horizontal, aboveTrigger ? 2 : 4)
+        .padding(.vertical, aboveTrigger ? 0 : 3)
+        .padding(.bottom, aboveTrigger ? 6 : 0)
+        .background(theme.palette.memoBody, in: CalendarMenuBackground(hasTail: aboveTrigger))
+        .shadow(color: .black.opacity(0.08), radius: 6, y: 2)
+        .environment(\.colorScheme, menuColorScheme ?? colorScheme)
+        .accessibilityElement(children: .contain)
+        .accessibilityAddTraits(.isModal)
+        .accessibilityAction(.escape, dismiss)
+    }
+
+    private func dismiss() {
+        isPresented = false
+    }
+
+    private func menuItem(_ title: String, symbol: String?, action: @escaping () -> Void) -> Button<CalendarTextMenuLabel> {
         Button {
-            pendingAction = action
-            isPresented = false
+            dismiss()
+            action()
         } label: {
+            CalendarTextMenuLabel(title: title, symbol: symbol)
+        }
+    }
+}
+
+struct CalendarTextMenuLabel: View {
+    @ScaledMetric(relativeTo: .footnote) private var symbolWidth: CGFloat = 18
+    let title: String
+    let symbol: String?
+
+    var body: some View {
+        HStack(spacing: 5) {
+            if let symbol {
+                Image(systemName: symbol)
+                    .foregroundStyle(.secondary)
+                    .frame(width: symbolWidth)
+                    .accessibilityHidden(true)
+            }
             Text(title)
         }
     }
 }
 
+struct CalendarTextMenuDivider: View {
+    var body: some View {
+        Divider()
+            .opacity(0.45)
+            .padding(.horizontal, 8)
+            .accessibilityHidden(true)
+    }
+}
+
+struct CalendarMenuPlacement {
+    static let tailInset: CGFloat = 16
+    let anchor: Anchor<CGRect>
+    let content: AnyView
+    let dismiss: () -> Void
+    let aboveTrigger: Bool
+}
+
+private struct CalendarMenuBackground: Shape {
+    let hasTail: Bool
+
+    func path(in rect: CGRect) -> Path {
+        let tailHeight: CGFloat = hasTail ? 6 : 0
+        var body = rect
+        body.size.height -= tailHeight
+        var path = RoundedRectangle(cornerRadius: 10).path(in: body)
+        if hasTail {
+            let center = rect.maxX - CalendarMenuPlacement.tailInset
+            path.move(to: CGPoint(x: center - 5, y: body.maxY - 1))
+            path.addLine(to: CGPoint(x: center + 5, y: body.maxY - 1))
+            path.addLine(to: CGPoint(x: center, y: rect.maxY))
+            path.closeSubpath()
+        }
+        return path
+    }
+}
+
+struct CalendarMenuPreference: PreferenceKey {
+    static let defaultValue: CalendarMenuPlacement? = nil
+
+    static func reduce(value: inout CalendarMenuPlacement?, nextValue: () -> CalendarMenuPlacement?) {
+        value = nextValue() ?? value
+    }
+}
+
 private struct CalendarTextMenuItemStyle: ButtonStyle {
     let textSize: CGFloat
+    let isCompact: Bool
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.system(size: textSize, weight: .medium))
             .foregroundStyle(.primary)
-            .padding(.horizontal, 8)
-            .frame(minWidth: 44, minHeight: 44)
-            .background {
-                if configuration.isPressed {
-                    RoundedRectangle(cornerRadius: 8).fill(.primary.opacity(0.07))
-                }
-            }
+            .padding(.horizontal, isCompact ? 6 : 8)
+            .frame(minWidth: isCompact ? 50 : 58, maxWidth: .infinity,
+                   minHeight: 44, alignment: isCompact ? .center : .leading)
+            .opacity(configuration.isPressed ? 0.55 : 1)
             .contentShape(Rectangle())
     }
 }

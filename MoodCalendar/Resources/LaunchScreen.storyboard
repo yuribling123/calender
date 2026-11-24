@@ -15,7 +15,7 @@
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" image="playfulWings" translatesAutoresizingMaskIntoConstraints="NO" id="launch-wings">
+                            <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" image="launchWingsDecorated" translatesAutoresizingMaskIntoConstraints="NO" id="launch-wings">
                                 <rect key="frame" x="96.5" y="376" width="200" height="100"/>
                                 <accessibility key="accessibilityConfiguration">
                                     <bool key="isAccessibilityElement" value="NO"/>
@@ -39,7 +39,7 @@
         </scene>
     </scenes>
     <resources>
-        <image name="playfulWings" width="1024" height="512"/>
+        <image name="launchWingsDecorated" width="1024" height="512"/>
         <namedColor name="AppBackground">
             <color red="0.9882352941" green="0.9803921569" blue="0.9686274510" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </namedColor>

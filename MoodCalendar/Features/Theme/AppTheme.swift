@@ -362,7 +362,7 @@ enum CardPaper: String, CaseIterable, Identifiable {
         case .blueberryHearts: rgb(252, 250, 245)
         case .peachHearts: rgb(253, 251, 248)
         case .grapeHearts: rgb(252, 249, 250)
-        case .nightHearts: rgb(52, 50, 54)
+        case .nightHearts: rgb(64, 61, 66)
         }
         let dark: Color = switch paper {
         case .original, .pink: rgb(58, 43, 48)
@@ -381,7 +381,7 @@ enum CardPaper: String, CaseIterable, Identifiable {
         case .blueberryHearts: rgb(41, 47, 63)
         case .peachHearts: rgb(57, 46, 41)
         case .grapeHearts: rgb(50, 43, 58)
-        case .nightHearts: rgb(52, 50, 54)
+        case .nightHearts: rgb(64, 61, 66)
         }
         return adaptive(light: light, dark: dark)
     }
@@ -423,7 +423,7 @@ struct CardPaperBackground: View {
                                 : Path(ellipseIn: CGRect(x: center.x - 3, y: center.y - 3,
                                                          width: 6, height: 6))
                             context.fill(path, with: .color((isHeart ? paper.heartInk : paper.dotInk)
-                                .opacity(paper == .nightHearts ? (isHeart ? 0.88 : 0.68)
+                                .opacity(paper == .nightHearts ? 0.82
                                     : (scheme == .dark ? 0.63 : 0.74))))
                         }
                     }
@@ -572,6 +572,7 @@ struct ThemePalette {
 extension ThemePalette {
     // Warm wood and neutral paper keep the retro collection understated.
     var collectionBackground: Color { adaptive(light: rgb(247, 245, 243), dark: rgb(29, 28, 31)) }
+    var searchBackdrop: Color { adaptive(light: rgb(75, 68, 62), dark: rgb(16, 15, 17)) }
     var collectionWoodTop: Color { adaptive(light: rgb(137, 111, 92), dark: rgb(99, 80, 66)) }
     var collectionWoodHighlight: Color { adaptive(light: rgb(145, 119, 100), dark: rgb(106, 86, 71)) }
     var collectionWoodFace: Color { adaptive(light: rgb(120, 94, 77), dark: rgb(85, 67, 55)) }
@@ -623,7 +624,8 @@ extension ThemePalette {
         ])
     }
     var collectionFavoriteHeart: Color { adaptive(light: rgb(190, 70, 79), dark: rgb(225, 116, 124)) }
-    var collectionSelectedRow: Color { adaptive(light: rgb(232, 231, 231), dark: rgb(56, 55, 58)) }
+    var collectionSongSelectedRow: Color { adaptive(light: rgb(235, 229, 232), dark: rgb(59, 53, 57)) }
+    var collectionWatchSelectedRow: Color { adaptive(light: rgb(229, 233, 235), dark: rgb(52, 57, 60)) }
     var collectionDiscLabelInk: Color { adaptive(light: rgb(239, 234, 225), dark: rgb(239, 234, 225)) }
     var collectionDiscPrint: Color { adaptive(light: rgb(166, 165, 171), dark: rgb(180, 179, 185)) }
     var collectionDiscGleam: Color { adaptive(light: rgb(248, 249, 250), dark: rgb(164, 167, 170)) }
@@ -751,9 +753,9 @@ extension ThemePalette {
     var monthlyTicketStubInk: Color { adaptive(light: rgb(122, 48, 56), dark: rgb(211, 170, 176)) }
     var monthlyTicketRule: Color { foreground.opacity(0.35) }
     var monthlyClothBase: Color { adaptive(light: rgb(247, 241, 228), dark: rgb(49, 45, 39)) }
+    var monthlyPolkaPaper: Color { adaptive(light: rgb(255, 252, 247), dark: rgb(45, 41, 39)) }
     var monthlyPolkaInks: [Color] {
         [adaptive(light: rgb(181, 133, 140), dark: rgb(195, 154, 160)),
-         adaptive(light: rgb(189, 153, 130), dark: rgb(204, 170, 150)),
          adaptive(light: rgb(179, 169, 127), dark: rgb(193, 184, 147)),
          adaptive(light: rgb(133, 156, 169), dark: rgb(151, 174, 186)),
          adaptive(light: rgb(156, 141, 166), dark: rgb(175, 161, 185))]

@@ -1,0 +1,9 @@
+{
+  "id" : "12541651-d6fa-4404-8442-f12edc6d10f6",
+  "targets" : [
+    {
+      "id" : "ea862680-2c34-4a5e-b824-f20e4e2ec856",
+      "name" : "MoodCalendar"
+    }
+  ]
+}

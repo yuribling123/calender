@@ -39,7 +39,7 @@ struct RecordSearchScreen: View {
             let height = min(width / 0.70, max(0, geometry.size.height - 24))
 
             ZStack {
-                Color.black.opacity(colorScheme == .dark ? 0.38 : 0.18)
+                theme.palette.searchBackdrop.opacity(colorScheme == .dark ? 0.40 : 0.18)
                     .ignoresSafeArea()
                     .onTapGesture(perform: closeSearch)
                     .accessibilityHidden(true)
@@ -213,8 +213,8 @@ struct RecordSearchScreen: View {
                     String(results.count)
                 ))
             }
-            .font(.caption2)
-            .foregroundStyle(.secondary)
+            .font(.caption2.weight(.regular))
+            .foregroundStyle(theme.palette.foreground.opacity(0.52))
             .padding(.top, 6)
             .padding(.bottom, 2)
             .accessibilityElement(children: .combine)
@@ -297,9 +297,9 @@ struct RecordSearchScreen: View {
     private func monthHeader(_ date: Date, isFirst: Bool) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(date.formatted(.dateTime.locale(AppLanguage.locale).year().month(.abbreviated)))
-                .font(.system(size: contentFontSize, weight: .medium, design: .rounded))
+                .font(.system(size: contentFontSize - 1, weight: .regular, design: .rounded))
                 .tracking(0.5)
-                .foregroundStyle(theme.palette.foreground.opacity(0.78))
+                .foregroundStyle(theme.palette.foreground.opacity(0.68))
                 .fixedSize(horizontal: false, vertical: true)
             Rectangle()
                 .fill(theme.palette.foreground.opacity(0.12))
@@ -363,7 +363,7 @@ private struct SearchResultRow: View {
     let isStarred: Bool
     @Environment(\.appTheme) private var theme
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
-    @ScaledMetric(relativeTo: .body) private var noteFontSize: CGFloat = 14
+    @ScaledMetric(relativeTo: .body) private var noteFontSize: CGFloat = 13
     @ScaledMetric(relativeTo: .caption2) private var secondaryFontSize: CGFloat = 11
 
     // 暂停显示记录的色纸颜色，保留以便恢复。
@@ -393,7 +393,7 @@ private struct SearchResultRow: View {
         .overlay(alignment: .bottom) {
             if result.source == .day {
                 Rectangle()
-                    .fill(theme.palette.foreground.opacity(0.09))
+                    .fill(theme.palette.foreground.opacity(0.16))
                     .frame(height: 0.5)
                     .padding(.horizontal, 12)
                     .accessibilityHidden(true)
@@ -419,19 +419,12 @@ private struct SearchResultRow: View {
                     .frame(width: 40, height: 30)
                     .accessibilityHidden(true)
             }
-            VStack(alignment: .leading, spacing: 3) {
-                if let location = result.locationName {
-                    Label(location, systemImage: "mappin")
-                        .font(.system(size: noteFontSize - 1))
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
-                }
-                highlighted(result.preview)
-                    .font(.system(size: noteFontSize))
-                    .lineLimit(2)
-                    .truncationMode(.tail)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-            }
+            highlighted(result.preview)
+                .font(.system(size: noteFontSize, weight: .light))
+                .lineSpacing(2)
+                .lineLimit(2)
+                .truncationMode(.tail)
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 

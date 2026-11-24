@@ -242,6 +242,9 @@ enum DailyChoice: Int, CaseIterable, Identifiable {
 /// Saved paper IDs remain stable across backup and CloudKit records.
 enum CardPaperAccess {
     static func requiresMembership(_ id: String?) -> Bool {
-        ["silverStars", "creamStars", "roseStars"].contains(id ?? "")
+        [
+            "silverStars", "creamStars", "roseStars",
+            "strawberryHearts", "peachHearts", "grapeHearts", "nightHearts",
+        ].contains(id ?? "")
     }
 }

@@ -4,6 +4,7 @@ import UIKit
 
 struct CollectionScreen: View {
     @Environment(\.appTheme) private var theme
+    @Environment(\.dismiss) private var dismiss
     @AppStorage("collectionVinylSkin") private var storedVinylSkin = CollectionVinylSkin.original.rawValue
     @AppStorage("collectionPhotoSkin.v1") private var storedPhotoSkin = CollectionPhotoSkin.original.rawValue
 // //     @AppStorage("collectionTapeSkin") private var storedTapeSkin = CollectionTapeSkin.original.rawValue
@@ -55,7 +56,7 @@ struct CollectionScreen: View {
                                     .padding(.top, 4)
                                     Text(localized("生活里慢慢积攒的片段"))
                                         .font(.footnote)
-                                        .foregroundStyle(theme.palette.collectionSecondaryInk)
+                                        .foregroundStyle(theme.palette.strongAccent.opacity(0.82))
                                 }
 
                                 collectionRack(spacing: UIDevice.current.userInterfaceIdiom == .pad
@@ -88,9 +89,37 @@ struct CollectionScreen: View {
             .iPadFillPage()
             .background(theme.palette.collectionBackground)
             .foregroundStyle(theme.palette.collectionInk)
-            .navigationTitle(category.map { localized($0.rawValue) } ?? "")
+            .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
+            .navigationBarBackButtonHidden(category != nil)
             .toolbar(category == nil ? .hidden : .visible, for: .navigationBar)
+            .toolbar {
+                if category != nil {
+                    ToolbarItem(placement: .principal) {
+                        if let category {
+                            Text(localized(category.rawValue))
+                                .font(.system(size: 17, weight: .regular))
+                                .foregroundStyle(theme.palette.collectionInk)
+                        }
+                    }
+                    if #available(iOS 26.0, *) {
+                        ToolbarItem(placement: .topBarLeading) {
+                            CollectionBackButton { dismiss() }
+                        }
+                        .sharedBackgroundVisibility(.hidden)
+                    } else {
+                        ToolbarItem(placement: .topBarLeading) {
+                            CollectionBackButton { dismiss() }
+                        }
+                    }
+                }
+            }
+            .background {
+                if category != nil {
+                    CollectionSwipeBackEnabler()
+                        .frame(width: 0, height: 0)
+                }
+            }
         }
     }
 
@@ -183,7 +212,7 @@ struct CollectionScreen: View {
     private func sectionTitle(_ category: CollectionCategory) -> some View {
         HStack(alignment: .firstTextBaseline, spacing: 6) {
             Text(localized(category.sectionTitle))
-                .font(.subheadline.weight(.medium))
+                .font(.subheadline)
             Text(countLabel(category))
                 .font(.caption)
                 .foregroundStyle(theme.palette.collectionSecondaryInk.opacity(0.9))
@@ -248,6 +277,10 @@ struct CollectionScreen: View {
         .frame(maxWidth: .infinity, alignment: .topLeading)
         .accessibilityElement(children: .combine)
         .accessibilityLabel(localized("照片"))
+        .contentShape(Rectangle())
+        .onTapGesture { onOpenDay(memory.date) }
+        .accessibilityAddTraits(.isButton)
+        .accessibilityAction { onOpenDay(memory.date) }
     }
 
     private func count(_ category: CollectionCategory) -> Int {
@@ -267,6 +300,63 @@ struct CollectionScreen: View {
         return image.size.width / image.size.height
     }
 
+}
+
+private struct CollectionBackButton: View {
+    @Environment(\.appTheme) private var theme
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            CollectionHandDrawnChevron()
+                .stroke(theme.palette.strongAccent,
+                        style: StrokeStyle(lineWidth: 2.2, lineCap: .round, lineJoin: .round))
+                .frame(width: 11, height: 20)
+        }
+        .buttonStyle(.plain)
+        .frame(width: 44, height: 44)
+        .contentShape(Rectangle())
+        .accessibilityLabel(localized("返回"))
+    }
+}
+
+private struct CollectionHandDrawnChevron: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        path.move(to: CGPoint(x: rect.maxX * 0.92, y: rect.minY + rect.height * 0.06))
+        path.addQuadCurve(
+            to: CGPoint(x: rect.minX + rect.width * 0.10, y: rect.midY),
+            control: CGPoint(x: rect.width * 0.48, y: rect.height * 0.27)
+        )
+        path.addQuadCurve(
+            to: CGPoint(x: rect.maxX * 0.86, y: rect.maxY - rect.height * 0.04),
+            control: CGPoint(x: rect.width * 0.43, y: rect.height * 0.74)
+        )
+        return path
+    }
+}
+
+private struct CollectionSwipeBackEnabler: UIViewControllerRepresentable {
+    func makeUIViewController(context: Context) -> Controller {
+        Controller()
+    }
+
+    func updateUIViewController(_ uiViewController: Controller, context: Context) {
+        uiViewController.enableSwipeBack()
+    }
+
+    final class Controller: UIViewController {
+        override func viewDidAppear(_ animated: Bool) {
+            super.viewDidAppear(animated)
+            enableSwipeBack()
+        }
+
+        func enableSwipeBack() {
+            guard let gesture = navigationController?.interactivePopGestureRecognizer else { return }
+            gesture.delegate = nil
+            gesture.isEnabled = true
+        }
+    }
 }
 
 enum CollectionCategory: String, CaseIterable, Identifiable {
@@ -905,19 +995,6 @@ struct CollectionDisc: View {
 
 }
 
-private struct CollectionRecordDate: View {
-    @Environment(\.appTheme) private var theme
-    let date: Date
-
-    var body: some View {
-        Text(date, format: .dateTime.year().month(.twoDigits).day(.twoDigits))
-            .font(.system(.caption, design: .monospaced))
-            .foregroundStyle(theme.palette.collectionSecondaryInk)
-            .lineLimit(1)
-            .fixedSize()
-    }
-}
-
 /// Keep selection and history as separate buttons, including for VoiceOver.
 private struct CollectionListRow: View {
     @Environment(\.appTheme) private var theme
@@ -945,7 +1022,7 @@ private struct CollectionListRow: View {
                             Text(String(format: "%02d", number)).font(.caption.monospacedDigit())
                         }
                     }
-                    .foregroundStyle(isSong ? theme.palette.collectionTrackNumberInk : theme.palette.collectionWatchNumberInk)
+                    .foregroundStyle(theme.palette.strongAccent)
                     .frame(width: numberWidth, alignment: .leading)
                     .accessibilityHidden(true)
                     VStack(alignment: .leading, spacing: 4) {
@@ -976,29 +1053,40 @@ private struct CollectionListRow: View {
                     .frame(width: 44, height: 44)
                     .contentShape(Rectangle())
             }
-            .accessibilityLabel(localized("全部记录") + "，" + title)
+            .accessibilityLabel(localized("相关回忆") + "，" + title)
         }
         .buttonStyle(.plain)
         .padding(.horizontal, 10)
         .padding(.vertical, 12)
         .frame(minHeight: 72, alignment: .leading)
-        .background(selected ? theme.palette.collectionSelectedRow : .clear,
-                    in: RoundedRectangle(cornerRadius: 8))
+        .background(selected ? theme.palette.softHighlight : .clear,
+                    in: RoundedRectangle(cornerRadius: 6))
+        .shadow(color: selected ? theme.palette.collectionShadow.opacity(0.18) : .clear,
+                radius: 0, x: 0, y: 1)
+        .overlay(alignment: .bottom) {
+            if selected {
+                RoundedRectangle(cornerRadius: 6)
+                    .strokeBorder(theme.palette.collectionSecondaryInk.opacity(0.12), lineWidth: 0.5)
+                    .accessibilityHidden(true)
+            } else {
+                Rectangle()
+                    .fill(theme.palette.collectionSecondaryInk.opacity(0.16))
+                    .frame(height: 0.5)
+                    .padding(.leading, numberWidth + 22)
+                    .padding(.trailing, 54)
+                    .accessibilityHidden(true)
+            }
+        }
     }
 }
 
 private struct CollectionRecordHistory: View {
     @Environment(\.appTheme) private var theme
     @Environment(\.dismiss) private var dismiss
-    @ScaledMetric(relativeTo: .body) private var artworkWidth: CGFloat = 64
-    @ScaledMetric(relativeTo: .body) private var moodArtworkWidth: CGFloat = 52
-    @ScaledMetric(relativeTo: .body) private var artworkHeight: CGFloat = 36
     @ScaledMetric(relativeTo: .headline) private var titleSize: CGFloat = 18
-    @ScaledMetric(relativeTo: .body) private var recordTextSize: CGFloat = 14
     let title: String
     let subtitle: String
     let memories: [CollectedMemory]
-    let isWatch: Bool
     let onOpenDay: (Date) -> Void
 
     var body: some View {
@@ -1018,46 +1106,14 @@ private struct CollectionRecordHistory: View {
                     }
                     .padding(.bottom, 4)
                     ForEach(memories) { memory in
-                        Button { onOpenDay(memory.date) } label: {
-                            VStack(alignment: .leading, spacing: 12) {
-                                HStack {
-                                    CollectionRecordDate(date: memory.date)
-                                    Spacer()
-                                    Image(systemName: "chevron.right")
-                                        .font(.system(size: 10, weight: .medium))
-                                        .foregroundStyle(theme.palette.collectionSecondaryInk)
-                                }
-                                if let choice = memory.entry.choice {
-                                    HStack(alignment: .center, spacing: 8) {
-                                        ChoiceArtwork(choice: choice)
-                                            .frame(width: choice.group == .mood ? moodArtworkWidth : artworkWidth,
-                                                   height: artworkHeight)
-                                            // Tighten the layout around the artwork's visible content.
-                                            .padding(.horizontal, choice.group == .mood
-                                                     ? -moodArtworkWidth * 0.06 : -artworkWidth * 0.29)
-                                            .accessibilityHidden(true)
-                                        Text(choice.title)
-                                    }
-                                }
-                                if isWatch, let note = memory.entry.watchNote,
-                                   !note.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                                    Text(note)
-                                        .lineSpacing(3)
-                                }
-                                Text(memory.entry.note.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-                                     ? localized("这一天没有写下文字") : memory.entry.note)
-                                    .lineSpacing(3)
+                        SelectedDateDetail(date: memory.date, entry: memory.entry,
+                                           isReadOnly: true, showsYear: true,
+                                           onRecordMood: { _ in }, onEdit: {})
+                            .contentShape(RoundedRectangle(cornerRadius: 18))
+                            .onTapGesture { onOpenDay(memory.date) }
+                            .accessibilityAction(named: localized("查看这一天的记录")) {
+                                onOpenDay(memory.date)
                             }
-                            .font(.system(size: recordTextSize))
-                            .foregroundStyle(theme.palette.collectionInk)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 14)
-                            .background(theme.palette.cardBackground, in: RoundedRectangle(cornerRadius: 12))
-                            .contentShape(RoundedRectangle(cornerRadius: 12))
-                        }
-                        .buttonStyle(.plain)
-                        .accessibilityElement(children: .combine)
                     }
                 }
                 .padding(.horizontal, 24)
@@ -1067,7 +1123,7 @@ private struct CollectionRecordHistory: View {
                 .foregroundStyle(theme.palette.collectionInk)
             }
             .background(theme.palette.collectionBackground)
-            .navigationTitle(localized("全部记录"))
+            .navigationTitle(localized("相关回忆"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -1191,7 +1247,7 @@ private struct SongCollectionList: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 26) {
+            VStack(alignment: .leading, spacing: 14) {
                 HStack(spacing: 12) {
 //                     CollectionDisc(skin: .resolve(storedVinylSkin))
                     CollectionDisc(skin: .resolve(storedVinylSkin))
@@ -1199,7 +1255,7 @@ private struct SongCollectionList: View {
                         .accessibilityHidden(true)
                     VStack(alignment: .leading, spacing: 4) {
                         Text(localized("我的歌单"))
-                            .font(.headline.weight(.medium))
+                            .font(.subheadline.weight(.medium))
                             .foregroundStyle(theme.palette.collectionInk)
                         CollectionCountLabel(text: localized("%lld 首收藏", songs.count))
                     }
@@ -1220,19 +1276,21 @@ private struct SongCollectionList: View {
             .padding(.bottom, 26)
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
-            CollectionPageControls(page: page) { index in
-                pageIndex = index
-                selectedSongID = nil
+            if page.count > 1 {
+                CollectionPageControls(page: page) { index in
+                    pageIndex = index
+                    selectedSongID = nil
+                }
+                .padding(.horizontal, 24)
+                .padding(.top, 8)
+                .padding(.bottom, 12)
+                .background(theme.palette.collectionBackground)
             }
-            .padding(.horizontal, 24)
-            .padding(.top, 8)
-            .padding(.bottom, 12)
-            .background(theme.palette.collectionBackground)
         }
         .sheet(item: $recordSong) { item in
             CollectionRecordHistory(title: item.title,
                                     subtitle: item.artist,
-                                    memories: item.memories, isWatch: false) { date in
+                                    memories: item.memories) { date in
                 recordSong = nil
                 onOpenDay(date)
             }
@@ -1589,7 +1647,7 @@ private struct WatchCollectionList: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 26) {
+            VStack(alignment: .leading, spacing: 14) {
                 HStack(spacing: 12) {
                     // CollectionWatchTape(title: "", kind: "", width: headerTapeWidth,
                     //                     skin: .resolve(storedTapeSkin))
@@ -1598,7 +1656,7 @@ private struct WatchCollectionList: View {
                         .accessibilityHidden(true)
                     VStack(alignment: .leading, spacing: 4) {
                         Text(localized("我的片单"))
-                            .font(.headline.weight(.medium))
+                            .font(.subheadline.weight(.medium))
                             .foregroundStyle(theme.palette.collectionInk)
                         CollectionCountLabel(text: localized("%lld 部收藏", watches.count))
                     }
@@ -1619,19 +1677,21 @@ private struct WatchCollectionList: View {
             .padding(.bottom, 26)
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
-            CollectionPageControls(page: page) { index in
-                pageIndex = index
-                selectedWatchID = nil
+            if page.count > 1 {
+                CollectionPageControls(page: page) { index in
+                    pageIndex = index
+                    selectedWatchID = nil
+                }
+                .padding(.horizontal, 24)
+                .padding(.top, 8)
+                .padding(.bottom, 12)
+                .background(theme.palette.collectionBackground)
             }
-            .padding(.horizontal, 24)
-            .padding(.top, 8)
-            .padding(.bottom, 12)
-            .background(theme.palette.collectionBackground)
         }
         .sheet(item: $recordWatch) { item in
             CollectionRecordHistory(title: item.title,
                                     subtitle: WatchKind.title(for: item.kind),
-                                    memories: item.memories, isWatch: true) { date in
+                                    memories: item.memories) { date in
                 recordWatch = nil
                 onOpenDay(date)
             }

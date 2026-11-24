@@ -2,7 +2,7 @@ import Foundation
 
 /// Pagination for collection lists. Clamp after records are removed from the last page.
 struct CollectionPage {
-    static let size = 6
+    static let size = 7
     let itemCount: Int
     let requestedIndex: Int
 

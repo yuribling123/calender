@@ -18,6 +18,7 @@ struct MoodCalendarApp: App {
     @State private var requestedCalendarMonth: Date?
     @State private var isGuidePresented = false
     @State private var isStartupReady = false
+    @AppStorage("lastSeenReleaseHighlightsID") private var lastSeenReleaseHighlightsID = ""
 
     private var guideKey: String { DemoData.isEnabled ? "demoHasSeenGuide" : "hasSeenGuide" }
 
@@ -115,7 +116,7 @@ struct MoodCalendarApp: App {
                 .environment(\.selectionShape, SelectionShape(rawValue: storedSelectionShape) ?? .circle)
                 .tint((AppTheme(rawValue: storedTheme) ?? .pink).palette.strongAccent)
                 .foregroundStyle(.primary)
-                .accessibilityHidden(isGuidePresented)
+                .accessibilityHidden(isGuidePresented || shouldShowReleaseHighlights)
                 .overlay {
                     if isGuidePresented {
                         ZStack {
@@ -145,6 +146,16 @@ struct MoodCalendarApp: App {
                             .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 20))
                             .padding(.horizontal, 24)
                             .accessibilityAddTraits(.isModal)
+                        }
+                    }
+                }
+                .overlay {
+                    if shouldShowReleaseHighlights {
+                        ReleaseHighlightsOverlay(
+                            release: .current,
+                            theme: AppTheme(rawValue: storedTheme) ?? .pink
+                        ) {
+                            lastSeenReleaseHighlightsID = ReleaseHighlights.current.id
                         }
                     }
                 }
@@ -180,7 +191,7 @@ struct MoodCalendarApp: App {
                 .alert(localized("有新版本啦"), isPresented: Binding(
                     get: {
                         isStartupReady && updateChecker.availableUpdate != nil && !isGuidePresented
-                            && !isICloudFailurePending
+                            && !isICloudFailurePending && !shouldShowReleaseHighlights
                     },
                     set: { if !$0 { updateChecker.availableUpdate = nil } }
                 ), presenting: updateChecker.availableUpdate) { update in
@@ -191,6 +202,15 @@ struct MoodCalendarApp: App {
                 }
         }
         .modelContainer(container)
+    }
+
+    private var shouldShowReleaseHighlights: Bool {
+        isStartupReady
+            && !DemoData.isEnabled
+            && !isGuidePresented
+            && !isICloudFailurePending
+            && !ReleaseHighlights.current.pages.isEmpty
+            && lastSeenReleaseHighlightsID != ReleaseHighlights.current.id
     }
 
     private func guideRow(_ number: String, text: String) -> some View {

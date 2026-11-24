@@ -5,15 +5,15 @@ struct SongCollectionChecks {
     static func main() {
         let emptyPage = CollectionPage(itemCount: 0, requestedIndex: 3)
         precondition(emptyPage.index == 0 && emptyPage.count == 1 && emptyPage.range.isEmpty)
-        let fullPage = CollectionPage(itemCount: 6, requestedIndex: 0)
-        precondition(fullPage.count == 1 && Array(fullPage.range) == Array(0..<6))
-        let lastPage = CollectionPage(itemCount: 7, requestedIndex: 1)
-        precondition(lastPage.count == 2 && Array(lastPage.range) == [6], "The seventh item starts a new page")
-        let removedLastItem = CollectionPage(itemCount: 6, requestedIndex: 1)
-        precondition(removedLastItem.index == 0 && Array(removedLastItem.range) == Array(0..<6),
+        let fullPage = CollectionPage(itemCount: 7, requestedIndex: 0)
+        precondition(fullPage.count == 1 && Array(fullPage.range) == Array(0..<7))
+        let lastPage = CollectionPage(itemCount: 8, requestedIndex: 1)
+        precondition(lastPage.count == 2 && Array(lastPage.range) == [7], "The eighth item starts a new page")
+        let removedLastItem = CollectionPage(itemCount: 7, requestedIndex: 1)
+        precondition(removedLastItem.index == 0 && Array(removedLastItem.range) == Array(0..<7),
                      "Removing the last page returns to a valid page")
-        let severalPages = (0..<3).flatMap { CollectionPage(itemCount: 13, requestedIndex: $0).range }
-        precondition(severalPages == Array(0..<13), "Pages preserve order without missing or duplicate items")
+        let severalPages = (0..<3).flatMap { CollectionPage(itemCount: 15, requestedIndex: $0).range }
+        precondition(severalPages == Array(0..<15), "Pages preserve order without missing or duplicate items")
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(identifier: "Asia/Shanghai")!
         let today = calendar.date(from: DateComponents(year: 2024, month: 3, day: 1))!
