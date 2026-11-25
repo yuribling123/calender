@@ -45,6 +45,7 @@ sources=(
     MoodCalendar/Persistence/EntryStore.swift
     MoodCalendar/Persistence/StarredDayStore.swift
     MoodCalendar/Persistence/MonthlyNoteSkinStore.swift
+    MoodCalendar/Persistence/CalendarAppearanceStore.swift
     Tests/DataBackupChecks.swift
 )
 xcrun --sdk macosx swiftc -parse-as-library $sources \

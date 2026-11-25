@@ -112,7 +112,6 @@ final class MembershipStore: ObservableObject {
             hasUnlock = true
         }
         isUnlocked = hasUnlock
-        enforceFreeCustomizationLimits()
     }
 
     private func apply(_ result: VerificationResult<Transaction>) async {
@@ -125,21 +124,5 @@ final class MembershipStore: ObservableObject {
         // A transaction update can also report a refund or revocation. Re-read
         // the current entitlement instead of assuming every update grants access.
         await refreshEntitlements()
-    }
-
-    private func enforceFreeCustomizationLimits() {
-        guard !isUnlocked else { return }
-        #if DEBUG
-        guard !DemoData.isEnabled else { return }
-        #endif
-        let defaults = UserDefaults.standard
-        let freeThemes: Set<String> = [AppTheme.pink.rawValue, AppTheme.black.rawValue]
-        if !freeThemes.contains(defaults.string(forKey: "appTheme") ?? "") {
-            defaults.set(AppTheme.pink.rawValue, forKey: "appTheme")
-        }
-        let freeShapes = [SelectionShape.circle.rawValue, SelectionShape.star.rawValue]
-        if !freeShapes.contains(defaults.string(forKey: "selectionShape") ?? "") {
-            defaults.set(SelectionShape.circle.rawValue, forKey: "selectionShape")
-        }
     }
 }

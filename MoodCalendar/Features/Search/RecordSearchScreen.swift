@@ -357,7 +357,7 @@ struct SearchReturnButton: View {
 }
 
 private struct SearchResultRow: View {
-    @AppStorage("calendarBookmarkStyle") private var storedBookmarkStyle = CalendarBookmarkStyle.dateColor.rawValue
+    @Environment(\.calendarBookmarkStyle) private var bookmarkStyle
     let result: RecordSearchResult
     let query: String
     let isStarred: Bool
@@ -434,10 +434,10 @@ private struct SearchResultRow: View {
                 Text(result.date.formatted(.dateTime.locale(AppLanguage.locale).day()))
                     .monospacedDigit()
                     .foregroundStyle(isStarred
-                        ? (CalendarBookmarkStyle.resolve(storedBookmarkStyle) == .dateColor ? CalendarBookmarkStyle.ink : theme.palette.bookmarkHighlightInk)
+                        ? (bookmarkStyle == .dateColor ? CalendarBookmarkStyle.ink : theme.palette.bookmarkHighlightInk)
                         : theme.palette.foreground.opacity(0.63))
                     .background {
-                        if isStarred && CalendarBookmarkStyle.resolve(storedBookmarkStyle) == .highlighter {
+                        if isStarred && bookmarkStyle == .highlighter {
                             BookmarkHighlight()
                         }
                     }

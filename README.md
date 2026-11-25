@@ -1,12 +1,16 @@
 # Mood Calendar
 
+首次使用先展示引导和版本介绍，不等待更新网络请求；两者关闭且 App 处于前台、没有 iCloud 错误提示时，延迟 450 毫秒开始自动更新检查。每个自然日最多执行一组检查（失败也计数），一组最多依次请求三次，任一次发现未忽略的新版本便立即停止并提示；全部未发现则保持安静。联网权限如需询问，由系统在网络访问时处理。引导轻微缩放淡入，并尊重减少动态效果设置。说明顺序为切换年份、手指滑动切换月份、记录今天；「知道了」使用贴合文字的胶囊按钮。
+
+手动检查更新入口目前已在「我的」中注释隐藏，保留实现以便恢复；下文有关手动检查的说明描述保留的实现。自动更新检查继续启用。
+
 A native iPhone and iPad mood calendar built with SwiftUI and SwiftData. You can create or edit one entry for today. Allow editing past days defaults to on in Personalization; past days show Edit for an existing entry and Add entry for an empty day. Turning it off makes past days read-only. Future dates are always read-only.
 
 iPad runs natively in portrait, landscape and resizable windows, with layouts measured from the current window or sheet (`Features/Shared/AdaptiveLayout.swift`). Calendar uses the available width and equal-height tablet date rows; windows at least 1000 points wide show the selected-day detail beside the calendar. From 760 points, monthly notes place the current month above a two-column history grouped by year; windows at least 1000 points wide show current and historical months side by side. Settings uses two content columns from 760 points. Collections use full-width shelves, larger tablet thumbnails, adaptive photo columns and two-column media pages when space permits; each media page still contains at most six items. Entry editing uses two columns in forms at least 700 points wide. Narrow windows and accessibility text fall back to one column where needed. Search occupies 90% of the tablet window up to 900 points and follows the keyboard safe area. Limited-task modals retain readable widths and scroll where needed. iPhone retains its existing layout values, spacing and orientation settings.
 
 The app has four tabs: Calendar, Monthly Note, Collection, and Settings. Settings lets you choose an accent color, a date and month selection marker, and a calendar title of up to ten characters. The title is a member feature; when left blank, the calendar shows “今日份”. Free users can use circle, star and sakura markers. Leaf, cat and heart markers require the one-time unlock. Preferences are stored locally. Accent colors do not change the five fixed mood colors, saved entries, or supplied sticker artwork.
 
-日期详情右侧的「标记／已标记」可标记或取消标记今天及未来日期；过去日期仅在「允许修改往日」开启时可标记或取消标记。个性化可选择两种标记样式：「日期改色」默认使用固定玫瑰棕色（深色外观使用较亮版本）；「荧光笔」在日期数字后划一笔当前主题相关的柔和底色，数字使用清晰的中性色。切换样式立即应用到日历和「找一找」，不改变已标记的日期，并保存在本机。两种样式都保留原有选中底形。今天已标记时始终优先显示所选标记样式，不添加角标。「找一找」中已标记的每日记录也使用同款标记样式显示日期数字，星期、正文和月便签维持原样。标记不依赖心情记录，过去日期的标记操作遵循「允许修改往日」偏好，关闭时保留已有标记但不可更改，并隐藏过去日期的标记入口；标记作为独立 SwiftData 日期记录保存，开启 iCloud 后随现有容器同步；ZIP 备份内 data.json 的 starredDays 字段保留标记与取消标记状态，可读文本列出已标记日期。导入保留本机已有状态（包括取消标记），兼容缺少该字段的旧备份，也支持仅包含标记的备份。已有 starredDays.v1 本机偏好在启动时迁移，成功保存后移除旧偏好；取消标记以显式 false 状态保存，较新的操作优先于旧迁移记录。新增模型字段均有默认值，通过增量迁移保留原有记录。Demo 使用隔离的内存库，不读取正式偏好或连接 iCloud。
+日期详情右侧的「标记／已标记」可标记或取消标记今天及未来日期；过去日期仅在「允许修改往日」开启时可标记或取消标记。个性化可选择两种标记样式：「日期改色」默认使用固定玫瑰棕色（深色外观使用较亮版本）；「荧光笔」在日期数字后划一笔当前主题相关的柔和底色，数字使用清晰的中性色。切换样式立即应用到日历和「找一找」，并保留已标记的日期。两种样式都保留原有选中底形。今天已标记时始终优先显示所选标记样式，不添加角标。「找一找」中已标记的每日记录也使用同款标记样式显示日期数字，星期、正文和月便签维持原样。标记不依赖心情记录，过去日期的标记操作遵循「允许修改往日」偏好，关闭时保留已有标记但不可更改，并隐藏过去日期的标记入口；标记作为独立 SwiftData 日期记录保存，开启 iCloud 后随现有容器同步；ZIP 备份内 data.json 的 starredDays 字段保留标记与取消标记状态，可读文本列出已标记日期。导入保留本机已有状态（包括取消标记），兼容缺少该字段的旧备份，也支持仅包含标记的备份。已有 starredDays.v1 本机偏好在启动时迁移，成功保存后移除旧偏好；取消标记以显式 false 状态保存，较新的操作优先于旧迁移记录。新增模型字段均有默认值，通过增量迁移保留原有记录。Demo 使用隔离的内存库，不读取正式偏好或连接 iCloud。
 
 启动屏使用系统原生 `LaunchScreen.storyboard`，仅居中显示开屏专用透明底翅膀原图 `launchWingsDecorated`，保留翅膀旁的星光装饰并等比完整呈现，不添加文字、动画或固定等待时间。图像框为 200 × 100 pt（保留原图透明留白）；日历等其他页面继续使用无周边装饰的 `playfulWings`。启动屏与首页共用 `AppBackground` 颜色资源，浅色为 RGB(252, 250, 247)，深色为 RGB(29, 28, 27)，跟随系统外观。
 
@@ -14,7 +18,7 @@ The app has four tabs: Calendar, Monthly Note, Collection, and Settings. Setting
 
 歌曲、影视的「相关回忆」复用日历详情卡片，展示记录保存的色卡、表情与完整内容，并隐藏标记／编辑菜单；点卡片可回到日历对应日期，卡片内的照片仍可打开预览。收藏架及照片墙中的照片支持点击跳到日历对应日期。
 
-自动更新提醒：普通模式在启动或返回前台时异步调用 Apple 公开 Lookup API，以当前 Bundle ID 查询设备地区对应商店的已上架版本和产品页；设备地区不可用时使用 US，因此设备地区与 Apple 账户商店不一致时可能无法查到更新。每个本地自然日最多尝试一次（失败也计数），不阻塞启动或首页；超时、离线、空结果或无效响应均静默处理。版本按数字段比较，例如 1.0.10 大于 1.0.9。发现新版显示「有新版本啦」，可前往 App Store 更新，或选择「稍后」永久忽略该版本的自动提醒；后续不同新版仍可提醒。首次引导和 iCloud 错误提示结束后才展示更新提示。Demo 不检查，也不读写更新检查偏好。请求只携带公开 Bundle ID、软件类型与地区，不包含用户心情、笔记或记录；无自建服务器、推送或手动检查入口。Apple 仍会收到网络请求的标准连接信息。检查功能只能提醒已安装此功能版本的用户更新未来版本。
+自动更新提醒：普通模式在启动或返回前台时异步调用 Apple 公开 Lookup API，以当前 Bundle ID 查询设备地区对应商店的已上架版本和产品页；设备地区不可用时使用 US，因此设备地区与 Apple 账户商店不一致时可能无法查到更新。每个本地自然日最多自动尝试一次（失败也计数），不阻塞启动或首页；自动检查的超时、离线、空结果或无效响应均静默处理。版本按数字段比较，例如 1.0.10 大于 1.0.9。发现新版显示「有新版本啦」，可前往 App Store 更新，或选择「稍后」永久忽略该版本的自动提醒；后续不同新版仍可提醒。首次引导、版本介绍和 iCloud 错误提示结束后才展示更新提示。Demo 不自动检查。「我的」底部提供「检查更新」入口，手动检查跳过当日检测限制和忽略版本记录，显示加载状态及新版、已是最新版本或检查失败的反馈；发现新版可前往 App Store。Demo 中主动点击也会请求真实商店。请求只携带公开 Bundle ID、软件类型与地区，不包含用户心情、笔记或记录；无自建服务器或推送。Apple 仍会收到网络请求的标准连接信息。检查功能只能提醒已安装此功能版本的用户更新未来版本。
 
 运行 `zsh Tests/run-app-update-checks.sh` 检查数字版本比较、无效版本、跨日限频、时钟回退、忽略版本和商店链接校验。
 
@@ -147,6 +151,8 @@ Calendar days are stored as the local year, month, and day when the entry is cre
 - 五档心情：极好 `#F28DB2`、好 `#F3A58F`、一般 `#E8C982`、不好 `#91A9C5`、很差 `#A99AB9`。
 - 每天从八组共四十项中选择一项：「心情」五项（编号 `1–5`）、「小幸」五项（`6–10`）、「日常」五项（`11–15`）、「陪伴」五项（`16–20`）、「随性」五项（`21–25`：电吉他、翅膀、鸡尾酒、打火机、羽毛笔）和「兔兔」五项（`26–30`：星星兔、眼镜兔、委屈兔、笑晕兔、无语兔）、「日常Ⅱ」五项（`31–34`、`36`）和「天气」五项（稳定编号 `37–41`，选择顺序为晴天、多云、下雨、下雪、彩虹）。选择页顺序为「心情」「陪伴」「日常」「日常Ⅱ」「小幸」「随性」「兔兔」「天气」。新图为 1024×512 透明 PNG，尺寸和留白对齐现有表情。免费用户可用「心情」「日常」「日常Ⅱ」和「陪伴」；永久解锁后可使用全部八组，原有编号保持不变。
 - 所选日期的心情详情会在等级名称旁显示对应短句：幸福到融化、心里软乎乎、今天就这样、小小不开心或快要碎掉了。
+- 首次使用时主题色默认为黑色，日期选中图形默认为樱花。
+- 主题色、选中图形和标记样式随 ZIP 备份导出。确认导入后应用备份中支持的设置，旧备份缺少这些字段时保留当前设置。开启 iCloud 同步后，三项设置分别同步，以最近一次选择或导入为准。升级时迁移已保存的本机偏好；会员外观仍需有效会员资格才能显示。发布前需在现有 CloudKit 容器中部署新增的 CalendarAppearanceSelection 记录类型。
 - 默认选中今天；若 App 跨过当地午夜后仍在前台，或第二天从后台打开，会自动切到新的一天。手机时区变化时也会按新的当地日期重新显示日历并校准午夜定时器。若尚未记录，可从首页详情区直接选心情，或点「选其他表情」进入完整选择页；今天始终可修改；往日能否修改由「允许修改往日」开关控制。
 - 编辑页使用与首页一致的暖色背景；八个表情分组在一行显示，空间不足时横向滚动，所选项目会高亮，并向 VoiceOver 说明选中状态。日历日期也会朗读选中状态，日期文字随系统字号适度放大。
 - 「月便签」显示本月可编辑的一句话，并列出所有有记录或便签的历史月份，不受最近 12 个月限制；点击历史月份标题可打开对应日历；小结少于三条记录时显示「那个月记下了」，其余显示「出现最多的是」，使用表情名称。七组项目参与同一计算，最高次数的表情中优先选择有留言的记录，再按日期取最近一次；全部没有留言时只显示最近的表情。留言只占一行，过长显示省略号；点击整行跳到对应记录当天的日历。
@@ -155,7 +161,7 @@ Calendar days are stored as the local year, month, and day when the entry is cre
 - 「我的」可导出或导入「今日份.zip」，恢复每日记录、月便签和照片。导入前会预览新增数量；同日或同月已有内容会保留，不恢复会员资格。
 - 「我的」可开启 iCloud 同步。启用后需完全退出并重新打开 App；CloudKit 会在用户登录 iCloud 且同步可用时自动同步本地每日记录和月便签。关闭开关只停止后续同步，不会删除云端已有副本。开发者需在 Apple Developer 账号中为 `com.qingqing.MoodCalendar` 配置 `iCloud.com.qingqing.MoodCalendar` CloudKit 容器。
 - Debug 构建提供“预览已登录、未开启”和“预览已开启”入口，只用于查看界面，不会开启 CloudKit 同步或更改实际同步设置。
-- 首次打开时，App 先请求通知权限，用户选择后再显示首次使用说明，并为尚未记录的日期安排当地时间每天下午 2 点的提醒。「我的」中可关闭或重新开启提醒；关闭会撤销尚未发送的提醒。系统通知被拒绝时，「我的」会提供打开 iPhone 设置的入口。Debug 演示模式也可测试提醒开关和通知。
+- 首次打开不请求通知权限；普通模式成功保存第一条每日记录、编辑页关闭后，若每日提醒开启且系统权限尚未决定，再请求通知权限。取消或保存失败不会触发，系统已有授权或拒绝决定时不再弹出。授权后为尚未记录的日期安排当地时间每天下午 2 点的提醒。「我的」中可关闭或主动开启提醒，主动开启也可请求尚未决定的通知权限；关闭会撤销尚未发送的提醒。系统通知被拒绝时，「我的」会提供打开 iPhone 设置的入口。Debug 演示模式不因保存示例记录自动请求权限，仍可主动测试提醒开关。
 - 「我的」提供一次性永久解锁：免费状态可使用薄樱、黑色、淡杏和若叶主题，圆形、星星和樱花选中图形，「心情」「日常」「日常Ⅱ」和「陪伴」四组表情，以及素笺小记、格子日记和半杯奶茶月便签皮肤；日历标题及其余表情组、主题色、选中图形和月便签皮肤需购买解锁。购买通过 StoreKit 2 校验，并支持恢复购买。App Store Connect 需创建非消耗型商品 `com.qingqing.MoodCalendar.premium.lifetime` 并在后台配置价格；未配置商品前，购买按钮不可用。
 
 ## 运行

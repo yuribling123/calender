@@ -56,7 +56,7 @@ struct CollectionScreen: View {
                                     .padding(.top, 4)
                                     Text(localized("生活里慢慢积攒的片段"))
                                         .font(.footnote)
-                                        .foregroundStyle(theme.palette.strongAccent.opacity(0.82))
+                                        .foregroundStyle(theme.palette.strongAccent.opacity(0.66))
                                 }
 
                                 collectionRack(spacing: UIDevice.current.userInterfaceIdiom == .pad
@@ -147,7 +147,7 @@ struct CollectionScreen: View {
 
             shelfContent(category)
                 .frame(maxWidth: .infinity, minHeight: category == .music ? 68 : (category == .watch ? 60 : 100),
-                       alignment: count(category) == 0 ? .center : .bottomLeading)
+                       alignment: .bottomLeading)
                 .fixedSize(horizontal: false, vertical: true)
                 .padding(.horizontal, 18)
                 .padding(.top, 32)
@@ -161,7 +161,9 @@ struct CollectionScreen: View {
     @ViewBuilder
     private func shelfContent(_ category: CollectionCategory) -> some View {
         if count(category) == 0 {
-            Color.clear
+            emptyShelfItem(category)
+                .padding(.vertical, 3)
+                .accessibilityHidden(true)
         } else {
             ScrollView(.horizontal) {
                 HStack(alignment: .bottom, spacing: category == .photo ? 22 : 16) {
@@ -191,21 +193,42 @@ struct CollectionScreen: View {
         }
     }
 
+    @ViewBuilder
+    private func emptyShelfItem(_ category: CollectionCategory) -> some View {
+        switch category {
+        case .music:
+            Color.clear.frame(width: songItemWidth, height: songItemWidth)
+        case .photo:
+            CollectionPhotoPaper(skin: .resolve(storedPhotoSkin)) {
+                Color.clear.frame(width: photoItemSize, height: photoItemSize)
+            }
+            .hidden()
+        case .watch:
+            CollectionWatchTape(title: "", kind: "", width: watchItemWidth)
+                .hidden()
+        }
+    }
+
     private func collectionHeader(_ category: CollectionCategory) -> some View {
         ViewThatFits(in: .horizontal) {
             HStack(alignment: .center) {
                 sectionTitle(category)
                 Spacer(minLength: 8)
-                if count(category) > 0 {
-                    viewAll(category)
-                }
+                shelfHeaderAction(category)
             }
             VStack(alignment: .leading, spacing: 4) {
                 sectionTitle(category)
-                if count(category) > 0 {
-                    viewAll(category)
-                }
+                shelfHeaderAction(category)
             }
+        }
+    }
+
+    @ViewBuilder
+    private func shelfHeaderAction(_ category: CollectionCategory) -> some View {
+        if count(category) > 0 {
+            viewAll(category)
+        } else {
+            viewAll(category).hidden()
         }
     }
 
@@ -1009,7 +1032,10 @@ private struct CollectionListRow: View {
 
     var body: some View {
         HStack(alignment: .center, spacing: 4) {
-            Button(action: onSelect) {
+            Button {
+                UIImpactFeedbackGenerator(style: .rigid).impactOccurred()
+                onSelect()
+            } label: {
                 HStack(alignment: .center, spacing: 12) {
                     Group {
                         if selected {

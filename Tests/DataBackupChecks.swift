@@ -17,9 +17,9 @@ struct DataBackupChecks {
             try DataBackupImporter.makePlan(from: Data(contentsOf: directory.appendingPathComponent(name)),
                                             existingDayKeys: days, existingMonthKeys: months)
         }
-        func expect(_ condition: @autoclosure () -> Bool) {
+        func expect(_ condition: @autoclosure () -> Bool, line: UInt = #line) {
             let result = condition()
-            precondition(result)
+            precondition(result, line: line)
         }
         func rejects(_ name: String) {
             do { _ = try plan(name); preconditionFailure("Expected invalid backup rejection: \(name)") }
@@ -50,6 +50,68 @@ struct DataBackupChecks {
         expect(imported.monthlyNotesToImport.first?.text == "new month")
         let filtered = try plan("legacy-duplicates.zip", days: ["2024-02-29"], months: ["2024-02"])
         expect(imported.futureLetters.isEmpty && imported.monthlyZineDrafts.isEmpty)
+        #if !LEGACY_IMPORT_CHECK
+        let appearanceSchema = Schema([MoodEntry.self, MonthlyNote.self, MonthlyNoteSkinSelection.self, StarredDaySelection.self, CalendarAppearanceSelection.self])
+        let appearance = ["appTheme": "sage", "selectionShape": "sakura", "calendarBookmarkStyle": "highlighter"]
+        let appearanceArchive = try DataBackupExporter.makeArchive(entries: [], monthlyNotes: [],
+            appearance: appearance.merging(["futureOption": "value"]) { current, _ in current })
+        let appearancePlan = try DataBackupImporter.makePlan(from: appearanceArchive,
+            existingDayKeys: [], existingMonthKeys: [])
+        expect(appearancePlan.appearance == appearance && appearancePlan.entriesToImport.isEmpty)
+        expect(imported.appearance.isEmpty)
+        let emptyLegacyArchive = try DataBackupExporter.makeArchive(entries: [], monthlyNotes: [])
+        let emptyLegacyPlan = try DataBackupImporter.makePlan(from: emptyLegacyArchive, existingDayKeys: [], existingMonthKeys: [])
+        let appearanceURL = directory.appendingPathComponent("appearance.store")
+        do {
+            let previousSchema = Schema([MoodEntry.self, MonthlyNote.self,
+                                         MonthlyNoteSkinSelection.self, StarredDaySelection.self])
+            let store = try ModelContainer(for: previousSchema, configurations:
+                ModelConfiguration(schema: previousSchema, url: appearanceURL, cloudKitDatabase: .none))
+            let context = ModelContext(store)
+            context.insert(MoodEntry(dayKey: "2024-02-29", choice: .good, note: "existing entry"))
+            try context.save()
+        }
+        do {
+            let store = try ModelContainer(for: appearanceSchema, configurations:
+                ModelConfiguration(schema: appearanceSchema, url: appearanceURL, cloudKitDatabase: .none))
+            let context = ModelContext(store)
+            let preferences = CalendarAppearanceStore(context: context)
+            let defaultsBeforeMigration = try preferences.backupValues()
+            expect(defaultsBeforeMigration == ["appTheme": "black", "selectionShape": "sakura",
+                                               "calendarBookmarkStyle": "dateColor"])
+            let suite = "MoodCalendarAppearanceChecks." + UUID().uuidString
+            let defaults = UserDefaults(suiteName: suite)!
+            defer { defaults.removePersistentDomain(forName: suite) }
+            defaults.set("pink", forKey: "appTheme")
+            defaults.set("circle", forKey: "selectionShape")
+            try preferences.migrateLegacySelections(defaults: defaults)
+            let migrated = try preferences.backupValues()
+            expect(migrated == ["appTheme": "pink", "selectionShape": "circle", "calendarBookmarkStyle": "dateColor"])
+            expect(defaults.object(forKey: "appTheme") == nil)
+            _ = try DataBackupImporter.restore(appearancePlan, into: context)
+            let originalCount = try context.fetchCount(FetchDescriptor<CalendarAppearanceSelection>())
+            _ = try DataBackupImporter.restore(appearancePlan, into: context)
+            _ = try DataBackupImporter.restore(emptyLegacyPlan, into: context)
+            let finalCount = try context.fetchCount(FetchDescriptor<CalendarAppearanceSelection>())
+            expect(finalCount == originalCount)
+            context.insert(CalendarAppearanceSelection(key: "appTheme", value: "pink",
+                                                       updatedAt: Date(timeIntervalSince1970: 0)))
+            try context.save()
+        }
+        do {
+            let store = try ModelContainer(for: appearanceSchema, configurations:
+                ModelConfiguration(schema: appearanceSchema, url: appearanceURL, cloudKitDatabase: .none))
+            let context = ModelContext(store)
+            let restored = try CalendarAppearanceStore(context: context).backupValues()
+            expect(restored == appearance)
+            let entries = try context.fetch(FetchDescriptor<MoodEntry>())
+            expect(entries.count == 1 && entries.first?.note == "existing entry")
+        }
+        if CommandLine.arguments.contains("--appearance-only") {
+            print("Calendar appearance backup and migration checks passed")
+            return
+        }
+        #endif
         // Local letters and editorial drafts travel with a ZIP, including a
         // letters-only archive. Restoring never replaces an existing local ID.
         let letter = FutureLetter(id: UUID(), title: "给以后", body: "一段私人的正文",

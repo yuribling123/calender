@@ -1,6 +1,93 @@
 {
   "sourceLanguage" : "zh-Hans",
   "strings" : {
+    "无法保存个性化设置" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn’t save personalization settings"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "個人設定を保存できませんでした"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "개인 설정을 저장할 수 없습니다"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法保存个性化设置"
+          }
+        }
+      }
+    },
+    "备份中的主题色、选中图形和标记样式将应用到本机。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The theme color, selection shape, and bookmark style from the backup will be applied to this device."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "バックアップのテーマカラー、選択マークの形、ブックマークのスタイルをこの端末に適用します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "백업의 테마 색상, 선택 표시 모양, 북마크 스타일을 이 기기에 적용합니다."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "备份中的主题色、选中图形和标记样式将应用到本机。"
+          }
+        }
+      }
+    },
+    "已恢复备份中的个性化设置。" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Personalization settings from the backup were restored."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "バックアップの個人設定を復元しました。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "백업의 개인 설정을 복원했습니다."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已恢复备份中的个性化设置。"
+          }
+        }
+      }
+    },
     "" : {
 
     },
@@ -13504,7 +13591,7 @@
         }
       }
     },
-    "用手指在日历上左右滑动，切换月份" : {
+    "手指在日历上左右滑动，切换月份" : {
       "extractionState" : "stale",
       "localizations" : {
         "en" : {
@@ -13528,7 +13615,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "用手指在日历上左右滑动，切换月份"
+            "value" : "手指在日历上左右滑动，切换月份"
           }
         }
       }

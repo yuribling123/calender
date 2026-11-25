@@ -24,7 +24,7 @@ struct ReleaseHighlights {
             ReleaseHighlightPage(
                 id: "weather-reactions",
                 videoName: "weather-reactions",
-                title: localized("天气也有小表情了"),
+                title: localized("天气有小表情了"),
                 message: localized("晴天、雨天，把今天的天气也一起记下来。")
             ),
             ReleaseHighlightPage(
@@ -36,7 +36,7 @@ struct ReleaseHighlights {
             ReleaseHighlightPage(
                 id: "entry-location",
                 videoName: "entry-location",
-                title: localized("把地点也留下"),
+                title: localized("把地点留下"),
                 message: localized("写下今天去过的地方，让回忆多一个小坐标。")
             ),
             ReleaseHighlightPage(

@@ -22,7 +22,7 @@ struct DataBackupDocument: FileDocument {
 }
 
 enum DataBackupExporter {
-    static func makeArchive(entries: [MoodEntry], monthlyNotes: [MonthlyNote], monthlyNoteSkins: [String: String] = [:], starredDays: [String: Bool] = [:], futureLetters: [FutureLetter] = [], monthlyZineDrafts: [String: MonthlyZineDraft] = [:]) throws -> Data {
+    static func makeArchive(entries: [MoodEntry], monthlyNotes: [MonthlyNote], monthlyNoteSkins: [String: String] = [:], starredDays: [String: Bool] = [:], futureLetters: [FutureLetter] = [], monthlyZineDrafts: [String: MonthlyZineDraft] = [:], appearance: [String: String]? = nil) throws -> Data {
         try FutureLetterStore.validate(futureLetters)
         try MonthlyZineDraftStore.validate(monthlyZineDrafts)
         // CloudKit can deliver duplicate records before the normal reconciliation
@@ -65,6 +65,7 @@ enum DataBackupExporter {
             starredDays: starredDays,
             futureLetters: futureLetters,
             monthlyZineDrafts: monthlyZineDrafts,
+            appearance: appearance,
             monthlyNotes: monthlyNotes.sorted { $0.monthKey < $1.monthKey }.map {
                 BackupMonthlyNote(
                     monthKey: $0.monthKey,
@@ -132,6 +133,7 @@ private struct BackupPayload: Codable {
     let starredDays: [String: Bool]?
     let futureLetters: [FutureLetter]?
     let monthlyZineDrafts: [String: MonthlyZineDraft]?
+    let appearance: [String: String]?
     let monthlyNotes: [BackupMonthlyNote]
 }
 
@@ -186,6 +188,7 @@ struct DataBackupImportPlan: Sendable {
     let existingMonthlyNoteCount: Int
     let futureLetters: [FutureLetter]
     let monthlyZineDrafts: [String: MonthlyZineDraft]
+    let appearance: [String: String]
 
     var photoCount: Int { entriesToImport.filter { $0.photoData != nil }.count }
 }
@@ -344,7 +347,8 @@ enum DataBackupImporter {
             existingEntryCount: latestEntries.count - newEntries.count,
             existingMonthlyNoteCount: latestNotes.count - newNotes.count,
             futureLetters: futureLetters,
-            monthlyZineDrafts: monthlyZineDrafts
+            monthlyZineDrafts: monthlyZineDrafts,
+            appearance: CalendarAppearanceKey.supportedValues(in: payload.appearance ?? [:])
         )
     }
 
@@ -381,6 +385,7 @@ enum DataBackupImporter {
         do {
             try StarredDayPersistence(context: context).restore(plan.starredDays)
             try MonthlyNoteSkinStore(context: context).restore(plan.monthlyNoteSkins, excluding: existingMonthKeys)
+            try CalendarAppearanceStore(context: context).restore(plan.appearance)
             try context.save()
         } catch {
             context.rollback()

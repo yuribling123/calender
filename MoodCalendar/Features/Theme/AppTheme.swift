@@ -111,18 +111,13 @@ enum CollectionVinylSkin: String, CaseIterable, Identifiable {
 // }
 //
 /// Display preferences for existing date bookmarks; saved dates remain unchanged.
-enum CalendarBookmarkStyle: String, CaseIterable, Identifiable {
-    case dateColor, highlighter
-
-    var id: String { rawValue }
+extension CalendarBookmarkStyle {
     var title: String {
         switch self {
         case .dateColor: localized("日期改色")
         case .highlighter: localized("荧光笔")
         }
     }
-
-    static func resolve(_ value: String) -> Self { Self(rawValue: value) ?? .dateColor }
 
     static let ink = adaptive(light: rgb(151, 84, 100), dark: rgb(185, 129, 145))
 }
@@ -154,9 +149,7 @@ private struct BookmarkStroke: Shape {
     }
 }
 
-enum AppTheme: String, CaseIterable, Identifiable {
-    case black, pink, apricot, sage, blue, lavender, caramel, creamYellow
-
+extension AppTheme {
     var requiresMembership: Bool {
         switch self {
         case .black, .pink, .apricot, .sage: false
@@ -164,7 +157,6 @@ enum AppTheme: String, CaseIterable, Identifiable {
         }
     }
 
-    var id: String { rawValue }
 
     var swatchColor: Color {
         self == .black ? rgb(38, 38, 38) : palette.accent
@@ -570,6 +562,12 @@ struct ThemePalette {
 }
 
 extension ThemePalette {
+    var settingsHeadingHighlight: Color {
+        isObsidian
+            ? adaptive(light: rgb(38, 38, 38).opacity(0.14), dark: rgb(205, 205, 205).opacity(0.22))
+            : adaptive(light: accent.opacity(0.32), dark: accent.opacity(0.26))
+    }
+
     // Warm wood and neutral paper keep the retro collection understated.
     var collectionBackground: Color { adaptive(light: rgb(247, 245, 243), dark: rgb(29, 28, 31)) }
     var searchBackdrop: Color { adaptive(light: rgb(75, 68, 62), dark: rgb(16, 15, 17)) }
@@ -895,7 +893,7 @@ private func rgb(_ red: Int, _ green: Int, _ blue: Int) -> Color {
 }
 
 private struct AppThemeKey: EnvironmentKey {
-    static let defaultValue: AppTheme = .pink
+    static let defaultValue: AppTheme = .defaultTheme
 }
 
 extension EnvironmentValues {
@@ -905,9 +903,7 @@ extension EnvironmentValues {
     }
 }
 
-enum SelectionShape: String, CaseIterable, Identifiable {
-    case circle, star, sakura, leaf, cat, heart
-
+extension SelectionShape {
     var requiresMembership: Bool {
         switch self {
         case .circle, .star, .sakura: false
@@ -915,7 +911,6 @@ enum SelectionShape: String, CaseIterable, Identifiable {
         }
     }
 
-    var id: String { rawValue }
     var title: String {
         switch self {
         case .circle: localized("圆形")
@@ -1068,7 +1063,7 @@ private struct LeafVein: Shape {
 }
 
 private struct SelectionShapeKey: EnvironmentKey {
-    static let defaultValue: SelectionShape = .circle
+    static let defaultValue: SelectionShape = .defaultShape
 }
 
 extension EnvironmentValues {
@@ -1132,4 +1127,15 @@ struct ChoiceArtwork: View {
         }
     }
 
+}
+
+private struct CalendarBookmarkStyleKey: EnvironmentKey {
+    static let defaultValue: CalendarBookmarkStyle = .dateColor
+}
+
+extension EnvironmentValues {
+    var calendarBookmarkStyle: CalendarBookmarkStyle {
+        get { self[CalendarBookmarkStyleKey.self] }
+        set { self[CalendarBookmarkStyleKey.self] = newValue }
+    }
 }

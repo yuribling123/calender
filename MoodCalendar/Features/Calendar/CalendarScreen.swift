@@ -32,6 +32,7 @@ struct CalendarScreen: View {
     @State private var editingDayKey: String?
     @State private var editingChoiceRawValue: Int?
     @State private var pendingSaveFeedback = false
+    @State private var pendingReminderAuthorization = false
     @State private var pendingRevealDayKey: String?
     @State private var animatedDayKey: String?
     @State private var saveError: String?
@@ -272,6 +273,9 @@ struct CalendarScreen: View {
             onSelect: { date in
                 guard calendar.isDate(date, equalTo: displayedMonth, toGranularity: .month) else {
                     return
+                }
+                if DayKey(date) != DayKey(selectedDay) {
+                    UISelectionFeedbackGenerator().selectionChanged()
                 }
                 selectedDay = date
                 if DayKey(date).relationToToday == .today {
@@ -784,6 +788,7 @@ struct CalendarScreen: View {
     }
 
     private func handleEditorSaved(_ choice: DailyChoice, hasChanges: Bool) {
+        pendingReminderAuthorization = !DemoData.isEnabled
         pendingSaveFeedback = hasChanges
         guard let key = editingDayKey,
               choice.rawValue != editingChoiceRawValue else { return }
@@ -791,6 +796,16 @@ struct CalendarScreen: View {
     }
 
     private func handleEditorDismissed() {
+        if pendingReminderAuthorization {
+            pendingReminderAuthorization = false
+            Task {
+                await DailyFragmentReminder.refresh(
+                    recordedDayKeys: recordedDayKeys,
+                    isEnabled: isDailyReminderEnabled,
+                    mayRequestAuthorization: true
+                )
+            }
+        }
         editingDayKey = nil
         editingChoiceRawValue = nil
         if pendingSaveFeedback {

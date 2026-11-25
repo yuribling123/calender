@@ -272,7 +272,7 @@ struct SelectedDateDetail: View {
     private var photoButton: some View {
         if let data = entry?.photoData, let image = UIImage(data: data) {
             Button {
-                if let onOpenRecord { onOpenRecord() } else { isPhotoPresented = true }
+                isPhotoPresented = true
             } label: {
                 Image(uiImage: image)
                     .resizable()

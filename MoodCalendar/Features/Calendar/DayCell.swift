@@ -18,7 +18,7 @@ struct DayCell: View {
     private var usesLargeCell: Bool { rowHeight > 72 }
     private var artworkHeight: CGFloat { usesLargeCell ? 36 : 26 }
 
-    @AppStorage("calendarBookmarkStyle") private var storedBookmarkStyle = CalendarBookmarkStyle.dateColor.rawValue
+    @Environment(\.calendarBookmarkStyle) private var bookmarkStyle
 
     @State private var revealScale: CGFloat = 1
     @State private var revealOpacity: CGFloat = 1
@@ -38,7 +38,7 @@ struct DayCell: View {
                     )
                     .foregroundStyle(
                         isStarred
-                            ? (CalendarBookmarkStyle.resolve(storedBookmarkStyle) == .dateColor ? CalendarBookmarkStyle.ink : theme.palette.bookmarkHighlightInk)
+                            ? (bookmarkStyle == .dateColor ? CalendarBookmarkStyle.ink : theme.palette.bookmarkHighlightInk)
                             : isSelected
                                 ? theme.palette.onSelection
                                 : isToday
@@ -46,7 +46,7 @@ struct DayCell: View {
                                     : Color.primary
                     )
                     .background {
-                        if isStarred && CalendarBookmarkStyle.resolve(storedBookmarkStyle) == .highlighter {
+                        if isStarred && bookmarkStyle == .highlighter {
                             BookmarkHighlight()
                         }
                     }

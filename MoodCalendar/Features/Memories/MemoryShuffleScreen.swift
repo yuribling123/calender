@@ -303,7 +303,7 @@ struct MemoryShuffleScreen: View {
     @MainActor
     private func shuffle() async {
         let usesReducedMotion = reduceMotion
-        let feedback = UIImpactFeedbackGenerator(style: .soft)
+        let feedback = UIImpactFeedbackGenerator(style: .medium)
         feedback.prepare()
         defer {
             isLifted = false

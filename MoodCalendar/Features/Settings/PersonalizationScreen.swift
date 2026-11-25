@@ -6,6 +6,34 @@ import CloudKit
 import UIKit
 import UserNotifications
 
+/// A broad marker stroke with a pressed tip and staggered lift-off marks.
+private struct SettingsMarkerStroke: Shape {
+    func path(in rect: CGRect) -> Path {
+        let tip = min(rect.height * 0.28, rect.width * 0.12)
+        func point(_ x: CGFloat, _ y: CGFloat) -> CGPoint {
+            CGPoint(x: rect.minX + x, y: rect.minY + rect.height * y)
+        }
+        let width = rect.width
+        var path = Path()
+        path.move(to: point(tip, 0.07))
+        path.addCurve(to: point(width - tip * 0.4, 0.04),
+                      control1: point(width * 0.32, -0.02),
+                      control2: point(width * 0.70, 0.10))
+        path.addLine(to: point(width - tip * 0.8, 0.31))
+        path.addLine(to: point(width, 0.34))
+        path.addLine(to: point(width - tip * 0.35, 0.62))
+        path.addLine(to: point(width - tip * 0.05, 0.65))
+        path.addLine(to: point(width - tip * 0.75, 0.94))
+        path.addCurve(to: point(tip * 0.15, 0.96),
+                      control1: point(width * 0.66, 0.89),
+                      control2: point(width * 0.30, 1.02))
+        path.addLine(to: point(tip * 0.40, 0.66))
+        path.addLine(to: point(0, 0.62))
+        path.closeSubpath()
+        return path
+    }
+}
+
 private struct CalendarTitleCardFramePreferenceKey: PreferenceKey {
     static var defaultValue: CGRect = .zero
 
@@ -120,9 +148,8 @@ struct PersonalizationScreen: View {
     @AppStorage("collectionWatchSkin.v1") private var storedWatchSkin = CollectionWatchSkin.original.rawValue
     @AppStorage("collectionPhotoSkin.v1") private var storedPhotoSkin = CollectionPhotoSkin.original.rawValue
 //     @AppStorage("collectionTapeSkin") private var storedTapeSkin = CollectionTapeSkin.original.rawValue
-    @AppStorage("appTheme") private var storedTheme = AppTheme.pink.rawValue
-    @AppStorage("calendarBookmarkStyle") private var storedBookmarkStyle = CalendarBookmarkStyle.dateColor.rawValue
-    @AppStorage("selectionShape") private var storedSelectionShape = SelectionShape.circle.rawValue
+    @State private var appearanceSaveFailed = false
+    @Environment(\.calendarBookmarkStyle) private var bookmarkStyle
     #if ICLOUD_SYNC_ENABLED
     @AppStorage("icloudSyncEnabled") private var isICloudSyncEnabled = false
     #endif
@@ -139,6 +166,9 @@ struct PersonalizationScreen: View {
     @Environment(\.selectionShape) private var selectionShape
     @Query private var entries: [MoodEntry]
     @State private var isThemePickerPresented = false
+    @StateObject private var manualUpdateChecker = AppUpdateChecker()
+    @State private var updateMessage: String?
+    @State private var manualUpdate: AppStoreUpdate?
     @State private var isShapePickerPresented = false
     @State private var isBookmarkStylePickerPresented = false
     @State private var isMembershipPresented = false
@@ -193,6 +223,28 @@ struct PersonalizationScreen: View {
 
     private var settingsSectionHeadingFont: Font {
         .system(size: settingsSectionHeadingSize, weight: .medium)
+    }
+
+    private func sectionHeading(_ title: String) -> some View {
+        Text(title)
+            .font(settingsSectionHeadingFont)
+            .foregroundStyle(theme.palette.resolved(for: colorScheme).foreground)
+            .background(alignment: .center) {
+                SettingsMarkerStroke()
+                    .fill(LinearGradient(
+                        colors: [theme.palette.settingsHeadingHighlight.opacity(0.85),
+                                 theme.palette.settingsHeadingHighlight,
+                                 theme.palette.settingsHeadingHighlight.opacity(0.9)],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    ))
+                    .frame(height: settingsSectionHeadingSize * 1.05)
+                    .padding(.horizontal, -6)
+                    .rotationEffect(.degrees(-1.2))
+                    .offset(y: 2)
+            }
+            .padding(.leading, 18)
+            .accessibilityAddTraits(.isHeader)
     }
 
     private var settingsHeadingFont: Font {
@@ -288,8 +340,11 @@ struct PersonalizationScreen: View {
                         importPlan.monthlyNotesToImport.count,
                         importPlan.existingEntryCount,
                         importPlan.existingMonthlyNoteCount
-                    ) + "\n" + localized("将恢复 %d 个月份的便签皮肤；本机已有选择会保留。", importPlan.monthlyNoteSkins.count) + "\n" + localized("将合并 %d 个日期的标记状态；本机已有状态会保留。", importPlan.starredDays.count) + "\n" + localized("另有 %d 封未来纸条和 %d 份小刊草稿；本机已有内容会保留。", importPlan.futureLetters.count, importPlan.monthlyZineDrafts.count))
+                    ) + "\n" + localized("将恢复 %d 个月份的便签皮肤；本机已有选择会保留。", importPlan.monthlyNoteSkins.count) + "\n" + localized("将合并 %d 个日期的标记状态；本机已有状态会保留。", importPlan.starredDays.count) + "\n" + localized("另有 %d 封未来纸条和 %d 份小刊草稿；本机已有内容会保留。", importPlan.futureLetters.count, importPlan.monthlyZineDrafts.count) + (importPlan.appearance.isEmpty ? "" : "\n" + localized("备份中的主题色、选中图形和标记样式将应用到本机。")))
                 }
+            }
+            .alert(localized("无法保存个性化设置"), isPresented: $appearanceSaveFailed) {
+                Button(localized("确定"), role: .cancel) {}
             }
             .alert(localized("数据备份"), isPresented: Binding(
                 get: { backupMessage != nil },
@@ -333,9 +388,7 @@ struct PersonalizationScreen: View {
 
     private var personalizationSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text(localized("个性化"))
-                .font(settingsSectionHeadingFont)
-                .padding(.leading, 18)
+            sectionHeading(localized("个性化"))
                 .padding(.top, 12)
 
             VStack(alignment: .leading, spacing: 8) {
@@ -782,9 +835,7 @@ struct PersonalizationScreen: View {
 //
     private func membershipSection(topPadding: CGFloat = 40) -> some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text(localized("会员"))
-                .font(settingsSectionHeadingFont)
-                .padding(.leading, 18)
+            sectionHeading(localized("会员"))
 
             Button {
                 isMembershipPresented = true
@@ -818,9 +869,7 @@ struct PersonalizationScreen: View {
 
     private var dataExportSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text(localized("数据管理"))
-                .font(settingsSectionHeadingFont)
-                .padding(.leading, 18)
+            sectionHeading(localized("数据管理"))
 
             Button(action: prepareDataBackup) {
                 HStack(spacing: 14) {
@@ -900,6 +949,14 @@ struct PersonalizationScreen: View {
         .padding(.top, 32)
     }
 
+    private func saveAppearance(_ value: String, for key: CalendarAppearanceKey) {
+        do {
+            try CalendarAppearanceStore(context: modelContext).select(value, for: key)
+        } catch {
+            appearanceSaveFailed = true
+        }
+    }
+
     private func prepareDataBackup() {
         do {
             let entries = try modelContext.fetch(FetchDescriptor<MoodEntry>())
@@ -908,7 +965,7 @@ struct PersonalizationScreen: View {
             _ = try futureLetterStore.exportData()
             let drafts = try MonthlyZineDraftStore.applicationStore(isDemo: DemoData.isEnabled).exportDrafts()
             backupDocument = DataBackupDocument(
-                data: try DataBackupExporter.makeArchive(entries: entries, monthlyNotes: monthlyNotes, monthlyNoteSkins: skins, starredDays: try StarredDayPersistence(context: modelContext).backupSelections(), futureLetters: futureLetterStore.letters, monthlyZineDrafts: drafts)
+                data: try DataBackupExporter.makeArchive(entries: entries, monthlyNotes: monthlyNotes, monthlyNoteSkins: skins, starredDays: try StarredDayPersistence(context: modelContext).backupSelections(), futureLetters: futureLetterStore.letters, monthlyZineDrafts: drafts, appearance: try CalendarAppearanceStore(context: modelContext).backupValues())
             )
             isShowingBackupExporter = true
         } catch {
@@ -956,7 +1013,7 @@ struct PersonalizationScreen: View {
                         existingMonthKeys: existingMonthKeys
                     )
                 }.value
-                guard !plan.entriesToImport.isEmpty || !plan.monthlyNotesToImport.isEmpty || !plan.monthlyNoteSkins.isEmpty || !plan.starredDays.isEmpty || !plan.futureLetters.isEmpty || !plan.monthlyZineDrafts.isEmpty else {
+                guard !plan.entriesToImport.isEmpty || !plan.monthlyNotesToImport.isEmpty || !plan.monthlyNoteSkins.isEmpty || !plan.starredDays.isEmpty || !plan.futureLetters.isEmpty || !plan.monthlyZineDrafts.isEmpty || !plan.appearance.isEmpty else {
                     backupMessage = localized("备份中的记录都已存在，没有需要补入的内容。")
                     return
                 }
@@ -979,7 +1036,7 @@ struct PersonalizationScreen: View {
             if !importPlan.futureLetters.isEmpty { try futureLetterStore.importLetters(importPlan.futureLetters) }
             if !importPlan.monthlyZineDrafts.isEmpty { try draftStore.mergeImportedDrafts(importPlan.monthlyZineDrafts) }
             let result = try DataBackupImporter.restore(importPlan, into: modelContext)
-            backupMessage = localized("导入完成：新增 %d 条每日记录和 %d 条月便签。", result.entries, result.monthlyNotes) + "\n" + localized("月便签皮肤已合并，本机已有选择会保留。") + "\n" + localized("日期标记已合并，本机已有状态会保留。") + "\n" + localized("未来纸条和小刊草稿已合并，本机已有内容会保留。")
+            backupMessage = localized("导入完成：新增 %d 条每日记录和 %d 条月便签。", result.entries, result.monthlyNotes) + "\n" + localized("月便签皮肤已合并，本机已有选择会保留。") + "\n" + localized("日期标记已合并，本机已有状态会保留。") + "\n" + localized("未来纸条和小刊草稿已合并，本机已有内容会保留。") + (importPlan.appearance.isEmpty ? "" : "\n" + localized("已恢复备份中的个性化设置。"))
         } catch {
             backupMessage = localized("导入未全部完成：%@。已合并的内容会保留，可安全重试。", error.localizedDescription)
         }
@@ -990,12 +1047,12 @@ struct PersonalizationScreen: View {
             isBookmarkStylePickerPresented = true
         } label: {
             HStack(spacing: 14) {
-                bookmarkStylePreview(CalendarBookmarkStyle.resolve(storedBookmarkStyle))
+                bookmarkStylePreview(bookmarkStyle)
                 VStack(alignment: .leading, spacing: 4) {
                     Text(localized("标记样式"))
                         .font(settingsItemFont)
                         .foregroundStyle(.primary)
-                    Text(CalendarBookmarkStyle.resolve(storedBookmarkStyle).title)
+                    Text(bookmarkStyle.title)
                         .font(settingsDetailFont)
                         .foregroundStyle(.secondary)
                 }
@@ -1011,7 +1068,7 @@ struct PersonalizationScreen: View {
         }
         .buttonStyle(.plain)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(localized("标记样式") + "，" + CalendarBookmarkStyle.resolve(storedBookmarkStyle).title)
+        .accessibilityLabel(localized("标记样式") + "，" + bookmarkStyle.title)
     }
 
     private func bookmarkStylePreview(_ style: CalendarBookmarkStyle) -> some View {
@@ -1058,9 +1115,9 @@ struct PersonalizationScreen: View {
     }
 
     private func bookmarkStyleOption(_ style: CalendarBookmarkStyle) -> some View {
-        let isSelected = CalendarBookmarkStyle.resolve(storedBookmarkStyle) == style
+        let isSelected = bookmarkStyle == style
         return Button {
-            storedBookmarkStyle = style.rawValue
+            saveAppearance(style.rawValue, for: .bookmark)
         } label: {
             HStack(spacing: 14) {
                 bookmarkStylePreview(style)
@@ -1107,10 +1164,7 @@ struct PersonalizationScreen: View {
 
     private var languageSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text(localized("语言"))
-                .font(settingsSectionHeadingFont)
-                .padding(.leading, 18)
-                .foregroundStyle(theme.palette.resolved(for: colorScheme).foreground)
+            sectionHeading(localized("语言"))
             HStack {
                 Text(localized("App 语言"))
                     .foregroundStyle(theme.palette.resolved(for: colorScheme).foreground)
@@ -1132,9 +1186,51 @@ struct PersonalizationScreen: View {
 
     private var feedbackSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text(localized("反馈"))
-                .font(settingsSectionHeadingFont)
-                .padding(.leading, 18)
+            /* 手动检查更新入口暂时隐藏，保留以便恢复。
+            Button {
+                Task {
+                    manualUpdate = nil
+                    switch await manualUpdateChecker.checkIfNeeded(manually: true) {
+                    case .update(let update):
+                        manualUpdate = update
+                        updateMessage = localized("有新版本啦") + " " + update.version
+                    case .upToDate:
+                        updateMessage = localized("已是最新版本")
+                    case .failed, .skipped:
+                        updateMessage = localized("检查失败，请稍后再试")
+                    }
+                }
+            } label: {
+                HStack(spacing: 14) {
+                    Image(systemName: "arrow.triangle.2.circlepath")
+                        .foregroundStyle(theme.palette.accent)
+                        .frame(width: 30)
+                        .accessibilityHidden(true)
+                    Text(localized("检查更新"))
+                        .foregroundStyle(.primary)
+                    Spacer()
+                    if manualUpdateChecker.isChecking { ProgressView() }
+                }
+                .padding(18)
+                .background(theme.palette.resolved(for: colorScheme).cardBackground, in: RoundedRectangle(cornerRadius: 20))
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .disabled(manualUpdateChecker.isChecking)
+            .alert(localized("检查更新"), isPresented: Binding(
+                get: { updateMessage != nil },
+                set: { if !$0 { updateMessage = nil } }
+            )) {
+                if let url = manualUpdate?.productURL {
+                    Button(localized("前往更新")) { openURL(url) }
+                }
+                Button(localized("确定"), role: .cancel) {}
+            } message: {
+                Text(updateMessage ?? "")
+            }
+            */
+
+            sectionHeading(localized("反馈"))
 
             Button {
                 openURL(feedbackEmailURL)
@@ -1227,7 +1323,8 @@ struct PersonalizationScreen: View {
                 Task {
                     await DailyFragmentReminder.refresh(
                         recordedDayKeys: recordedDayKeys,
-                        isEnabled: enabled
+                        isEnabled: enabled,
+                        mayRequestAuthorization: true
                     )
                     await checkReminderPermission()
                 }
@@ -1239,9 +1336,7 @@ struct PersonalizationScreen: View {
     #if ICLOUD_SYNC_ENABLED
     private var syncSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text(localized("数据同步"))
-                .font(settingsSectionHeadingFont)
-                .padding(.leading, 18)
+            sectionHeading(localized("数据同步"))
 
             HStack(spacing: 16) {
                 VStack(alignment: .leading, spacing: 4) {
@@ -1422,7 +1517,7 @@ struct PersonalizationScreen: View {
                                 isMembershipPresented = true
                                 return
                             }
-                            storedTheme = option.rawValue
+                            saveAppearance(option.rawValue, for: .theme)
                         } label: {
                             HStack(spacing: 14) {
                                 Circle()
@@ -1438,7 +1533,7 @@ struct PersonalizationScreen: View {
                                         .font(.caption)
                                         .foregroundStyle(theme.palette.strongAccent)
                                 }
-                                if storedTheme == option.rawValue {
+                                if theme == option {
                                     Image(systemName: "checkmark")
                                         .foregroundStyle(option.palette.strongAccent)
                                         .accessibilityHidden(true)
@@ -1446,13 +1541,13 @@ struct PersonalizationScreen: View {
                             }
                             .padding(.horizontal, 16)
                             .frame(minHeight: 48)
-                            .background(storedTheme == option.rawValue ? option.palette.softHighlight : .clear,
+                            .background(theme == option ? option.palette.softHighlight : .clear,
                                         in: RoundedRectangle(cornerRadius: 14))
                             .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
                         .accessibilityLabel(option.title)
-                        .accessibilityAddTraits(storedTheme == option.rawValue ? .isSelected : [])
+                        .accessibilityAddTraits(theme == option ? .isSelected : [])
                     }
                 }
             }
@@ -1490,7 +1585,7 @@ struct PersonalizationScreen: View {
                             isMembershipPresented = true
                             return
                         }
-                        storedSelectionShape = option.rawValue
+                        saveAppearance(option.rawValue, for: .shape)
                     } label: {
                         HStack(spacing: 14) {
                             SelectionShapeIcon(
@@ -1509,7 +1604,7 @@ struct PersonalizationScreen: View {
                                     .font(.caption)
                                     .foregroundStyle(theme.palette.strongAccent)
                             }
-                            if storedSelectionShape == option.rawValue {
+                            if selectionShape == option {
                                 Image(systemName: "checkmark")
                                     .foregroundStyle(theme.palette.strongAccent)
                                     .accessibilityHidden(true)
@@ -1517,13 +1612,13 @@ struct PersonalizationScreen: View {
                         }
                         .padding(.horizontal, 16)
                         .frame(minHeight: 48)
-                        .background(storedSelectionShape == option.rawValue ? theme.palette.softHighlight : .clear,
+                        .background(selectionShape == option ? theme.palette.softHighlight : .clear,
                                     in: RoundedRectangle(cornerRadius: 14))
                         .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel(option.title)
-                    .accessibilityAddTraits(storedSelectionShape == option.rawValue ? .isSelected : [])
+                    .accessibilityAddTraits(selectionShape == option ? .isSelected : [])
                 }
                 Spacer(minLength: 0)
             }

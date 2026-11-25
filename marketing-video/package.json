@@ -1,0 +1,23 @@
+{
+  "name": "little-today-marketing-video",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "remotion studio src/index.ts",
+    "music": "node scripts/generate-music.mjs",
+    "render": "remotion render src/index.ts LittleTodayVertical out/little-today-vertical.mp4",
+    "render:cat-push": "remotion render src/index.ts CatPushPhone out/cat-pushes-phone.mp4",
+    "still": "remotion still src/index.ts LittleTodayVertical out/cover.png --frame=330"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.406",
+    "@remotion/google-fonts": "4.0.406",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "remotion": "4.0.406"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.14",
+    "typescript": "5.9.3"
+  }
+}

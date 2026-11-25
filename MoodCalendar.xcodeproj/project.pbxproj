@@ -7,38 +7,26 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		F12520260000000000000001 /* weather-reactions.mov in Resources */ = {isa = PBXBuildFile; fileRef = F12520260000000000000011; };
-		F12520260000000000000002 /* heart-palettes.mov in Resources */ = {isa = PBXBuildFile; fileRef = F12520260000000000000012; };
-		F12520260000000000000003 /* entry-location.mov in Resources */ = {isa = PBXBuildFile; fileRef = F12520260000000000000013; };
-		F12520260000000000000004 /* card-preview.mov in Resources */ = {isa = PBXBuildFile; fileRef = F12520260000000000000014; };
-		F12520260000000000000005 /* monthly-note-skins.mov in Resources */ = {isa = PBXBuildFile; fileRef = F12520260000000000000015; };
-		F12420260000000000000001 /* ReleaseHighlights.swift in Sources */ = {isa = PBXBuildFile; fileRef = F12420260000000000000002; };
-        F11920260000000000000001 /* AppUpdate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11920260000000000000002; };
-        F11920260000000000000003 /* AppUpdateChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11920260000000000000004; };
-		F11820260000000000000001 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F11820260000000000000002 /* LaunchScreen.storyboard */; };
-		F30A20260000000000000002 /* AdaptiveLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = F30A20260000000000000001; };
-		F29C20260000000000000002 /* MoodCalendar/Domain/WatchKind.swift in Sources */ = {isa = PBXBuildFile; fileRef = F29C20260000000000000001; };
-		F26C20260000000000000004 /* MoodCalendar/Features/Collection/CollectionScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = F26C20260000000000000003; };
-		F26C20260000000000000002 /* MoodCalendar/Domain/EntryCollection.swift in Sources */ = {isa = PBXBuildFile; fileRef = F26C20260000000000000001; };
-		F19A20260000000000000005 /* Features/Monthly/MonthlyNoteSkinView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F19A20260000000000000006; };
-		F19A20260000000000000003 /* Persistence/MonthlyNoteSkinStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F19A20260000000000000004; };
-		F19A20260000000000000007 /* Persistence/StarredDayStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F19A20260000000000000008; };
-		F19A20260000000000000001 /* Domain/MonthlyNoteSkin.swift in Sources */ = {isa = PBXBuildFile; fileRef = F19A20260000000000000002; };
-		F18D20260000000000000005 /* MoodCalendar/Features/Search/NotebookDecorations.swift in Sources */ = {isa = PBXBuildFile; fileRef = F18D20260000000000000006 /* MoodCalendar/Features/Search/NotebookDecorations.swift */; };
-		F18D20260000000000000003 /* MoodCalendar/Features/Search/RecordSearchScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = F18D20260000000000000004 /* MoodCalendar/Features/Search/RecordSearchScreen.swift */; };
-		F18D20260000000000000001 /* MoodCalendar/Domain/RecordSearch.swift in Sources */ = {isa = PBXBuildFile; fileRef = F18D20260000000000000002 /* MoodCalendar/Domain/RecordSearch.swift */; };
-		AB17C1000000000000000001 /* player-click.wav in Resources */ = {isa = PBXBuildFile; fileRef = AB17C1000000000000000002 /* player-click.wav */; };
 		063D1D5D61FAE4C7C9BDDE12 /* MoodCalendar/Domain/MonthLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E4D6142AB9DB5CD211CAB4B /* MoodCalendar/Domain/MonthLayout.swift */; };
 		1562EBB728B9E65040A47063 /* MoodCalendar/App/MoodCalendarApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C0B7456F844A41B2530A42A /* MoodCalendar/App/MoodCalendarApp.swift */; };
+		2177149D9554AC5BAE1D4CA9 /* MoodCalendar/Domain/FutureLetter.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF4647F5F8E4F75E72A60CFF /* MoodCalendar/Domain/FutureLetter.swift */; };
 		222F0DBFFE5EB23DCD3FD16F /* MoodCalendar/Resources/Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5B04B2273026590A440D27C9 /* MoodCalendar/Resources/Assets.xcassets */; };
 		22A9293E2F85788A74063562 /* MoodCalendar/Features/Calendar/CalendarScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CC4B7E862ADE897AED1178D /* MoodCalendar/Features/Calendar/CalendarScreen.swift */; };
 		40189279965620E2F8774349 /* MoodCalendar/Persistence/EntryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 152329B8FA3DC8602E5E97F0 /* MoodCalendar/Persistence/EntryStore.swift */; };
 		4F782E38FF74881CD7B15D2B /* MoodCalendar/Features/Entry/EntryEditorScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C64447ECA14C7F8D4BDDEA8 /* MoodCalendar/Features/Entry/EntryEditorScreen.swift */; };
+		6AC1B26A96647EC77FD38C78 /* MoodCalendar/Persistence/FutureLetterStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = D58D909FEC9592176803222D /* MoodCalendar/Persistence/FutureLetterStore.swift */; };
+		747994E5B66E33DE5D28F3B4 /* MoodCalendar/Features/Memories/MemoryShuffleScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB3C4833379A5BB304484D2E /* MoodCalendar/Features/Memories/MemoryShuffleScreen.swift */; };
+		7F1B0F7A0533BFB5A58865B2 /* MoodCalendar/Persistence/MonthlyZineDraftStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C740AB799839137541EE6B7 /* MoodCalendar/Persistence/MonthlyZineDraftStore.swift */; };
+		7FF53E7762D8E08CACAEDD5C /* MoodCalendar/Features/Zine/MonthlyZinePoster.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39B7D307D6369DA1D0188827 /* MoodCalendar/Features/Zine/MonthlyZinePoster.swift */; };
+		81F7E29F91367F8E4FFC56A3 /* MoodCalendar/Domain/MonthlyZine.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB309B9E5546788F1F9630A7 /* MoodCalendar/Domain/MonthlyZine.swift */; };
 		848A87C66C814D5DD06A7D50 /* MoodCalendar/Persistence/MoodEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4C6790AF6A66C004E857DC6 /* MoodCalendar/Persistence/MoodEntry.swift */; };
 		890704F5E2B61DECC1503EDD /* MoodCalendar/App/DemoData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26EE3BBB2D46F5FB94E3D3D6 /* MoodCalendar/App/DemoData.swift */; };
+		8B68DF77B3FA20AF36574646 /* MoodCalendar/Features/Zine/MonthlyZineScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CED8C0661A412EC88240FC7 /* MoodCalendar/Features/Zine/MonthlyZineScreen.swift */; };
 		96F5AD9F1ABF7EF9F47A4453 /* MoodCalendar/Features/Calendar/MonthGrid.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBFEF3D7150230FF10C342E2 /* MoodCalendar/Features/Calendar/MonthGrid.swift */; };
+		9754C240D1F66C6EFA434651 /* MoodCalendar/Domain/MemoryShuffle.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFD08A3394B2DAB18A216F38 /* MoodCalendar/Domain/MemoryShuffle.swift */; };
 		A104EF7CBA62193D308ADD01 /* MoodCalendar/Features/Theme/AppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = A104EF7CBA62193D308ADD02 /* MoodCalendar/Features/Theme/AppTheme.swift */; };
 		A104EF7CBA62193D308ADD03 /* MoodCalendar/Features/Settings/PersonalizationScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A104EF7CBA62193D308ADD04 /* MoodCalendar/Features/Settings/PersonalizationScreen.swift */; };
+		AB17C1000000000000000001 /* MoodCalendar/Resources/Sounds/player-click.wav in Resources */ = {isa = PBXBuildFile; fileRef = AB17C1000000000000000002 /* MoodCalendar/Resources/Sounds/player-click.wav */; };
 		B524A5756F176F151EDB2A38 /* MoodCalendar/Domain/Mood.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A772840AC9D4747D2365F08 /* MoodCalendar/Domain/Mood.swift */; };
 		B8E4A6C13D5F7092AAE4B501 /* MoodCalendar/Persistence/DataBackup.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8E4A6C13D5F7092AAE4B502 /* MoodCalendar/Persistence/DataBackup.swift */; };
 		BA6FF04F9B7852D8CA0A079A /* MoodCalendar/Domain/DayKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34689774686455350911AEC2 /* MoodCalendar/Domain/DayKey.swift */; };
@@ -47,70 +35,73 @@
 		C8649DE90000000000000003 /* MoodCalendar/Resources/InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = C8649DE90000000000000004 /* MoodCalendar/Resources/InfoPlist.xcstrings */; };
 		C91A00000000000000000001 /* MoodCalendar/Features/Monthly/MonthlyGoalScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C91A00000000000000000002 /* MoodCalendar/Features/Monthly/MonthlyGoalScreen.swift */; };
 		D5A12E830CB94AD18D911001 /* MoodCalendar/Domain/DailyChoice.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A12E830CB94AD18D911002 /* MoodCalendar/Domain/DailyChoice.swift */; };
+		D84206C10D25C0D908C5F7C1 /* MoodCalendar/Persistence/MemoryDiscoveryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 639D58B373249629531B3C2F /* MoodCalendar/Persistence/MemoryDiscoveryStore.swift */; };
 		E091A2B3C4D5E6F701234567 /* MoodCalendar/App/DailyFragmentReminder.swift in Sources */ = {isa = PBXBuildFile; fileRef = E091A2B3C4D5E6F701234568 /* MoodCalendar/App/DailyFragmentReminder.swift */; };
 		E091A2B3C4D5E6F701234569 /* MoodCalendar/App/MembershipStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E091A2B3C4D5E6F701234570 /* MoodCalendar/App/MembershipStore.swift */; };
 		E091A2B3C4D5E6F701234571 /* MoodCalendar/Features/Settings/MembershipScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = E091A2B3C4D5E6F701234572 /* MoodCalendar/Features/Settings/MembershipScreen.swift */; };
 		E091A2B3C4D5E6F701234573 /* MoodCalendar/App/SaveFeedback.swift in Sources */ = {isa = PBXBuildFile; fileRef = E091A2B3C4D5E6F701234574 /* MoodCalendar/App/SaveFeedback.swift */; };
 		E091A2B3C4D5E6F701234575 /* MoodCalendar/Resources/Sounds/save-chime.wav in Resources */ = {isa = PBXBuildFile; fileRef = E091A2B3C4D5E6F701234576 /* MoodCalendar/Resources/Sounds/save-chime.wav */; };
 		E091A2B3C4D5E6F701234577 /* MoodCalendar/PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = E091A2B3C4D5E6F701234578 /* MoodCalendar/PrivacyInfo.xcprivacy */; };
+		E13F9FF85810A2B0B1080FBC /* MoodCalendar/Features/Letters/FutureLettersScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CE0CEEB7A69169B297F5B2E /* MoodCalendar/Features/Letters/FutureLettersScreen.swift */; };
 		F071CA1E0000000000000001 /* MoodCalendar/Resources/Fonts in Resources */ = {isa = PBXBuildFile; fileRef = F071CA1E0000000000000002 /* MoodCalendar/Resources/Fonts */; };
 		F071CA1E0000000000000003 /* MoodCalendar/Resources/Sounds/photo-flip.wav in Resources */ = {isa = PBXBuildFile; fileRef = F071CA1E0000000000000004 /* MoodCalendar/Resources/Sounds/photo-flip.wav */; };
+		F11820260000000000000001 /* MoodCalendar/Resources/LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F11820260000000000000002 /* MoodCalendar/Resources/LaunchScreen.storyboard */; };
+		F11920260000000000000001 /* MoodCalendar/Domain/AppUpdate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11920260000000000000002 /* MoodCalendar/Domain/AppUpdate.swift */; };
+		F11920260000000000000003 /* MoodCalendar/App/AppUpdateChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11920260000000000000004 /* MoodCalendar/App/AppUpdateChecker.swift */; };
+		F12420260000000000000001 /* MoodCalendar/Features/Shared/ReleaseHighlights.swift in Sources */ = {isa = PBXBuildFile; fileRef = F12420260000000000000002 /* MoodCalendar/Features/Shared/ReleaseHighlights.swift */; };
+		F12520260000000000000001 /* MoodCalendar/Resources/ReleaseHighlights/weather-reactions.mov in Resources */ = {isa = PBXBuildFile; fileRef = F12520260000000000000011 /* MoodCalendar/Resources/ReleaseHighlights/weather-reactions.mov */; };
+		F12520260000000000000002 /* MoodCalendar/Resources/ReleaseHighlights/heart-palettes.mov in Resources */ = {isa = PBXBuildFile; fileRef = F12520260000000000000012 /* MoodCalendar/Resources/ReleaseHighlights/heart-palettes.mov */; };
+		F12520260000000000000003 /* MoodCalendar/Resources/ReleaseHighlights/entry-location.mov in Resources */ = {isa = PBXBuildFile; fileRef = F12520260000000000000013 /* MoodCalendar/Resources/ReleaseHighlights/entry-location.mov */; };
+		F12520260000000000000004 /* MoodCalendar/Resources/ReleaseHighlights/card-preview.mov in Resources */ = {isa = PBXBuildFile; fileRef = F12520260000000000000014 /* MoodCalendar/Resources/ReleaseHighlights/card-preview.mov */; };
+		F12520260000000000000005 /* MoodCalendar/Resources/ReleaseHighlights/monthly-note-skins.mov in Resources */ = {isa = PBXBuildFile; fileRef = F12520260000000000000015 /* MoodCalendar/Resources/ReleaseHighlights/monthly-note-skins.mov */; };
+		F18D20260000000000000001 /* MoodCalendar/Domain/RecordSearch.swift in Sources */ = {isa = PBXBuildFile; fileRef = F18D20260000000000000002 /* MoodCalendar/Domain/RecordSearch.swift */; };
+		F18D20260000000000000003 /* MoodCalendar/Features/Search/RecordSearchScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = F18D20260000000000000004 /* MoodCalendar/Features/Search/RecordSearchScreen.swift */; };
+		F18D20260000000000000005 /* MoodCalendar/Features/Search/NotebookDecorations.swift in Sources */ = {isa = PBXBuildFile; fileRef = F18D20260000000000000006 /* MoodCalendar/Features/Search/NotebookDecorations.swift */; };
+		F19A20260000000000000001 /* MoodCalendar/Domain/MonthlyNoteSkin.swift in Sources */ = {isa = PBXBuildFile; fileRef = F19A20260000000000000002 /* MoodCalendar/Domain/MonthlyNoteSkin.swift */; };
+		F19A20260000000000000003 /* MoodCalendar/Persistence/MonthlyNoteSkinStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F19A20260000000000000004 /* MoodCalendar/Persistence/MonthlyNoteSkinStore.swift */; };
+		F19A20260000000000000005 /* MoodCalendar/Features/Monthly/MonthlyNoteSkinView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F19A20260000000000000006 /* MoodCalendar/Features/Monthly/MonthlyNoteSkinView.swift */; };
+		F19A20260000000000000007 /* MoodCalendar/Persistence/StarredDayStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F19A20260000000000000008 /* MoodCalendar/Persistence/StarredDayStore.swift */; };
+		F26C20260000000000000002 /* MoodCalendar/Domain/EntryCollection.swift in Sources */ = {isa = PBXBuildFile; fileRef = F26C20260000000000000001 /* MoodCalendar/Domain/EntryCollection.swift */; };
+		F26C20260000000000000004 /* MoodCalendar/Features/Collection/CollectionScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = F26C20260000000000000003 /* MoodCalendar/Features/Collection/CollectionScreen.swift */; };
+		F29C20260000000000000002 /* MoodCalendar/Domain/WatchKind.swift in Sources */ = {isa = PBXBuildFile; fileRef = F29C20260000000000000001 /* MoodCalendar/Domain/WatchKind.swift */; };
+		F30A20260000000000000002 /* MoodCalendar/Features/Shared/AdaptiveLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = F30A20260000000000000001 /* MoodCalendar/Features/Shared/AdaptiveLayout.swift */; };
 		F4171D7AA7BFA1ECAECEE9B0 /* MoodCalendar/Features/Calendar/SelectedDateDetail.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D8FFAD8C7F230C3E65731BA /* MoodCalendar/Features/Calendar/SelectedDateDetail.swift */; };
-		2177149D9554AC5BAE1D4CA9 /* MoodCalendar/Domain/FutureLetter.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF4647F5F8E4F75E72A60CFF; };
-		9754C240D1F66C6EFA434651 /* MoodCalendar/Domain/MemoryShuffle.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFD08A3394B2DAB18A216F38; };
-		81F7E29F91367F8E4FFC56A3 /* MoodCalendar/Domain/MonthlyZine.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB309B9E5546788F1F9630A7; };
-		E13F9FF85810A2B0B1080FBC /* MoodCalendar/Features/Letters/FutureLettersScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CE0CEEB7A69169B297F5B2E; };
-		747994E5B66E33DE5D28F3B4 /* MoodCalendar/Features/Memories/MemoryShuffleScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB3C4833379A5BB304484D2E; };
-		6AC1B26A96647EC77FD38C78 /* MoodCalendar/Persistence/FutureLetterStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = D58D909FEC9592176803222D; };
-		D84206C10D25C0D908C5F7C1 /* MoodCalendar/Persistence/MemoryDiscoveryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 639D58B373249629531B3C2F; };
-		7F1B0F7A0533BFB5A58865B2 /* MoodCalendar/Persistence/MonthlyZineDraftStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C740AB799839137541EE6B7; };
-		7FF53E7762D8E08CACAEDD5C /* MoodCalendar/Features/Zine/MonthlyZinePoster.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39B7D307D6369DA1D0188827; };
-		8B68DF77B3FA20AF36574646 /* MoodCalendar/Features/Zine/MonthlyZineScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8CED8C0661A412EC88240FC7; };
+		FB12C4600000000000000001 /* MoodCalendar/Persistence/CalendarAppearanceStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB12C4600000000000000002 /* MoodCalendar/Persistence/CalendarAppearanceStore.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		F12520260000000000000011 /* weather-reactions.mov */ = {isa = PBXFileReference; lastKnownFileType = video.quicktime; path = MoodCalendar/Resources/ReleaseHighlights/weather-reactions.mov; sourceTree = "<group>"; };
-		F12520260000000000000012 /* heart-palettes.mov */ = {isa = PBXFileReference; lastKnownFileType = video.quicktime; path = MoodCalendar/Resources/ReleaseHighlights/heart-palettes.mov; sourceTree = "<group>"; };
-		F12520260000000000000013 /* entry-location.mov */ = {isa = PBXFileReference; lastKnownFileType = video.quicktime; path = MoodCalendar/Resources/ReleaseHighlights/entry-location.mov; sourceTree = "<group>"; };
-		F12520260000000000000014 /* card-preview.mov */ = {isa = PBXFileReference; lastKnownFileType = video.quicktime; path = MoodCalendar/Resources/ReleaseHighlights/card-preview.mov; sourceTree = "<group>"; };
-		F12520260000000000000015 /* monthly-note-skins.mov */ = {isa = PBXFileReference; lastKnownFileType = video.quicktime; path = MoodCalendar/Resources/ReleaseHighlights/monthly-note-skins.mov; sourceTree = "<group>"; };
-		F12420260000000000000002 /* ReleaseHighlights.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Features/Shared/ReleaseHighlights.swift; sourceTree = "<group>"; };
-        F11920260000000000000002 /* AppUpdate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Domain/AppUpdate.swift; sourceTree = "<group>"; };
-        F11920260000000000000004 /* AppUpdateChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/App/AppUpdateChecker.swift; sourceTree = "<group>"; };
-		F11820260000000000000002 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = MoodCalendar/Resources/LaunchScreen.storyboard; sourceTree = "<group>"; };
-		F30A20260000000000000001 /* AdaptiveLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Features/Shared/AdaptiveLayout.swift; sourceTree = "<group>"; };
-		F29C20260000000000000001 /* MoodCalendar/Domain/WatchKind.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Domain/WatchKind.swift; sourceTree = "<group>"; };
-		F26C20260000000000000003 /* MoodCalendar/Features/Collection/CollectionScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Features/Collection/CollectionScreen.swift; sourceTree = "<group>"; };
-		F26C20260000000000000001 /* MoodCalendar/Domain/EntryCollection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Domain/EntryCollection.swift; sourceTree = "<group>"; };
-		F19A20260000000000000006 /* Features/Monthly/MonthlyNoteSkinView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Features/Monthly/MonthlyNoteSkinView.swift; sourceTree = "<group>"; };
-		F19A20260000000000000004 /* Persistence/MonthlyNoteSkinStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Persistence/MonthlyNoteSkinStore.swift; sourceTree = "<group>"; };
-		F19A20260000000000000008 /* Persistence/StarredDayStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Persistence/StarredDayStore.swift; sourceTree = "<group>"; };
-		F19A20260000000000000002 /* Domain/MonthlyNoteSkin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Domain/MonthlyNoteSkin.swift; sourceTree = "<group>"; };
-		F18D20260000000000000006 /* MoodCalendar/Features/Search/NotebookDecorations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Features/Search/NotebookDecorations.swift; sourceTree = "<group>"; };
-		F18D20260000000000000004 /* MoodCalendar/Features/Search/RecordSearchScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Features/Search/RecordSearchScreen.swift; sourceTree = "<group>"; };
-		F18D20260000000000000002 /* MoodCalendar/Domain/RecordSearch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Domain/RecordSearch.swift; sourceTree = "<group>"; };
-		AB17C1000000000000000002 /* player-click.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "MoodCalendar/Resources/Sounds/player-click.wav"; sourceTree = "<group>"; };
 		152329B8FA3DC8602E5E97F0 /* MoodCalendar/Persistence/EntryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Persistence/EntryStore.swift; sourceTree = "<group>"; };
 		1D9F4BD6307F721500C157D8 /* MoodCalendarDebug.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = MoodCalendarDebug.entitlements; path = MoodCalendar/MoodCalendarDebug.entitlements; sourceTree = "<group>"; };
 		26EE3BBB2D46F5FB94E3D3D6 /* MoodCalendar/App/DemoData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/App/DemoData.swift; sourceTree = "<group>"; };
 		34689774686455350911AEC2 /* MoodCalendar/Domain/DayKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Domain/DayKey.swift; sourceTree = "<group>"; };
 		38A007151ABE87CC01A5B6E9 /* MoodCalendar.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MoodCalendar.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		39B7D307D6369DA1D0188827 /* MoodCalendar/Features/Zine/MonthlyZinePoster.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Features/Zine/MonthlyZinePoster.swift; sourceTree = "<group>"; };
+		3CE0CEEB7A69169B297F5B2E /* MoodCalendar/Features/Letters/FutureLettersScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Features/Letters/FutureLettersScreen.swift; sourceTree = "<group>"; };
 		4CC4B7E862ADE897AED1178D /* MoodCalendar/Features/Calendar/CalendarScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Features/Calendar/CalendarScreen.swift; sourceTree = "<group>"; };
 		5B04B2273026590A440D27C9 /* MoodCalendar/Resources/Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = MoodCalendar/Resources/Assets.xcassets; sourceTree = "<group>"; };
+		639D58B373249629531B3C2F /* MoodCalendar/Persistence/MemoryDiscoveryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Persistence/MemoryDiscoveryStore.swift; sourceTree = "<group>"; };
 		6C64447ECA14C7F8D4BDDEA8 /* MoodCalendar/Features/Entry/EntryEditorScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Features/Entry/EntryEditorScreen.swift; sourceTree = "<group>"; };
 		7A772840AC9D4747D2365F08 /* MoodCalendar/Domain/Mood.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Domain/Mood.swift; sourceTree = "<group>"; };
 		8C0B7456F844A41B2530A42A /* MoodCalendar/App/MoodCalendarApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/App/MoodCalendarApp.swift; sourceTree = "<group>"; };
+		8C740AB799839137541EE6B7 /* MoodCalendar/Persistence/MonthlyZineDraftStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Persistence/MonthlyZineDraftStore.swift; sourceTree = "<group>"; };
+		8CED8C0661A412EC88240FC7 /* MoodCalendar/Features/Zine/MonthlyZineScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Features/Zine/MonthlyZineScreen.swift; sourceTree = "<group>"; };
 		8D8FFAD8C7F230C3E65731BA /* MoodCalendar/Features/Calendar/SelectedDateDetail.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Features/Calendar/SelectedDateDetail.swift; sourceTree = "<group>"; };
 		9E4D6142AB9DB5CD211CAB4B /* MoodCalendar/Domain/MonthLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Domain/MonthLayout.swift; sourceTree = "<group>"; };
 		A104EF7CBA62193D308ADD02 /* MoodCalendar/Features/Theme/AppTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Features/Theme/AppTheme.swift; sourceTree = "<group>"; };
 		A104EF7CBA62193D308ADD04 /* MoodCalendar/Features/Settings/PersonalizationScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Features/Settings/PersonalizationScreen.swift; sourceTree = "<group>"; };
+		AB17C1000000000000000002 /* MoodCalendar/Resources/Sounds/player-click.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "MoodCalendar/Resources/Sounds/player-click.wav"; sourceTree = "<group>"; };
+		AF4647F5F8E4F75E72A60CFF /* MoodCalendar/Domain/FutureLetter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Domain/FutureLetter.swift; sourceTree = "<group>"; };
+		AFD08A3394B2DAB18A216F38 /* MoodCalendar/Domain/MemoryShuffle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Domain/MemoryShuffle.swift; sourceTree = "<group>"; };
 		B8E4A6C13D5F7092AAE4B502 /* MoodCalendar/Persistence/DataBackup.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Persistence/DataBackup.swift; sourceTree = "<group>"; };
+		BB309B9E5546788F1F9630A7 /* MoodCalendar/Domain/MonthlyZine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Domain/MonthlyZine.swift; sourceTree = "<group>"; };
+		BB3C4833379A5BB304484D2E /* MoodCalendar/Features/Memories/MemoryShuffleScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Features/Memories/MemoryShuffleScreen.swift; sourceTree = "<group>"; };
 		BBFEF3D7150230FF10C342E2 /* MoodCalendar/Features/Calendar/MonthGrid.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Features/Calendar/MonthGrid.swift; sourceTree = "<group>"; };
 		C8649DE90000000000000002 /* MoodCalendar/Resources/Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = MoodCalendar/Resources/Localizable.xcstrings; sourceTree = "<group>"; };
 		C8649DE90000000000000004 /* MoodCalendar/Resources/InfoPlist.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = MoodCalendar/Resources/InfoPlist.xcstrings; sourceTree = "<group>"; };
 		C91A00000000000000000002 /* MoodCalendar/Features/Monthly/MonthlyGoalScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Features/Monthly/MonthlyGoalScreen.swift; sourceTree = "<group>"; };
 		D441A0F31890CD8CCDA0CF48 /* MoodCalendar/Features/Calendar/DayCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Features/Calendar/DayCell.swift; sourceTree = "<group>"; };
 		D4C6790AF6A66C004E857DC6 /* MoodCalendar/Persistence/MoodEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Persistence/MoodEntry.swift; sourceTree = "<group>"; };
+		D58D909FEC9592176803222D /* MoodCalendar/Persistence/FutureLetterStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Persistence/FutureLetterStore.swift; sourceTree = "<group>"; };
 		D5A12E830CB94AD18D911002 /* MoodCalendar/Domain/DailyChoice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Domain/DailyChoice.swift; sourceTree = "<group>"; };
 		E091A2B3C4D5E6F701234568 /* MoodCalendar/App/DailyFragmentReminder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/App/DailyFragmentReminder.swift; sourceTree = "<group>"; };
 		E091A2B3C4D5E6F701234570 /* MoodCalendar/App/MembershipStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/App/MembershipStore.swift; sourceTree = "<group>"; };
@@ -120,30 +111,41 @@
 		E091A2B3C4D5E6F701234578 /* MoodCalendar/PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = MoodCalendar/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		F071CA1E0000000000000002 /* MoodCalendar/Resources/Fonts */ = {isa = PBXFileReference; lastKnownFileType = folder; path = MoodCalendar/Resources/Fonts; sourceTree = "<group>"; };
 		F071CA1E0000000000000004 /* MoodCalendar/Resources/Sounds/photo-flip.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "MoodCalendar/Resources/Sounds/photo-flip.wav"; sourceTree = "<group>"; };
-		AF4647F5F8E4F75E72A60CFF /* MoodCalendar/Domain/FutureLetter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Domain/FutureLetter.swift; sourceTree = "<group>"; };
-		AFD08A3394B2DAB18A216F38 /* MoodCalendar/Domain/MemoryShuffle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Domain/MemoryShuffle.swift; sourceTree = "<group>"; };
-		BB309B9E5546788F1F9630A7 /* MoodCalendar/Domain/MonthlyZine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Domain/MonthlyZine.swift; sourceTree = "<group>"; };
-		3CE0CEEB7A69169B297F5B2E /* MoodCalendar/Features/Letters/FutureLettersScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Features/Letters/FutureLettersScreen.swift; sourceTree = "<group>"; };
-		BB3C4833379A5BB304484D2E /* MoodCalendar/Features/Memories/MemoryShuffleScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Features/Memories/MemoryShuffleScreen.swift; sourceTree = "<group>"; };
-		D58D909FEC9592176803222D /* MoodCalendar/Persistence/FutureLetterStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Persistence/FutureLetterStore.swift; sourceTree = "<group>"; };
-		639D58B373249629531B3C2F /* MoodCalendar/Persistence/MemoryDiscoveryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Persistence/MemoryDiscoveryStore.swift; sourceTree = "<group>"; };
-		8C740AB799839137541EE6B7 /* MoodCalendar/Persistence/MonthlyZineDraftStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Persistence/MonthlyZineDraftStore.swift; sourceTree = "<group>"; };
-		39B7D307D6369DA1D0188827 /* MoodCalendar/Features/Zine/MonthlyZinePoster.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Features/Zine/MonthlyZinePoster.swift; sourceTree = "<group>"; };
-		8CED8C0661A412EC88240FC7 /* MoodCalendar/Features/Zine/MonthlyZineScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Features/Zine/MonthlyZineScreen.swift; sourceTree = "<group>"; };
+		F11820260000000000000002 /* MoodCalendar/Resources/LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = MoodCalendar/Resources/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		F11920260000000000000002 /* MoodCalendar/Domain/AppUpdate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Domain/AppUpdate.swift; sourceTree = "<group>"; };
+		F11920260000000000000004 /* MoodCalendar/App/AppUpdateChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/App/AppUpdateChecker.swift; sourceTree = "<group>"; };
+		F12420260000000000000002 /* MoodCalendar/Features/Shared/ReleaseHighlights.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Features/Shared/ReleaseHighlights.swift; sourceTree = "<group>"; };
+		F12520260000000000000011 /* MoodCalendar/Resources/ReleaseHighlights/weather-reactions.mov */ = {isa = PBXFileReference; lastKnownFileType = video.quicktime; path = "MoodCalendar/Resources/ReleaseHighlights/weather-reactions.mov"; sourceTree = "<group>"; };
+		F12520260000000000000012 /* MoodCalendar/Resources/ReleaseHighlights/heart-palettes.mov */ = {isa = PBXFileReference; lastKnownFileType = video.quicktime; path = "MoodCalendar/Resources/ReleaseHighlights/heart-palettes.mov"; sourceTree = "<group>"; };
+		F12520260000000000000013 /* MoodCalendar/Resources/ReleaseHighlights/entry-location.mov */ = {isa = PBXFileReference; lastKnownFileType = video.quicktime; path = "MoodCalendar/Resources/ReleaseHighlights/entry-location.mov"; sourceTree = "<group>"; };
+		F12520260000000000000014 /* MoodCalendar/Resources/ReleaseHighlights/card-preview.mov */ = {isa = PBXFileReference; lastKnownFileType = video.quicktime; path = "MoodCalendar/Resources/ReleaseHighlights/card-preview.mov"; sourceTree = "<group>"; };
+		F12520260000000000000015 /* MoodCalendar/Resources/ReleaseHighlights/monthly-note-skins.mov */ = {isa = PBXFileReference; lastKnownFileType = video.quicktime; path = "MoodCalendar/Resources/ReleaseHighlights/monthly-note-skins.mov"; sourceTree = "<group>"; };
+		F18D20260000000000000002 /* MoodCalendar/Domain/RecordSearch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Domain/RecordSearch.swift; sourceTree = "<group>"; };
+		F18D20260000000000000004 /* MoodCalendar/Features/Search/RecordSearchScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Features/Search/RecordSearchScreen.swift; sourceTree = "<group>"; };
+		F18D20260000000000000006 /* MoodCalendar/Features/Search/NotebookDecorations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Features/Search/NotebookDecorations.swift; sourceTree = "<group>"; };
+		F19A20260000000000000002 /* MoodCalendar/Domain/MonthlyNoteSkin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Domain/MonthlyNoteSkin.swift; sourceTree = "<group>"; };
+		F19A20260000000000000004 /* MoodCalendar/Persistence/MonthlyNoteSkinStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Persistence/MonthlyNoteSkinStore.swift; sourceTree = "<group>"; };
+		F19A20260000000000000006 /* MoodCalendar/Features/Monthly/MonthlyNoteSkinView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Features/Monthly/MonthlyNoteSkinView.swift; sourceTree = "<group>"; };
+		F19A20260000000000000008 /* MoodCalendar/Persistence/StarredDayStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Persistence/StarredDayStore.swift; sourceTree = "<group>"; };
+		F26C20260000000000000001 /* MoodCalendar/Domain/EntryCollection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Domain/EntryCollection.swift; sourceTree = "<group>"; };
+		F26C20260000000000000003 /* MoodCalendar/Features/Collection/CollectionScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Features/Collection/CollectionScreen.swift; sourceTree = "<group>"; };
+		F29C20260000000000000001 /* MoodCalendar/Domain/WatchKind.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Domain/WatchKind.swift; sourceTree = "<group>"; };
+		F30A20260000000000000001 /* MoodCalendar/Features/Shared/AdaptiveLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Features/Shared/AdaptiveLayout.swift; sourceTree = "<group>"; };
+		FB12C4600000000000000002 /* MoodCalendar/Persistence/CalendarAppearanceStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoodCalendar/Persistence/CalendarAppearanceStore.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
 		B28B7AF69320201D1CF206EB = {
 			isa = PBXGroup;
 			children = (
-				F12520260000000000000011 /* weather-reactions.mov */,
-				F12520260000000000000012 /* heart-palettes.mov */,
-				F12520260000000000000013 /* entry-location.mov */,
-				F12520260000000000000014 /* card-preview.mov */,
-				F12520260000000000000015 /* monthly-note-skins.mov */,
-				F12420260000000000000002 /* ReleaseHighlights.swift */,
-        F11920260000000000000002 /* AppUpdate.swift */,
-        F11920260000000000000004 /* AppUpdateChecker.swift */,
+				F12520260000000000000011 /* MoodCalendar/Resources/ReleaseHighlights/weather-reactions.mov */,
+				F12520260000000000000012 /* MoodCalendar/Resources/ReleaseHighlights/heart-palettes.mov */,
+				F12520260000000000000013 /* MoodCalendar/Resources/ReleaseHighlights/entry-location.mov */,
+				F12520260000000000000014 /* MoodCalendar/Resources/ReleaseHighlights/card-preview.mov */,
+				F12520260000000000000015 /* MoodCalendar/Resources/ReleaseHighlights/monthly-note-skins.mov */,
+				F12420260000000000000002 /* MoodCalendar/Features/Shared/ReleaseHighlights.swift */,
+				F11920260000000000000002 /* MoodCalendar/Domain/AppUpdate.swift */,
+				F11920260000000000000004 /* MoodCalendar/App/AppUpdateChecker.swift */,
 				8CED8C0661A412EC88240FC7 /* MoodCalendar/Features/Zine/MonthlyZineScreen.swift */,
 				39B7D307D6369DA1D0188827 /* MoodCalendar/Features/Zine/MonthlyZinePoster.swift */,
 				8C740AB799839137541EE6B7 /* MoodCalendar/Persistence/MonthlyZineDraftStore.swift */,
@@ -154,7 +156,7 @@
 				BB309B9E5546788F1F9630A7 /* MoodCalendar/Domain/MonthlyZine.swift */,
 				AFD08A3394B2DAB18A216F38 /* MoodCalendar/Domain/MemoryShuffle.swift */,
 				AF4647F5F8E4F75E72A60CFF /* MoodCalendar/Domain/FutureLetter.swift */,
-				F30A20260000000000000001 /* AdaptiveLayout.swift */,
+				F30A20260000000000000001 /* MoodCalendar/Features/Shared/AdaptiveLayout.swift */,
 				F18D20260000000000000006 /* MoodCalendar/Features/Search/NotebookDecorations.swift */,
 				F26C20260000000000000001 /* MoodCalendar/Domain/EntryCollection.swift */,
 				F29C20260000000000000001 /* MoodCalendar/Domain/WatchKind.swift */,
@@ -163,11 +165,11 @@
 				F18D20260000000000000002 /* MoodCalendar/Domain/RecordSearch.swift */,
 				1D9F4BD6307F721500C157D8 /* MoodCalendarDebug.entitlements */,
 				F071CA1E0000000000000004 /* MoodCalendar/Resources/Sounds/photo-flip.wav */,
-				AB17C1000000000000000002 /* player-click.wav */,
+				AB17C1000000000000000002 /* MoodCalendar/Resources/Sounds/player-click.wav */,
 				F071CA1E0000000000000002 /* MoodCalendar/Resources/Fonts */,
 				C8649DE90000000000000002 /* MoodCalendar/Resources/Localizable.xcstrings */,
 				C8649DE90000000000000004 /* MoodCalendar/Resources/InfoPlist.xcstrings */,
-				F11820260000000000000002 /* LaunchScreen.storyboard */,
+				F11820260000000000000002 /* MoodCalendar/Resources/LaunchScreen.storyboard */,
 				8C0B7456F844A41B2530A42A /* MoodCalendar/App/MoodCalendarApp.swift */,
 				E091A2B3C4D5E6F701234568 /* MoodCalendar/App/DailyFragmentReminder.swift */,
 				E091A2B3C4D5E6F701234574 /* MoodCalendar/App/SaveFeedback.swift */,
@@ -192,10 +194,11 @@
 				A104EF7CBA62193D308ADD04 /* MoodCalendar/Features/Settings/PersonalizationScreen.swift */,
 				E091A2B3C4D5E6F701234572 /* MoodCalendar/Features/Settings/MembershipScreen.swift */,
 				C91A00000000000000000002 /* MoodCalendar/Features/Monthly/MonthlyGoalScreen.swift */,
-				F19A20260000000000000006 /* Features/Monthly/MonthlyNoteSkinView.swift */,
-				F19A20260000000000000004 /* Persistence/MonthlyNoteSkinStore.swift */,
-				F19A20260000000000000008 /* Persistence/StarredDayStore.swift */,
-				F19A20260000000000000002 /* Domain/MonthlyNoteSkin.swift */,
+				F19A20260000000000000006 /* MoodCalendar/Features/Monthly/MonthlyNoteSkinView.swift */,
+				F19A20260000000000000004 /* MoodCalendar/Persistence/MonthlyNoteSkinStore.swift */,
+				FB12C4600000000000000002 /* MoodCalendar/Persistence/CalendarAppearanceStore.swift */,
+				F19A20260000000000000008 /* MoodCalendar/Persistence/StarredDayStore.swift */,
+				F19A20260000000000000002 /* MoodCalendar/Domain/MonthlyNoteSkin.swift */,
 				FBDC4F23F93125BBEEAE800C /* Products */,
 			);
 			sourceTree = "<group>";
@@ -275,18 +278,18 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F12520260000000000000001 /* weather-reactions.mov in Resources */,
-				F12520260000000000000002 /* heart-palettes.mov in Resources */,
-				F12520260000000000000003 /* entry-location.mov in Resources */,
-				F12520260000000000000004 /* card-preview.mov in Resources */,
-				F12520260000000000000005 /* monthly-note-skins.mov in Resources */,
+				F12520260000000000000001 /* MoodCalendar/Resources/ReleaseHighlights/weather-reactions.mov in Resources */,
+				F12520260000000000000002 /* MoodCalendar/Resources/ReleaseHighlights/heart-palettes.mov in Resources */,
+				F12520260000000000000003 /* MoodCalendar/Resources/ReleaseHighlights/entry-location.mov in Resources */,
+				F12520260000000000000004 /* MoodCalendar/Resources/ReleaseHighlights/card-preview.mov in Resources */,
+				F12520260000000000000005 /* MoodCalendar/Resources/ReleaseHighlights/monthly-note-skins.mov in Resources */,
 				F071CA1E0000000000000003 /* MoodCalendar/Resources/Sounds/photo-flip.wav in Resources */,
-				AB17C1000000000000000001 /* player-click.wav in Resources */,
+				AB17C1000000000000000001 /* MoodCalendar/Resources/Sounds/player-click.wav in Resources */,
 				F071CA1E0000000000000001 /* MoodCalendar/Resources/Fonts in Resources */,
 				C8649DE90000000000000001 /* MoodCalendar/Resources/Localizable.xcstrings in Resources */,
 				C8649DE90000000000000003 /* MoodCalendar/Resources/InfoPlist.xcstrings in Resources */,
 				222F0DBFFE5EB23DCD3FD16F /* MoodCalendar/Resources/Assets.xcassets in Resources */,
-				F11820260000000000000001 /* LaunchScreen.storyboard in Resources */,
+				F11820260000000000000001 /* MoodCalendar/Resources/LaunchScreen.storyboard in Resources */,
 				E091A2B3C4D5E6F701234575 /* MoodCalendar/Resources/Sounds/save-chime.wav in Resources */,
 				E091A2B3C4D5E6F701234577 /* MoodCalendar/PrivacyInfo.xcprivacy in Resources */,
 			);
@@ -299,9 +302,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F12420260000000000000001 /* ReleaseHighlights.swift in Sources */,
-        F11920260000000000000001 /* AppUpdate.swift in Sources */,
-        F11920260000000000000003 /* AppUpdateChecker.swift in Sources */,
+				F12420260000000000000001 /* MoodCalendar/Features/Shared/ReleaseHighlights.swift in Sources */,
+				F11920260000000000000001 /* MoodCalendar/Domain/AppUpdate.swift in Sources */,
+				F11920260000000000000003 /* MoodCalendar/App/AppUpdateChecker.swift in Sources */,
 				8B68DF77B3FA20AF36574646 /* MoodCalendar/Features/Zine/MonthlyZineScreen.swift in Sources */,
 				7FF53E7762D8E08CACAEDD5C /* MoodCalendar/Features/Zine/MonthlyZinePoster.swift in Sources */,
 				7F1B0F7A0533BFB5A58865B2 /* MoodCalendar/Persistence/MonthlyZineDraftStore.swift in Sources */,
@@ -312,7 +315,7 @@
 				81F7E29F91367F8E4FFC56A3 /* MoodCalendar/Domain/MonthlyZine.swift in Sources */,
 				9754C240D1F66C6EFA434651 /* MoodCalendar/Domain/MemoryShuffle.swift in Sources */,
 				2177149D9554AC5BAE1D4CA9 /* MoodCalendar/Domain/FutureLetter.swift in Sources */,
-				F30A20260000000000000002 /* AdaptiveLayout.swift in Sources */,
+				F30A20260000000000000002 /* MoodCalendar/Features/Shared/AdaptiveLayout.swift in Sources */,
 				F18D20260000000000000005 /* MoodCalendar/Features/Search/NotebookDecorations.swift in Sources */,
 				F26C20260000000000000002 /* MoodCalendar/Domain/EntryCollection.swift in Sources */,
 				F29C20260000000000000002 /* MoodCalendar/Domain/WatchKind.swift in Sources */,
@@ -340,10 +343,11 @@
 				A104EF7CBA62193D308ADD01 /* MoodCalendar/Features/Theme/AppTheme.swift in Sources */,
 				A104EF7CBA62193D308ADD03 /* MoodCalendar/Features/Settings/PersonalizationScreen.swift in Sources */,
 				C91A00000000000000000001 /* MoodCalendar/Features/Monthly/MonthlyGoalScreen.swift in Sources */,
-				F19A20260000000000000005 /* Features/Monthly/MonthlyNoteSkinView.swift in Sources */,
-				F19A20260000000000000003 /* Persistence/MonthlyNoteSkinStore.swift in Sources */,
-				F19A20260000000000000007 /* Persistence/StarredDayStore.swift in Sources */,
-				F19A20260000000000000001 /* Domain/MonthlyNoteSkin.swift in Sources */,
+				F19A20260000000000000005 /* MoodCalendar/Features/Monthly/MonthlyNoteSkinView.swift in Sources */,
+				F19A20260000000000000003 /* MoodCalendar/Persistence/MonthlyNoteSkinStore.swift in Sources */,
+				FB12C4600000000000000001 /* MoodCalendar/Persistence/CalendarAppearanceStore.swift in Sources */,
+				F19A20260000000000000007 /* MoodCalendar/Persistence/StarredDayStore.swift in Sources */,
+				F19A20260000000000000001 /* MoodCalendar/Domain/MonthlyNoteSkin.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -364,7 +368,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = "Little Today";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MARKETING_VERSION = 1.1.1;
+				MARKETING_VERSION = 1.1.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.qingqing.MoodCalendar;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -412,7 +416,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = "Little Today";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				MARKETING_VERSION = 1.1.1;
+				MARKETING_VERSION = 1.1.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.qingqing.MoodCalendar;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;

@@ -5,7 +5,7 @@ enum DailyFragmentReminder {
     private static let identifierPrefix = "daily-fragment-reminder-"
     private static let scheduledDayLimit = 60
 
-    static func refresh(recordedDayKeys: Set<String>, isEnabled: Bool, mayRequestAuthorization: Bool = true) async {
+    static func refresh(recordedDayKeys: Set<String>, isEnabled: Bool, mayRequestAuthorization: Bool = false) async {
         let center = UNUserNotificationCenter.current()
         let existingRequests = await center.pendingNotificationRequests()
         let reminderIDs = existingRequests
